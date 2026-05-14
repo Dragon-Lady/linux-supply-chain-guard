@@ -20,7 +20,16 @@ Safety stance:
 cd C:\Users\tanya\linux-supply-chain-guard
 npm test
 node bin\linux-supply-chain-guard.js --json
+npm run canary:socket-firewall
+npm run canary:socket-firewall:log
 ```
+
+`npm run canary:socket-firewall` requires Socket Firewall (`sfw`) to be
+installed on the canary host first with `npm install -g sfw`. See
+`docs/socket-firewall-canary.md`.
+
+Windows scheduled canary task:
+`LinuxSupplyChainGuard-SocketFirewallCanary`
 
 ## Initial Scope
 
