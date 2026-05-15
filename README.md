@@ -18,6 +18,17 @@ Shai-Hulud / Here We Go Again analysis.
 - No token revocation.
 - No claim that a host is clean.
 - Secret files are detected by path only; contents are not printed.
+- No telemetry, upload, or maintainer-side collection of scan results.
+
+## Privacy
+
+This guard does not save, collect, upload, or transmit user data. It reads local
+host metadata and reports findings to the terminal, or to a local report path
+only when the operator explicitly provides `--report`.
+
+Credential-adjacent files are reported by path only. The tool does not print
+secret values, read private keys for content, or send results to the project
+maintainers.
 
 ## Usage
 
