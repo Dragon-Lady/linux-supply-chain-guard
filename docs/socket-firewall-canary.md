@@ -44,10 +44,30 @@ As of 2026-05-14, `npm view sfw version time --json` reports latest version
 `2.0.4`, published `2025-09-30T18:01:24.292Z`. That npm wrapper package is
 well outside the 7-day package-age gate.
 
-The age gate does not make `sfw` trusted by default. Because this package is now
-part of the defensive path and could itself become a target, continue to monitor
-the npm wrapper package, its publisher activity, and any Socket Firewall binary
-downloaded by the wrapper during first run.
+The age gate does not make `sfw` trusted by default. Socket Firewall has two
+moving parts that must be watched separately:
+
+- The npm wrapper package: `sfw` version, package metadata, maintainer set, and
+  wrapper file hashes.
+- The fetched Socket Firewall binary: binary version, cache path, checksum, and
+  update behavior.
+
+Because this package is now part of the defensive path and could itself become
+a target, continue to monitor both layers before promotion.
+
+## 2026-05-16 Binary Update
+
+The canary observed the fetched Socket Firewall Free binary cache advance from
+`v1.9.0` to `v1.10.0` while the npm wrapper package remained `sfw@2.0.4`.
+Socket's main Firewall docs had not yet been updated to call out that version,
+but `SocketDev/sfw-free` published a GitHub release for `v1.10.0` on
+2026-05-16 with the changelog note `windows arm (#117)`.
+
+Treat this as vendor release propagation with incomplete docs, not as clean
+promotion evidence. Suspicion is lower because the GitHub release exists, but
+the 7-day canary clock was restarted and the binary remains under observation
+until scheduled runs stay clean and Socket's public docs/release surfaces are
+consistent.
 
 ## Canary Duration
 
@@ -79,8 +99,11 @@ Reset the 7-day canary clock if any of these change:
 - The published `sfw` npm package version.
 - The downloaded Socket Firewall binary version.
 - The binary source URL or checksum.
+- Any cached binary path, symlink/cache behavior, or first-run download behavior.
 - The package's publisher or maintainer set.
-- The wrapper behavior, cache layout, or update behavior.
+- The wrapper behavior, wrapper file hashes, cache layout, or update behavior.
+- Any scheduled canary log is incomplete, missing exit code, or does not reach
+  `Protected by Socket Firewall`.
 
 Under normal conditions, an npm package already outside the 7-day age gate could
 move from staging to execution after local tests. During an active supply-chain
@@ -95,6 +118,8 @@ package age gate has passed.
 - The wrapper emits useful allow/block output for maintainer review.
 - The fetched Socket Firewall binary version and source are captured in canary
   logs before promotion.
+- Every scheduled run completes with exit code `0` and includes wrapper hashes
+  plus cached binary hashes.
 
 ## Ongoing Protocol
 
