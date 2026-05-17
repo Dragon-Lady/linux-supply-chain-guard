@@ -30,9 +30,13 @@ package detection.
 
 ## Privacy
 
-This guard does not save, collect, upload, or transmit user data. It reads local
-host metadata and reports findings to the terminal, or to a local report path
-only when the operator explicitly provides `--report`.
+This guard does not provide a hosted service, send telemetry to the
+maintainers, or upload scan results. It reads local host metadata and reports
+findings to the terminal, or to a local report path only when the operator
+explicitly provides `--report`.
+
+Any output files are created in the operator's local environment unless the
+operator separately chooses to share them.
 
 Credential-adjacent files are reported by path only. The tool does not print
 secret values, read private keys for content, or send results to the project

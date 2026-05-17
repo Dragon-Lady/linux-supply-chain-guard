@@ -69,6 +69,20 @@ the 7-day canary clock was restarted and the binary remains under observation
 until scheduled runs stay clean and Socket's public docs/release surfaces are
 consistent.
 
+## 2026-05-17 Vendor Confirmation
+
+Socket replied on X confirming the `v1.10.0` Socket Firewall Free update was
+intentional:
+
+```text
+https://x.com/SocketSecurity/status/2055868318838333786?s=20
+```
+
+This lowers the concern around the binary/cache version jump, but does not by
+itself promote Socket Firewall out of canary. Keep the restarted 7-day canary
+window, scheduled log review, wrapper hash checks, cached binary hash checks,
+and normal package-age/lockfile protocols in place.
+
 ## Canary Duration
 
 Keep Socket Firewall in canary for at least 7 full days before promoting it to a
