@@ -17,7 +17,7 @@ Safety stance:
 ## Core Commands
 
 ```powershell
-cd C:\Users\tanya\linux-supply-chain-guard
+cd C:\path\to\linux-supply-chain-guard
 npm test
 node bin\linux-supply-chain-guard.js --json
 npm run canary:socket-firewall
