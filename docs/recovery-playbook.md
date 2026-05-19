@@ -25,6 +25,11 @@ when a Linux host may have executed compromised package payloads.
   mitigations for `esp4`, `esp6`, and `rxrpc`.
 - Do not rely on mitigations if the host requires IPsec ESP or AFS/rxrpc
   workloads; use patched kernels.
+- For NGINX Rift / `CVE-2026-42945`, patch exposed NGINX Open Source or NGINX
+  Plus deployments through vendor packages. Prioritize internet-facing reverse
+  proxies, package mirrors, CI/build hosts, and self-hosted developer services.
+  Review rewrite-module configuration separately; this guard does not yet
+  inspect NGINX versions or rewrite rules.
 
 ## 4. Rotate From A Clean Machine
 

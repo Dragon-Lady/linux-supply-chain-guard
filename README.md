@@ -9,6 +9,11 @@ lane, including Fragnesia / `CVE-2026-46300` kernel exposure, risky module
 state, and known developer-tooling persistence paths reported in public
 Shai-Hulud / Here We Go Again analysis.
 
+This project also tracks urgent exposed-Linux-server advisories as operator
+guidance when they intersect supply-chain response hosts. NGINX Rift /
+`CVE-2026-42945` is currently documented as advisory-only context; this guard
+does not yet perform NGINX version or rewrite-module configuration detection.
+
 ## Safety stance
 
 - Read-only checks by default.
@@ -67,6 +72,16 @@ Exit codes:
   - `pgmonitor.py`
 - Common developer credential surfaces by presence only.
 
+## Advisory-only Watch Items
+
+- NGINX Rift / `CVE-2026-42945`: heap buffer overflow in
+  `ngx_http_rewrite_module`, reported against NGINX Open Source and NGINX Plus
+  versions `0.6.27` through `1.30.0`. Public reporting says exploitation
+  attempts are active in the wild. Worker-process crash is exploitable; possible
+  RCE depends on vulnerable rewrite configuration and ASLR being disabled.
+  Patch exposed NGINX deployments through vendor packages. This guard currently
+  documents the risk but does not automatically inspect NGINX builds.
+
 ## Interpreting results
 
 Critical findings mean the host may need immediate containment or patching.
@@ -82,3 +97,7 @@ the known indicators it checks.
   https://nvd.nist.gov/vuln/detail/CVE-2026-46300
 - JFrog Shai-Hulud: Here We Go Again:
   https://research.jfrog.com/post/shai-hulud-here-we-go-again/
+- The Hacker News on NGINX CVE-2026-42945 active exploitation:
+  https://thehackernews.com/2026/05/nginx-cve-2026-42945-exploited-in-wild.html
+- The Register on NGINX Rift exploitation:
+  https://www.theregister.com/security/2026/05/18/nginx-rift-attackers-waste-no-time-targeting-exposed-servers/
