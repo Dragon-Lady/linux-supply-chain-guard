@@ -9,6 +9,18 @@ The initial posture checks cover AlmaLinux's May 13, 2026 Fragnesia /
 `CVE-2026-46300` disclosure and known Linux persistence paths from public
 Shai-Hulud / Here We Go Again reporting.
 
+This project also keeps advisory-only notes for urgent Linux server exposure
+risks that may affect build hosts, CI infrastructure, package mirrors, or
+self-hosted developer services. NGINX Rift / `CVE-2026-42945` is currently
+tracked in this advisory-only lane. It affects NGINX Open Source and NGINX Plus
+versions `0.6.27` through `1.30.0` via a heap buffer overflow in
+`ngx_http_rewrite_module`. Public reporting says exploitation attempts have
+been observed in the wild. Worker-process crash is exploitable; reliable RCE
+depends on a vulnerable rewrite configuration and ASLR being disabled. This
+guard does not yet inspect NGINX versions or rewrite configuration, so operators
+should patch exposed NGINX deployments through vendor packages and verify
+configuration separately.
+
 Fragnesia is a Linux kernel local-root flaw affecting supported AlmaLinux
 releases through the `esp4`, `esp6`, and, on some AlmaLinux 9/10 systems,
 `rxrpc` modules. This tool does not test exploitability. It checks kernel
