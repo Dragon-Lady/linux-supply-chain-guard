@@ -30,6 +30,12 @@ when a Linux host may have executed compromised package payloads.
   proxies, package mirrors, CI/build hosts, and self-hosted developer services.
   Review rewrite-module configuration separately; this guard does not yet
   inspect NGINX versions or rewrite rules.
+- For Sudo `CVE-2026-35535`, patch sudo through distro packages on Linux
+  workstations, WSL environments, CI runners, and build hosts. Treat it as a
+  local privilege-escalation amplifier: it is not remote by itself, but it can
+  turn compromised package execution or a low-privilege shell into root.
+  Verify package status with the distro's security tracker; this guard does not
+  yet inspect installed sudo versions.
 
 ## 4. Rotate From A Clean Machine
 
