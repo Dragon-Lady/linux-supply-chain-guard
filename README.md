@@ -7,7 +7,9 @@ runners, and build hosts.
 It checks local host posture related to the May 2026 Linux supply-chain response
 lane, including Fragnesia / `CVE-2026-46300` kernel exposure, risky module
 state, and known developer-tooling persistence paths reported in public
-Shai-Hulud / Here We Go Again analysis.
+Shai-Hulud / Here We Go Again analysis. It also checks selected dependency
+metadata for the OX-reported DPRK npm RAT package names that target developer
+workstations through install-time payloads.
 
 This project also tracks urgent Linux advisories as operator guidance when they
 intersect supply-chain response hosts. NGINX Rift / `CVE-2026-42945` and Sudo
@@ -71,6 +73,13 @@ Exit codes:
   - `gh-token-monitor.sh`
   - `pgsql-monitor.service`
   - `pgmonitor.py`
+- OX-reported DPRK npm RAT dependency indicators:
+  - `terminal-logger-utils`
+  - `pretty-logger-utils`
+  - `ts-logger-pack`
+  - `pinno-loggers`
+  - `utils.cjs`
+  - `/api/validate/keyboard-events`
 - Common developer credential surfaces by presence only.
 
 ## Advisory-only Watch Items
@@ -104,6 +113,8 @@ the known indicators it checks.
   https://nvd.nist.gov/vuln/detail/CVE-2026-46300
 - JFrog Shai-Hulud: Here We Go Again:
   https://research.jfrog.com/post/shai-hulud-here-we-go-again/
+- OX Security DPRK npm RAT writeup:
+  https://www.ox.security/blog/north-korean-npm-infostealer-rat/
 - The Hacker News on NGINX CVE-2026-42945 active exploitation:
   https://thehackernews.com/2026/05/nginx-cve-2026-42945-exploited-in-wild.html
 - The Register on NGINX Rift exploitation:

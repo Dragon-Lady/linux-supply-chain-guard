@@ -9,6 +9,14 @@ The initial posture checks cover AlmaLinux's May 13, 2026 Fragnesia /
 `CVE-2026-46300` disclosure and known Linux persistence paths from public
 Shai-Hulud / Here We Go Again reporting.
 
+The May 20, 2026 OX Security DPRK npm RAT report is now included because it
+targets developer workstations through npm package installation. This guard
+checks dependency metadata for `terminal-logger-utils`, `pretty-logger-utils`,
+`ts-logger-pack`, and `pinno-loggers`, plus behavior markers such as
+`utils.cjs`, `/api/validate/keyboard-events`, `pwdKeyString`, and
+`Telegram Desktop`. These checks are read-only and do not inspect secret file
+contents.
+
 This project also keeps advisory-only notes for urgent Linux exposure risks
 that may affect build hosts, CI infrastructure, package mirrors, WSL developer
 environments, or self-hosted developer services.
@@ -48,6 +56,17 @@ Known supply-chain persistence checks include:
 - `/etc/systemd/system/pgsql-monitor.service`
 - `~/.local/bin/pgmonitor.py`
 - `/usr/bin/pgmonitor.py`
+
+Known DPRK npm RAT dependency indicators include:
+
+- `terminal-logger-utils`
+- `pretty-logger-utils`
+- `ts-logger-pack`
+- `pinno-loggers`
+- `utils.cjs`
+- `/api/validate/keyboard-events`
+- `pwdKeyString`
+- `Telegram Desktop`
 
 This project intentionally avoids exploit reproduction steps, cleanup
 automation, and secret disclosure. It cannot prove a host is clean.
