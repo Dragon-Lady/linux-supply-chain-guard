@@ -9,10 +9,11 @@ lane, including Fragnesia / `CVE-2026-46300` kernel exposure, risky module
 state, and known developer-tooling persistence paths reported in public
 Shai-Hulud / Here We Go Again analysis.
 
-This project also tracks urgent exposed-Linux-server advisories as operator
-guidance when they intersect supply-chain response hosts. NGINX Rift /
-`CVE-2026-42945` is currently documented as advisory-only context; this guard
-does not yet perform NGINX version or rewrite-module configuration detection.
+This project also tracks urgent Linux advisories as operator guidance when they
+intersect supply-chain response hosts. NGINX Rift / `CVE-2026-42945` and Sudo
+`CVE-2026-35535` are currently documented as advisory-only context; this guard
+does not yet perform NGINX version, rewrite-module configuration, or distro sudo
+package detection.
 
 ## Safety stance
 
@@ -81,6 +82,12 @@ Exit codes:
   RCE depends on vulnerable rewrite configuration and ASLR being disabled.
   Patch exposed NGINX deployments through vendor packages. This guard currently
   documents the risk but does not automatically inspect NGINX builds.
+- Sudo `CVE-2026-35535`: local privilege escalation in sudo through `1.9.17p2`
+  before upstream commit `3e474c2`, caused by non-fatal privilege-drop failures
+  before running the mailer. A local attacker may be able to escalate to root
+  without sudoers membership. Patch Linux workstations, CI runners, WSL
+  environments, and build hosts through distro packages. This guard currently
+  documents the risk but does not automatically inspect installed sudo packages.
 
 ## Interpreting results
 
@@ -101,3 +108,7 @@ the known indicators it checks.
   https://thehackernews.com/2026/05/nginx-cve-2026-42945-exploited-in-wild.html
 - The Register on NGINX Rift exploitation:
   https://www.theregister.com/security/2026/05/18/nginx-rift-attackers-waste-no-time-targeting-exposed-servers/
+- Ubuntu CVE-2026-35535 tracker:
+  https://ubuntu.com/security/CVE-2026-35535
+- NVD CVE-2026-35535:
+  https://nvd.nist.gov/vuln/detail/CVE-2026-35535
