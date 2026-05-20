@@ -28,6 +28,14 @@ function run() {
   write(path.join(root, "tmp", "transformers.pyz"), "payload");
   write(path.join(home, ".config", "systemd", "user", "gh-token-monitor.service"), "[Service]\n");
   write(path.join(home, ".config", "gh", "hosts.yml"), "github.com:\n");
+  write(path.join(home, "repo", "package.json"), JSON.stringify({
+    dependencies: {
+      "terminal-logger-utils": "1.0.0"
+    },
+    scripts: {
+      postinstall: "node utils.cjs"
+    }
+  }));
 
   const report = scanHost({ targetRoot: root, homePath: home });
   const ids = new Set(report.findings.map((finding) => finding.id));
@@ -37,6 +45,8 @@ function run() {
   assert(ids.has("known-supply-chain-persistence-path"));
   assert(ids.has("transformers-pyz-present"));
   assert(ids.has("developer-secret-surfaces-present"));
+  assert(ids.has("dprk-npm-rat-package-reference"));
+  assert(ids.has("dprk-npm-rat-text-indicator"));
 
   const patched = makeFixture();
   write(path.join(patched, "etc", "os-release"), 'ID="almalinux"\nVERSION_ID="9.7"\n');

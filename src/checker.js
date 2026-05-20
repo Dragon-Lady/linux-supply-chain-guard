@@ -14,6 +14,28 @@ const KNOWN_HASHES = new Set([
   "5245eb032e336b85cff0dbb3450d591826bf2ef214fd30d7eba1a763664e151b",
 ]);
 
+const KNOWN_DPRK_NPM_PACKAGES = [
+  "terminal-logger-utils",
+  "pretty-logger-utils",
+  "ts-logger-pack",
+  "pinno-loggers",
+];
+
+const DPRK_NPM_TEXT_INDICATORS = [
+  "utils.cjs",
+  "/api/validate/keyboard-events",
+  "pwdKeyString",
+  "Telegram Desktop",
+];
+
+const DEPENDENCY_FILE_NAMES = new Set([
+  "package.json",
+  "package-lock.json",
+  "npm-shrinkwrap.json",
+  "pnpm-lock.yaml",
+  "yarn.lock",
+]);
+
 function scanHost(options = {}) {
   const targetRoot = path.resolve(options.targetRoot || "/");
   const homePath = options.homePath || process.env.HOME || "";
@@ -27,6 +49,7 @@ function scanHost(options = {}) {
   checkAlmaFragnesia(findings, osRelease, kernelRelease);
   checkKernelModules(findings, targetRoot);
   checkPersistence(findings, targetRoot, homePath);
+  checkDprkNpmRat(findings, targetRoot, homePath);
   checkTransformersPayload(findings, targetRoot);
   checkSecretSurfaces(findings, targetRoot, homePath);
 
@@ -120,6 +143,38 @@ function checkPersistence(findings, targetRoot, homePath) {
     const resolved = mapLinuxPath(targetRoot, candidate);
     if (exists(resolved)) {
       addFinding(findings, "critical", "known-supply-chain-persistence-path", "Known supply-chain persistence or payload path exists.", candidate, "Contain the host and preserve evidence. Remove persistence from a trusted recovery posture before rotating tokens.");
+    }
+  }
+}
+
+function checkDprkNpmRat(findings, targetRoot, homePath) {
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const roots = [
+    homeRelative,
+    "/opt",
+    "/srv",
+    "/var/www",
+    "/usr/local/lib/node_modules",
+  ].filter(Boolean);
+  const files = [];
+  for (const root of roots) {
+    files.push(...findDependencyFiles(mapLinuxPath(targetRoot, root), 25000 - files.length));
+    if (files.length >= 25000) break;
+  }
+
+  for (const filePath of files) {
+    const text = readText(filePath);
+    if (!text) continue;
+    const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+    for (const packageName of KNOWN_DPRK_NPM_PACKAGES) {
+      if (text.includes(packageName)) {
+        addFinding(findings, "critical", "dprk-npm-rat-package-reference", "Known DPRK npm RAT package name appears in dependency metadata.", `${relative}: ${packageName}`, "Do not run npm install/build/test in this tree. Inspect from a clean posture and rotate credentials if execution is suspected.");
+      }
+    }
+    for (const indicator of DPRK_NPM_TEXT_INDICATORS) {
+      if (text.includes(indicator)) {
+        addFinding(findings, "warning", "dprk-npm-rat-text-indicator", "DPRK npm RAT behavior indicator appears in dependency metadata.", `${relative}: ${indicator}`, "Review the referenced package scripts and lockfile entries before running package manager commands.");
+      }
     }
   }
 }
@@ -219,6 +274,32 @@ function walkFiles(dirPath) {
       const fullPath = path.join(current, entry.name);
       if (entry.isDirectory()) stack.push(fullPath);
       else if (entry.isFile()) files.push(fullPath);
+    }
+  }
+  return files;
+}
+
+function findDependencyFiles(dirPath, maxFiles) {
+  const files = [];
+  if (maxFiles <= 0 || !exists(dirPath)) return files;
+  const stack = [dirPath];
+  const skipDirs = new Set([".git", ".hg", ".svn", ".next", "dist", "build", "coverage"]);
+  while (stack.length > 0 && files.length < maxFiles) {
+    const current = stack.pop();
+    let entries = [];
+    try {
+      entries = fs.readdirSync(current, { withFileTypes: true });
+    } catch (_error) {
+      continue;
+    }
+    for (const entry of entries) {
+      const fullPath = path.join(current, entry.name);
+      if (entry.isDirectory()) {
+        if (!skipDirs.has(entry.name)) stack.push(fullPath);
+      } else if (entry.isFile() && DEPENDENCY_FILE_NAMES.has(entry.name)) {
+        files.push(fullPath);
+        if (files.length >= maxFiles) break;
+      }
     }
   }
   return files;
