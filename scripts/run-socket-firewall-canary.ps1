@@ -12,6 +12,29 @@ function Write-CanaryLog {
     $Message | Tee-Object -FilePath $logPath -Append | Out-Null
 }
 
+function Get-Sha256Observation {
+    param([string]$Path)
+
+    if (Get-Command Get-FileHash -ErrorAction SilentlyContinue) {
+        return Get-FileHash -Algorithm SHA256 -Path $Path |
+            Select-Object Algorithm, Hash, Path
+    }
+
+    $stream = [System.IO.File]::OpenRead($Path)
+    try {
+        $sha256 = [System.Security.Cryptography.SHA256]::Create()
+        $hashBytes = $sha256.ComputeHash($stream)
+        $hash = -join ($hashBytes | ForEach-Object { $_.ToString("x2") })
+        [pscustomobject]@{
+            Algorithm = "SHA256"
+            Hash = $hash.ToUpperInvariant()
+            Path = $Path
+        }
+    } finally {
+        $stream.Dispose()
+    }
+}
+
 function Run-LoggedCommand {
     param([string]$Label, [string[]]$Command)
 
@@ -41,7 +64,7 @@ function Write-FileHashObservation {
         return
     }
 
-    Get-FileHash -Algorithm SHA256 -Path $Path |
+    Get-Sha256Observation -Path $Path |
         Select-Object Algorithm, Hash, Path |
         Format-List |
         Out-String |
@@ -69,7 +92,7 @@ function Write-DirectoryHashObservation {
 
     Get-ChildItem -Path $Path -Force -Recurse -File |
         Sort-Object FullName |
-        Get-FileHash -Algorithm SHA256 |
+        ForEach-Object { Get-Sha256Observation -Path $_.FullName } |
         Select-Object Algorithm, Hash, Path |
         Format-List |
         Out-String |
