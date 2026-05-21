@@ -1,5 +1,34 @@
 # Socket Firewall Canary
 
+## Promotion Status
+
+Approved for guarded repository use on 2026-05-21.
+
+Approved versions and hashes:
+
+- npm wrapper: `sfw@2.0.4`
+- wrapper package hash:
+  `CA3164EAA442EDE6A36B617AA5A206C7AA1B162AC02F7612019D8BC8A89D1979`
+- wrapper script hash:
+  `F478BC7D23D8103058F2853F5750F79200E836D7F261603D3EADD2493F1B4895`
+- fetched Socket Firewall Free binary: `v1.10.0`
+- Windows x86_64 binary hash:
+  `9242C7D608743F51AF2E0FFD89CB24E3D9F4FE46A5CDF0774F23400D5AD43319`
+
+Promotion basis:
+
+- Socket confirmed the `v1.10.0` update was intentional.
+- Socket public docs describe Socket Firewall Free as an `sfw` wrapper for
+  supported package-manager commands.
+- `SocketDev/sfw-free` published `v1.10.0` as the latest GitHub release.
+- Local scheduled canary logs completed with exit code `0`, emitted
+  `Protected by Socket Firewall`, and showed stable wrapper/binary hashes.
+
+This promotion does not make `sfw` a substitute for normal package controls.
+Continue using `--ignore-scripts` on first contact, reviewing lockfile changes,
+and resetting the canary if wrapper version, binary version, hashes, cache
+behavior, publisher/maintainer state, or source URL changes.
+
 Socket Firewall can be tested as an opt-in install wrapper before making it a
 default developer or CI path. Keep this canary reversible: do not replace normal
 `npm install` workflows until the wrapper is observed on a disposable runner.
@@ -78,10 +107,12 @@ intentional:
 https://x.com/SocketSecurity/status/2055868318838333786?s=20
 ```
 
-This lowers the concern around the binary/cache version jump, but does not by
-itself promote Socket Firewall out of canary. Keep the restarted 7-day canary
-window, scheduled log review, wrapper hash checks, cached binary hash checks,
-and normal package-age/lockfile protocols in place.
+This lowered the concern around the binary/cache version jump. On 2026-05-21,
+Socket's direct confirmation plus updated public documentation and clean local
+canary logs were accepted as sufficient evidence to promote the observed
+`sfw@2.0.4` wrapper and `sfw-free` `v1.10.0` binary to guarded repository use.
+Keep wrapper hash checks, cached binary hash checks, and normal
+package-age/lockfile protocols in place.
 
 ## Canary Duration
 

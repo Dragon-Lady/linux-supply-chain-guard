@@ -56,6 +56,18 @@ node bin/linux-supply-chain-guard.js / --json
 node bin/linux-supply-chain-guard.js /mnt/recovered-root --report report.json --home /mnt/recovered-root/home/alice
 ```
 
+Optional guarded dependency resolution for this checkout:
+
+```bash
+sfw npm install --package-lock-only --ignore-scripts --audit=false --fund=false
+```
+
+Socket Firewall is approved for guarded use in this repository as of
+2026-05-21 after vendor confirmation of the `sfw-free` `v1.10.0` binary update
+and local canary logs showing stable wrapper and binary hashes. Keep lifecycle
+scripts suppressed on first contact and review any lockfile changes before
+commit.
+
 Exit codes:
 
 - `0`: informational findings only
