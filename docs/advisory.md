@@ -17,6 +17,13 @@ checks dependency metadata for `terminal-logger-utils`, `pretty-logger-utils`,
 `Telegram Desktop`. These checks are read-only and do not inspect secret file
 contents.
 
+The May 29, 2026 TeamPCP/Dynatrace watch pack is included as a weak-signal
+exposure detector. It looks for Dynatrace token-shaped values, redacts those
+values in output, and flags repo/service strings observed in public
+threat-actor screenshots. These findings are correlation leads, not proof of
+compromise: operators should compare them against repository visibility, CI
+logs, package metadata, Dynatrace token inventory, and rotation status.
+
 This project also keeps advisory-only notes for urgent Linux exposure risks
 that may affect build hosts, CI infrastructure, package mirrors, WSL developer
 environments, or self-hosted developer services.
@@ -67,6 +74,30 @@ Known DPRK npm RAT dependency indicators include:
 - `/api/validate/keyboard-events`
 - `pwdKeyString`
 - `Telegram Desktop`
+
+TeamPCP/Dynatrace weak-signal exposure indicators include:
+
+- Dynatrace token-shaped values beginning with `dt0c01`, `dt0s01`, or related
+  `dt0*` API/access-token prefixes
+- `hard-copilot`
+- `hard-csc`
+- `hard-iam`
+- `local-cluster-setup`
+- `nonprod-dtappghrunner`
+- `prod-copilot`
+- `prod-csc`
+- `prod-dtappghrunner`
+- `prod-iam`
+- `dynatrace.scorecards`
+- `dynatrace.security.enrichment`
+- `dynatrace.security.operations`
+- `dynatrace.security.threats.exploits`
+- `dynatrace.sensitive.data.center`
+- `dynatrace.services`
+- `dynatrace.snowflake.connector`
+- `dynatrace.software.lifecycle`
+- `dynatrace.specktrack`
+- `dynatrace.storage.management`
 
 This project intentionally avoids exploit reproduction steps, cleanup
 automation, and secret disclosure. It cannot prove a host is clean.

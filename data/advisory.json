@@ -1,10 +1,11 @@
 {
   "incident": "Linux supply-chain host exposure guard",
-  "lastUpdated": "2026-05-20",
+  "lastUpdated": "2026-05-29",
   "scope": {
-    "postureChecks": "Read-only Linux host checks for vulnerable kernel posture, risky module state, known supply-chain persistence paths, and selected DPRK npm RAT dependency indicators.",
+    "postureChecks": "Read-only Linux host checks for vulnerable kernel posture, risky module state, known supply-chain persistence paths, selected DPRK npm RAT dependency indicators, and TeamPCP/Dynatrace weak-signal exposure indicators.",
     "notInScope": "No exploit testing, malware execution, automatic cleanup, token revocation, or claims that a host is clean.",
-    "fragnesia": "CVE-2026-46300 affects supported AlmaLinux releases through esp4, esp6, and in some AlmaLinux 9/10 cases rxrpc. Built-in patched kernel thresholds follow AlmaLinux's May 13, 2026 disclosure."
+    "fragnesia": "CVE-2026-46300 affects supported AlmaLinux releases through esp4, esp6, and in some AlmaLinux 9/10 cases rxrpc. Built-in patched kernel thresholds follow AlmaLinux's May 13, 2026 disclosure.",
+    "dynatraceTeamPcp": "Weak-signal checks flag Dynatrace token-shaped values and TeamPCP/Dynatrace screenshot repo/service strings in scanned metadata. These findings are correlation leads and do not prove compromise by themselves."
   },
   "sources": [
     "https://almalinux.org/blog/2026-05-13-fragnesia-cve-2026-46300/",
