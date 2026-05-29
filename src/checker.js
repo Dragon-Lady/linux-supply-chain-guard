@@ -28,12 +28,73 @@ const DPRK_NPM_TEXT_INDICATORS = [
   "Telegram Desktop",
 ];
 
+const DYNATRACE_TOKEN_PATTERN = /dt0[cs][0-9]{2}\.[A-Z0-9]{24}\.[A-Z0-9]{64,}/gi;
+
+const DYNATRACE_TEAMPCP_REPO_TERMS = [
+  "hard-copilot",
+  "hard-csc",
+  "hard-iam",
+  "local-cluster-setup",
+  "nonprod-dtappghrunner",
+  "prod-copilot",
+  "prod-csc",
+  "prod-dtappghrunner",
+  "prod-iam",
+];
+
+const DYNATRACE_TEAMPCP_SERVICE_TERMS = [
+  "dynatrace.scorecards",
+  "dynatrace.security.enrichment",
+  "dynatrace.security.operations",
+  "dynatrace.security.threats.exploits",
+  "dynatrace.sensitive.data.center",
+  "dynatrace.services",
+  "dynatrace.snowflake.connector",
+  "dynatrace.software.lifecycle",
+  "dynatrace.specktrack",
+  "dynatrace.storage.management",
+];
+
 const DEPENDENCY_FILE_NAMES = new Set([
   "package.json",
   "package-lock.json",
   "npm-shrinkwrap.json",
   "pnpm-lock.yaml",
   "yarn.lock",
+]);
+
+const WATCH_FILE_NAMES = new Set([
+  ...DEPENDENCY_FILE_NAMES,
+  "requirements.txt",
+  "pyproject.toml",
+  "poetry.lock",
+  "Pipfile",
+  "Pipfile.lock",
+  "Dockerfile",
+  "docker-compose.yml",
+  "docker-compose.yaml",
+  ".npmrc",
+  ".pypirc",
+  "README.md",
+  "SECURITY.md",
+]);
+
+const WATCH_FILE_EXTENSIONS = new Set([
+  ".js",
+  ".cjs",
+  ".mjs",
+  ".ts",
+  ".tsx",
+  ".jsx",
+  ".json",
+  ".yaml",
+  ".yml",
+  ".toml",
+  ".lock",
+  ".md",
+  ".txt",
+  ".env",
+  ".tf",
 ]);
 
 function scanHost(options = {}) {
@@ -50,6 +111,7 @@ function scanHost(options = {}) {
   checkKernelModules(findings, targetRoot);
   checkPersistence(findings, targetRoot, homePath);
   checkDprkNpmRat(findings, targetRoot, homePath);
+  checkDynatraceTeamPcpWatch(findings, targetRoot, homePath);
   checkTransformersPayload(findings, targetRoot);
   checkSecretSurfaces(findings, targetRoot, homePath);
 
@@ -179,6 +241,45 @@ function checkDprkNpmRat(findings, targetRoot, homePath) {
   }
 }
 
+function checkDynatraceTeamPcpWatch(findings, targetRoot, homePath) {
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const roots = [
+    homeRelative,
+    "/opt",
+    "/srv",
+    "/var/www",
+    "/usr/local/lib/node_modules",
+    "/etc",
+  ].filter(Boolean);
+  const files = [];
+  for (const root of roots) {
+    files.push(...findWatchFiles(mapLinuxPath(targetRoot, root), 25000 - files.length));
+    if (files.length >= 25000) break;
+  }
+
+  for (const filePath of files) {
+    const text = readText(filePath);
+    if (!text) continue;
+    const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+    const tokenMatches = Array.from(new Set(text.match(DYNATRACE_TOKEN_PATTERN) || []));
+    for (const token of tokenMatches) {
+      addFinding(findings, "critical", "dynatrace-token-exposure", "Dynatrace token-shaped credential appears in scanned metadata.", `${relative}: ${redactDynatraceToken(token)}`, "Treat as a credential exposure. Rotate the token from a clean posture, review scopes, and audit Dynatrace/API usage around the exposure window.");
+    }
+
+    for (const term of DYNATRACE_TEAMPCP_REPO_TERMS) {
+      if (text.includes(term)) {
+        addFinding(findings, "warning", "dynatrace-teampcp-repo-term", "TeamPCP/Dynatrace screenshot repo term appears in scanned metadata.", `${relative}: ${term}`, "Weak signal only: preserve the file, identify whether the term belongs to an expected Dynatrace-controlled source, and correlate with package, CI, and repository access logs.");
+      }
+    }
+
+    for (const term of DYNATRACE_TEAMPCP_SERVICE_TERMS) {
+      if (text.includes(term)) {
+        addFinding(findings, "warning", "dynatrace-teampcp-service-term", "TeamPCP/Dynatrace screenshot service term appears in scanned metadata.", `${relative}: ${term}`, "Weak signal only: correlate with repository visibility, CI logs, package metadata, and token rotation status. This finding does not prove compromise by itself.");
+      }
+    }
+  }
+}
+
 function checkTransformersPayload(findings, targetRoot) {
   const payloadPath = mapLinuxPath(targetRoot, "/tmp/transformers.pyz");
   if (!exists(payloadPath) || !isFile(payloadPath)) {
@@ -303,6 +404,49 @@ function findDependencyFiles(dirPath, maxFiles) {
     }
   }
   return files;
+}
+
+function findWatchFiles(dirPath, maxFiles) {
+  const files = [];
+  if (maxFiles <= 0 || !exists(dirPath)) return files;
+  const stack = [dirPath];
+  const skipDirs = new Set([".git", ".hg", ".svn", ".next", "dist", "build", "coverage", "node_modules", ".venv", "venv"]);
+  while (stack.length > 0 && files.length < maxFiles) {
+    const current = stack.pop();
+    let entries = [];
+    try {
+      entries = fs.readdirSync(current, { withFileTypes: true });
+    } catch (_error) {
+      continue;
+    }
+    for (const entry of entries) {
+      const fullPath = path.join(current, entry.name);
+      if (entry.isDirectory()) {
+        if (!skipDirs.has(entry.name)) stack.push(fullPath);
+      } else if (entry.isFile() && isWatchFile(entry.name, fullPath)) {
+        files.push(fullPath);
+        if (files.length >= maxFiles) break;
+      }
+    }
+  }
+  return files;
+}
+
+function isWatchFile(fileName, filePath) {
+  if (WATCH_FILE_NAMES.has(fileName)) return true;
+  const extension = path.extname(fileName);
+  if (!WATCH_FILE_EXTENSIONS.has(extension)) return false;
+  try {
+    return fs.statSync(filePath).size <= 1024 * 1024;
+  } catch (_error) {
+    return false;
+  }
+}
+
+function redactDynatraceToken(token) {
+  const parts = token.split(".");
+  if (parts.length < 3) return "dt0***";
+  return `${parts[0]}.${parts[1]}.<redacted>`;
 }
 
 function readOsRelease(text) {

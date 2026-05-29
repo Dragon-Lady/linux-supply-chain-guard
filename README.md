@@ -11,6 +11,13 @@ Shai-Hulud / Here We Go Again analysis. It also checks selected dependency
 metadata for the OX-reported DPRK npm RAT package names that target developer
 workstations through install-time payloads.
 
+The May 29, 2026 TeamPCP/Dynatrace watch pack adds weak-signal exposure checks
+for Dynatrace token-shaped credentials and repo/service names observed in
+public threat-actor screenshots. These findings do not prove a Dynatrace breach
+by themselves; they are meant to catch leaked strings in repos, dependency
+metadata, logs, and mounted workspaces where malware-hash tooling may see
+nothing.
+
 This project also tracks urgent Linux advisories as operator guidance when they
 intersect supply-chain response hosts. NGINX Rift / `CVE-2026-42945` and Sudo
 `CVE-2026-35535` are currently documented as advisory-only context; this guard
@@ -26,6 +33,7 @@ package detection.
 - No token revocation.
 - No claim that a host is clean.
 - Secret files are detected by path only; contents are not printed.
+- Dynatrace token-shaped values are redacted in output.
 - No telemetry, upload, or maintainer-side collection of scan results.
 
 ## Privacy
@@ -96,6 +104,13 @@ Exit codes:
   - `pinno-loggers`
   - `utils.cjs`
   - `/api/validate/keyboard-events`
+- TeamPCP/Dynatrace weak-signal exposure indicators:
+  - Dynatrace token-shaped values such as `dt0c01.*` and `dt0s01.*`
+  - `hard-copilot`, `hard-csc`, `hard-iam`, `local-cluster-setup`
+  - `nonprod-dtappghrunner`, `prod-copilot`, `prod-csc`,
+    `prod-dtappghrunner`, `prod-iam`
+  - `dynatrace.scorecards`, `dynatrace.security.operations`,
+    `dynatrace.snowflake.connector`, and related service-name strings
 - Common developer credential surfaces by presence only.
 
 ## Advisory-only Watch Items

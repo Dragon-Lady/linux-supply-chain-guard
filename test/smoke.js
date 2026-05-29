@@ -36,6 +36,16 @@ function run() {
       postinstall: "node utils.cjs"
     }
   }));
+  const dynatraceFixtureToken = [
+    "dt0c01",
+    "ABCDEFGHIJKLMNOPQRSTUVWX",
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKL"
+  ].join(".");
+  write(path.join(home, "repo", "dynatrace-watch.md"), [
+    "prod-dtappghrunner",
+    "dynatrace.security.operations",
+    dynatraceFixtureToken
+  ].join("\n"));
 
   const report = scanHost({ targetRoot: root, homePath: home });
   const ids = new Set(report.findings.map((finding) => finding.id));
@@ -47,6 +57,12 @@ function run() {
   assert(ids.has("developer-secret-surfaces-present"));
   assert(ids.has("dprk-npm-rat-package-reference"));
   assert(ids.has("dprk-npm-rat-text-indicator"));
+  assert(ids.has("dynatrace-token-exposure"));
+  assert(ids.has("dynatrace-teampcp-repo-term"));
+  assert(ids.has("dynatrace-teampcp-service-term"));
+  const tokenFinding = report.findings.find((finding) => finding.id === "dynatrace-token-exposure");
+  assert(tokenFinding.evidence.includes("dt0c01.ABCDEFGHIJKLMNOPQRSTUVWX.<redacted>"));
+  assert(!tokenFinding.evidence.includes("ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ"));
 
   const patched = makeFixture();
   write(path.join(patched, "etc", "os-release"), 'ID="almalinux"\nVERSION_ID="9.7"\n');
