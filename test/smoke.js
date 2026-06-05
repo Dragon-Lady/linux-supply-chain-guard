@@ -46,6 +46,11 @@ function run() {
     "dynatrace.security.operations",
     dynatraceFixtureToken
   ].join("\n"));
+  write(path.join(root, "var", "tmp", ".xs"), "chisel relay binary placeholder");
+  write(path.join(root, "etc", "cron.d", "xsync"), "* * * * * root /var/tmp/.xs client R:0.0.0.0:2525:smtp.gmail.com:587 # xsync\n");
+  write(path.join(root, "root", ".sliver-client", "configs", "root_localhost.cfg"), "Sliver localhost profile\n");
+  write(path.join(root, "root", "excalibur", "smtp_proxies.csv"), "213.136.80.73,25,38.242.204.245\n");
+  write(path.join(root, "root", "excalibur", "chisel_verifier.py"), "StrictHostKeyChecking=no\nchisel_verified.json\n");
 
   const report = scanHost({ targetRoot: root, homePath: home });
   const ids = new Set(report.findings.map((finding) => finding.id));
@@ -60,6 +65,10 @@ function run() {
   assert(ids.has("dynatrace-token-exposure"));
   assert(ids.has("dynatrace-teampcp-repo-term"));
   assert(ids.has("dynatrace-teampcp-service-term"));
+  assert(ids.has("pcpjack-relay-artifact-path"));
+  assert(ids.has("pcpjack-xsync-persistence-marker"));
+  assert(ids.has("pcpjack-relay-file-name"));
+  assert(ids.has("pcpjack-relay-text-indicator"));
   const tokenFinding = report.findings.find((finding) => finding.id === "dynatrace-token-exposure");
   assert(tokenFinding.evidence.includes("dt0c01.ABCDEFGHIJKLMNOPQRSTUVWX.<redacted>"));
   assert(!tokenFinding.evidence.includes("ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ"));

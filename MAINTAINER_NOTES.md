@@ -39,6 +39,9 @@ Windows scheduled canary task:
 - Known Shai-Hulud / Here We Go Again Linux persistence paths.
 - `/tmp/transformers.pyz` presence and SHA-256 when present.
 - Developer credential surfaces by path presence only.
+- PCPJack / Chisel SMTP relay host-residue indicators from Hunt.io and
+  Security Affairs: `/var/tmp/.xs`, `xsync`, Sliver client config paths, relay
+  CSV/verifier files, and high-signal relay IP/path strings.
 
 ## Public Response Rules
 

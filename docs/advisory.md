@@ -24,6 +24,14 @@ threat-actor screenshots. These findings are correlation leads, not proof of
 compromise: operators should compare them against repository visibility, CI
 logs, package metadata, Dynatrace token inventory, and rotation status.
 
+The June 5, 2026 PCPJack watch pack is included as host-residue detection for
+the cloud SMTP relay network reported by Hunt.io and Security Affairs. The
+report describes roughly 230 cloud servers used as authenticated outbound mail
+relays through Chisel reverse tunnels, Sliver C2, relay verifier scripts, and
+`xsync` persistence watching `/var/tmp/.xs`. These checks look for local
+artifact paths and copied host metadata only; they do not scan the internet or
+probe SMTP relays.
+
 This project also keeps advisory-only notes for urgent Linux exposure risks
 that may affect build hosts, CI infrastructure, package mirrors, WSL developer
 environments, or self-hosted developer services.
@@ -98,6 +106,18 @@ TeamPCP/Dynatrace weak-signal exposure indicators include:
 - `dynatrace.software.lifecycle`
 - `dynatrace.specktrack`
 - `dynatrace.storage.management`
+
+PCPJack / cloud SMTP relay host-residue indicators include:
+
+- `/var/tmp/.xs`
+- `xsync`
+- `/root/.sliver-client/configs/root_localhost.cfg`
+- `/root/excalibur/smtp_proxies.csv`
+- `chisel_verifier.py`
+- `chisel_verified.json`
+- `smtp.gmail.com:587`
+- `38.242.204.245`
+- `213.136.80.73`
 
 This project intentionally avoids exploit reproduction steps, cleanup
 automation, and secret disclosure. It cannot prove a host is clean.

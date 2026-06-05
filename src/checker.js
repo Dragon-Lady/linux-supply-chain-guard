@@ -55,6 +55,32 @@ const DYNATRACE_TEAMPCP_SERVICE_TERMS = [
   "dynatrace.storage.management",
 ];
 
+const PCPJACK_TEXT_INDICATORS = [
+  "PCPJack",
+  "chisel_verifier.py",
+  "chisel_verified.json",
+  "smtp_proxies.csv",
+  "smtp.gmail.com:587",
+  "38.242.204.245",
+  "38.242.204[.]245",
+  "213.136.80.73",
+  "213.136.80[.]73",
+  "/root/.sliver-client/configs/root_localhost.cfg",
+  "/root/excalibur/smtp_proxies.csv",
+  "StrictHostKeyChecking=no",
+  "R:0.0.0.0:",
+  "R:.*:",
+  "socks5",
+];
+
+const PCPJACK_FILE_NAMES = new Set([
+  "chisel_verifier.py",
+  "chisel_verified.json",
+  "smtp_proxies.csv",
+  "root_localhost.cfg",
+  "sliver-client.cfg",
+]);
+
 const DEPENDENCY_FILE_NAMES = new Set([
   "package.json",
   "package-lock.json",
@@ -92,6 +118,8 @@ const WATCH_FILE_EXTENSIONS = new Set([
   ".toml",
   ".lock",
   ".md",
+  ".py",
+  ".csv",
   ".txt",
   ".env",
   ".tf",
@@ -112,6 +140,7 @@ function scanHost(options = {}) {
   checkPersistence(findings, targetRoot, homePath);
   checkDprkNpmRat(findings, targetRoot, homePath);
   checkDynatraceTeamPcpWatch(findings, targetRoot, homePath);
+  checkPcpJackRelayArtifacts(findings, targetRoot, homePath);
   checkTransformersPayload(findings, targetRoot);
   checkSecretSurfaces(findings, targetRoot, homePath);
 
@@ -275,6 +304,69 @@ function checkDynatraceTeamPcpWatch(findings, targetRoot, homePath) {
     for (const term of DYNATRACE_TEAMPCP_SERVICE_TERMS) {
       if (text.includes(term)) {
         addFinding(findings, "warning", "dynatrace-teampcp-service-term", "TeamPCP/Dynatrace screenshot service term appears in scanned metadata.", `${relative}: ${term}`, "Weak signal only: correlate with repository visibility, CI logs, package metadata, and token rotation status. This finding does not prove compromise by itself.");
+      }
+    }
+  }
+}
+
+function checkPcpJackRelayArtifacts(findings, targetRoot, homePath) {
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const candidatePaths = [
+    "/var/tmp/.xs",
+    "/tmp/.ch",
+    "/tmp/.ch2",
+    "/tmp/.ch3",
+    "/tmp/.ch4",
+    "/tmp/.ch5",
+    "/etc/systemd/system/xsync.service",
+    "/root/.sliver-client/configs/root_localhost.cfg",
+    "/root/excalibur/smtp_proxies.csv",
+    homeRelative ? `${homeRelative}/.config/systemd/user/xsync.service` : "",
+  ].filter(Boolean);
+
+  for (const candidate of candidatePaths) {
+    const resolved = mapLinuxPath(targetRoot, candidate);
+    if (exists(resolved)) {
+      addFinding(findings, "warning", "pcpjack-relay-artifact-path", "PCPJack/Chisel SMTP relay artifact path exists.", candidate, "Review for Sliver/Chisel relay persistence. Preserve evidence and inspect cron/systemd before cleanup.");
+    }
+  }
+
+  const cronText = [
+    readText(mapLinuxPath(targetRoot, "/etc/crontab")),
+    readDirectoryText(mapLinuxPath(targetRoot, "/etc/cron.d")),
+    homeRelative ? readDirectoryText(mapLinuxPath(targetRoot, `${homeRelative}/.config/systemd/user`)) : "",
+    homeRelative ? readDirectoryText(mapLinuxPath(targetRoot, `${homeRelative}/.local/share/systemd/user`)) : "",
+  ].join("\n");
+  if (/#\s*xsync\b|\bxsync\b.*\/var\/tmp\/\.xs|\/var\/tmp\/\.xs.*\bxsync\b/i.test(cronText)) {
+    addFinding(findings, "warning", "pcpjack-xsync-persistence-marker", "xsync persistence marker references the PCPJack /var/tmp/.xs Chisel relay path.", "xsync + /var/tmp/.xs", "Review cron and systemd user services for Chisel relay watchdog persistence.");
+  }
+
+  const roots = [
+    homeRelative,
+    "/root",
+    "/tmp",
+    "/var/tmp",
+    "/opt",
+    "/srv",
+    "/var/www",
+    "/etc",
+  ].filter(Boolean);
+  const files = [];
+  for (const root of roots) {
+    files.push(...findWatchFiles(mapLinuxPath(targetRoot, root), 25000 - files.length));
+    if (files.length >= 25000) break;
+  }
+
+  for (const filePath of files) {
+    const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+    if (PCPJACK_FILE_NAMES.has(path.basename(filePath))) {
+      addFinding(findings, "warning", "pcpjack-relay-file-name", "PCPJack/Chisel relay file name appears in scanned host tree.", relative, "Review this file for SMTP relay, Sliver, Chisel, or proxy fleet state.");
+    }
+    const text = readText(filePath);
+    if (!text) continue;
+    for (const indicator of PCPJACK_TEXT_INDICATORS) {
+      if (text.includes(indicator)) {
+        addFinding(findings, "warning", "pcpjack-relay-text-indicator", "PCPJack/Chisel SMTP relay indicator appears in scanned host metadata.", `${relative}: ${indicator}`, "Correlate with process, cron, systemd, Sliver, and outbound SMTP relay logs.");
       }
     }
   }
