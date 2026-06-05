@@ -10,6 +10,8 @@
 - CSO Online, NGINX Rift disclosure and patches: https://www.csoonline.com/article/4171437/ai-agent-finds-18-year-old-remote-code-execution-flaw-in-nginx.html
 - Ubuntu CVE-2026-35535 tracker: https://ubuntu.com/security/CVE-2026-35535
 - NVD CVE-2026-35535 record: https://nvd.nist.gov/vuln/detail/CVE-2026-35535
+- Hunt.io, PCPJack exposed SMTP relay network: https://hunt.io/blog/pcpjack-230-cloud-servers-smtp-proxy-network-sliver-chisel
+- Security Affairs, PCPJack summary: https://securityaffairs.com/193189/cyber-crime/pcpjack-exposed-researchers-uncover-230-node-cloud-email-relay-network.html
 
 These links are retained for defensive host posture and incident-response
 context. This project intentionally avoids exploit reproduction steps or malware

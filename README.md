@@ -18,6 +18,12 @@ by themselves; they are meant to catch leaked strings in repos, dependency
 metadata, logs, and mounted workspaces where malware-hash tooling may see
 nothing.
 
+The June 5, 2026 PCPJack watch pack adds host-residue checks for the exposed
+cloud SMTP relay network reported by Hunt.io and Security Affairs. It looks for
+Sliver/Chisel relay artifacts, `xsync` watchdog persistence, relay CSV/verifier
+files, and high-signal IP/path strings. These checks are review signals for
+mounted Linux hosts and cloud runners; they do not scan remote infrastructure.
+
 This project also tracks urgent Linux advisories as operator guidance when they
 intersect supply-chain response hosts. NGINX Rift / `CVE-2026-42945` and Sudo
 `CVE-2026-35535` are currently documented as advisory-only context; this guard
@@ -111,6 +117,13 @@ Exit codes:
     `prod-dtappghrunner`, `prod-iam`
   - `dynatrace.scorecards`, `dynatrace.security.operations`,
     `dynatrace.snowflake.connector`, and related service-name strings
+- PCPJack / cloud SMTP relay residue indicators:
+  - `/var/tmp/.xs` Chisel relay payload path
+  - `xsync` cron/systemd persistence markers
+  - `/root/.sliver-client/configs/root_localhost.cfg`
+  - `/root/excalibur/smtp_proxies.csv`
+  - `chisel_verifier.py`, `chisel_verified.json`
+  - `smtp.gmail.com:587`, `38.242.204.245`, and `213.136.80.73`
 - Common developer credential surfaces by presence only.
 
 ## Advisory-only Watch Items
@@ -154,3 +167,7 @@ the known indicators it checks.
   https://ubuntu.com/security/CVE-2026-35535
 - NVD CVE-2026-35535:
   https://nvd.nist.gov/vuln/detail/CVE-2026-35535
+- Hunt.io PCPJack exposed relay network report:
+  https://hunt.io/blog/pcpjack-230-cloud-servers-smtp-proxy-network-sliver-chisel
+- Security Affairs PCPJack summary:
+  https://securityaffairs.com/193189/cyber-crime/pcpjack-exposed-researchers-uncover-230-node-cloud-email-relay-network.html
