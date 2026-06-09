@@ -51,6 +51,19 @@ function run() {
   write(path.join(root, "root", ".sliver-client", "configs", "root_localhost.cfg"), "Sliver localhost profile\n");
   write(path.join(root, "root", "excalibur", "smtp_proxies.csv"), "213.136.80.73,25,38.242.204.245\n");
   write(path.join(root, "root", "excalibur", "chisel_verifier.py"), "StrictHostKeyChecking=no\nchisel_verified.json\n");
+  write(path.join(home, "ai-gateway", "requirements.txt"), "litellm==1.83.6\nstarlette==1.0.0\n");
+  write(path.join(home, "ai-gateway", "docker-compose.yml"), [
+    "services:",
+    "  litellm:",
+    "    image: ghcr.io/berriai/litellm:main",
+    "    command: litellm --host 0.0.0.0 --port 4000",
+    "    environment:",
+    "      - OPENAI_API_KEY=${OPENAI_API_KEY}",
+    "    labels:",
+    "      - route=/mcp-rest/test/connection",
+    "      - route=/mcp-rest/test/tools/list",
+    "      - trusted_hosts=*",
+  ].join("\n"));
 
   const report = scanHost({ targetRoot: root, homePath: home });
   const ids = new Set(report.findings.map((finding) => finding.id));
@@ -69,6 +82,11 @@ function run() {
   assert(ids.has("pcpjack-xsync-persistence-marker"));
   assert(ids.has("pcpjack-relay-file-name"));
   assert(ids.has("pcpjack-relay-text-indicator"));
+  assert(ids.has("litellm-cve-2026-42271-vulnerable-version"));
+  assert(ids.has("litellm-starlette-host-header-chain"));
+  assert(ids.has("litellm-public-bind"));
+  assert(ids.has("litellm-mcp-test-route-reference"));
+  assert(ids.has("litellm-provider-key-blast-radius"));
   const tokenFinding = report.findings.find((finding) => finding.id === "dynatrace-token-exposure");
   assert(tokenFinding.evidence.includes("dt0c01.ABCDEFGHIJKLMNOPQRSTUVWX.<redacted>"));
   assert(!tokenFinding.evidence.includes("ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ"));

@@ -81,6 +81,31 @@ const PCPJACK_FILE_NAMES = new Set([
   "sliver-client.cfg",
 ]);
 
+const LITELLM_AFFECTED_MIN = "1.74.2";
+const LITELLM_FIXED = "1.83.7";
+const STARLETTE_FIXED = "1.0.1";
+const LITELLM_MCP_TEST_ROUTES = [
+  "/mcp-rest/test/connection",
+  "/mcp-rest/test/tools/list",
+];
+const LITELLM_CONFIG_TERMS = [
+  "litellm",
+  "LiteLLM",
+  "LITELLM",
+  "mcp-rest",
+];
+const PROVIDER_KEY_ENV_TERMS = [
+  "OPENAI_API_KEY",
+  "ANTHROPIC_API_KEY",
+  "AZURE_API_KEY",
+  "AZURE_OPENAI_API_KEY",
+  "AWS_ACCESS_KEY_ID",
+  "GOOGLE_API_KEY",
+  "GEMINI_API_KEY",
+  "MISTRAL_API_KEY",
+  "COHERE_API_KEY",
+];
+
 const DEPENDENCY_FILE_NAMES = new Set([
   "package.json",
   "package-lock.json",
@@ -141,6 +166,7 @@ function scanHost(options = {}) {
   checkDprkNpmRat(findings, targetRoot, homePath);
   checkDynatraceTeamPcpWatch(findings, targetRoot, homePath);
   checkPcpJackRelayArtifacts(findings, targetRoot, homePath);
+  checkLiteLlmGatewayExposure(findings, targetRoot, homePath);
   checkTransformersPayload(findings, targetRoot);
   checkSecretSurfaces(findings, targetRoot, homePath);
 
@@ -372,6 +398,67 @@ function checkPcpJackRelayArtifacts(findings, targetRoot, homePath) {
   }
 }
 
+function checkLiteLlmGatewayExposure(findings, targetRoot, homePath) {
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const roots = [
+    homeRelative,
+    "/opt",
+    "/srv",
+    "/var/www",
+    "/etc",
+    "/root",
+  ].filter(Boolean);
+  const files = [];
+  for (const root of roots) {
+    files.push(...findWatchFiles(mapLinuxPath(targetRoot, root), 25000 - files.length));
+    if (files.length >= 25000) break;
+  }
+
+  for (const filePath of files) {
+    const text = readText(filePath);
+    if (!text) continue;
+    const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+    const hasLiteLlm = hasAnyTerm(text, LITELLM_CONFIG_TERMS);
+    const liteLlmVersions = packageVersionsInText(text, "litellm");
+    const starletteVersions = packageVersionsInText(text, "starlette");
+
+    for (const version of liteLlmVersions) {
+      if (isVersionInRange(version, LITELLM_AFFECTED_MIN, LITELLM_FIXED)) {
+        addFinding(findings, "critical", "litellm-cve-2026-42271-vulnerable-version", "LiteLLM dependency is in the CVE-2026-42271 affected range.", `${relative}: litellm ${version}`, `Upgrade LiteLLM to ${LITELLM_FIXED} or newer, restrict admin/MCP routes, and rotate proxy/provider credentials if exposure is suspected.`);
+      }
+    }
+
+    if (hasLiteLlm) {
+      for (const version of starletteVersions) {
+        if (compareDottedVersion(version, STARLETTE_FIXED) < 0) {
+          addFinding(findings, "warning", "litellm-starlette-host-header-chain", "LiteLLM appears with a Starlette version vulnerable to the Host-header authentication-bypass chain.", `${relative}: starlette ${version}`, `Upgrade Starlette to ${STARLETTE_FIXED} or newer, then review LiteLLM authentication and reverse-proxy Host-header handling.`);
+        }
+      }
+    }
+
+    if (hasLiteLlm && exposesAllInterfaces(text)) {
+      addFinding(findings, "warning", "litellm-public-bind", "LiteLLM-related config appears to bind a service to all interfaces.", relative, "Bind the LiteLLM proxy to localhost/private interfaces unless deliberate, and place admin/MCP routes behind trusted network controls.");
+    }
+
+    for (const route of LITELLM_MCP_TEST_ROUTES) {
+      if (text.includes(route)) {
+        addFinding(findings, "warning", "litellm-mcp-test-route-reference", "LiteLLM MCP test endpoint route appears in scanned config or source.", `${relative}: ${route}`, "If this route is reachable, block it at the reverse proxy/API gateway or require admin-only access.");
+      }
+    }
+
+    if (hasLiteLlm && /Host\s*[:=]|host_header|trusted_hosts|allowed_hosts/i.test(text)) {
+      addFinding(findings, "review", "litellm-host-header-review", "LiteLLM-related config mentions Host-header or trusted-host handling.", relative, "Review for Starlette Host-header bypass exposure and require strict trusted-host validation.");
+    }
+
+    if (hasLiteLlm) {
+      const keyTerms = PROVIDER_KEY_ENV_TERMS.filter((term) => text.includes(term));
+      if (keyTerms.length > 0) {
+        addFinding(findings, "review", "litellm-provider-key-blast-radius", "LiteLLM-related config references provider credential environment names.", `${relative}: ${keyTerms.join(", ")}`, "Do not print secret values. If the proxy was exposed, rotate provider/proxy keys from a clean posture.");
+      }
+    }
+  }
+}
+
 function checkTransformersPayload(findings, targetRoot) {
   const payloadPath = mapLinuxPath(targetRoot, "/tmp/transformers.pyz");
   if (!exists(payloadPath) || !isFile(payloadPath)) {
@@ -598,6 +685,46 @@ function isFile(filePath) {
 
 function escapeRegExp(value) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function hasAnyTerm(text, terms) {
+  return terms.some((term) => text.includes(term));
+}
+
+function exposesAllInterfaces(text) {
+  return /\b(0\.0\.0\.0|\[::\]|::)\b/.test(text) || /--host\s+0\.0\.0\.0\b/i.test(text);
+}
+
+function packageVersionsInText(text, packageName) {
+  const escaped = escapeRegExp(packageName);
+  const versions = new Set();
+  const patterns = [
+    new RegExp(`\\b${escaped}\\b\\s*(?:==|===|=|~=|>=|<=|>|<)\\s*["']?([0-9]+\\.[0-9]+\\.[0-9]+)`, "gi"),
+    new RegExp(`\\b${escaped}\\b["']?\\s*[:=]\\s*["']?[^0-9\\n\\r]{0,12}([0-9]+\\.[0-9]+\\.[0-9]+)`, "gi"),
+    new RegExp(`name\\s*=\\s*["']${escaped}["'][\\s\\S]{0,300}?version\\s*=\\s*["']([0-9]+\\.[0-9]+\\.[0-9]+)["']`, "gi"),
+  ];
+  for (const pattern of patterns) {
+    for (const match of text.matchAll(pattern)) {
+      versions.add(match[1]);
+    }
+  }
+  return Array.from(versions);
+}
+
+function isVersionInRange(version, inclusiveMin, exclusiveMax) {
+  return compareDottedVersion(version, inclusiveMin) >= 0 && compareDottedVersion(version, exclusiveMax) < 0;
+}
+
+function compareDottedVersion(a, b) {
+  const left = String(a).split(".").map((part) => Number.parseInt(part, 10) || 0);
+  const right = String(b).split(".").map((part) => Number.parseInt(part, 10) || 0);
+  const length = Math.max(left.length, right.length);
+  for (let i = 0; i < length; i += 1) {
+    const l = left[i] || 0;
+    const r = right[i] || 0;
+    if (l !== r) return l > r ? 1 : -1;
+  }
+  return 0;
 }
 
 module.exports = {
