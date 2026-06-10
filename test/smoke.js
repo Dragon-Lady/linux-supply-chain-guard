@@ -31,7 +31,8 @@ function run() {
   write(path.join(home, "repo", "package.json"), JSON.stringify({
     dependencies: {
       "terminal-logger-utils": "1.0.0",
-      "csc154-internall-depend": "^1.0.0"
+      "csc154-internall-depend": "^1.0.0",
+      "@validate-sdk/v2": "^1.0.0"
     },
     scripts: {
       postinstall: "node utils.cjs"
