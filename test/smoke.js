@@ -52,6 +52,30 @@ function run() {
   write(path.join(root, "root", "excalibur", "smtp_proxies.csv"), "213.136.80.73,25,38.242.204.245\n");
   write(path.join(root, "root", "excalibur", "chisel_verifier.py"), "StrictHostKeyChecking=no\nchisel_verified.json\n");
   write(path.join(home, "ai-gateway", "requirements.txt"), "litellm==1.83.6\nstarlette==1.0.0\n");
+  const hadesBunSentinel = [".bun", "_ran"].join("");
+  const hadesBunUrl = ["https://github.com/oven-sh/bun/releases/", "download/bun-v1.3.", "13/bun-linux-x64.zip"].join("");
+  const hadesTitle = ["Hades - The End for the ", "Damned"].join("");
+  const hadesWorkflowMarker = ["Run ", "Copilot\nformat", "-results\n"].join("");
+  const hadesC2 = ["thebeautiful", "marchoftime"].join("");
+  const hadesSshPath = ["/tmp/.sshu", "-setup.js"].join("");
+  write(path.join(root, "tmp", hadesBunSentinel), "marker");
+  write(path.join(home, "hades-env", "requirements.txt"), "langchain-core-mcp==1.4.2\n");
+  write(
+    path.join(home, "hades-env", ".venv", "lib", "python3.12", "site-packages", "langchain_core-setup.pth"),
+    [
+      "import os, sys, subprocess, urllib.request, tempfile",
+      "for d in sys.path:",
+      "    candidate = os.path.join(d, '_index.js')",
+      `bun_url = '${hadesBunUrl}'`,
+      "subprocess.run(['bun', 'run', candidate], check=False)",
+      `open(os.path.join(tempfile.gettempdir(), '${hadesBunSentinel}'), 'w').close()`
+    ].join("\n")
+  );
+  write(
+    path.join(home, "hades-env", ".venv", "lib", "python3.12", "site-packages", "_index.js"),
+    `${hadesTitle}\n${hadesWorkflowMarker}${hadesC2}\n${hadesSshPath}\n`
+  );
+  write(path.join(home, "hades-env", ".venv", "lib", "python3.12", "site-packages", "ensmallen_haswell.abi3.so"), "placeholder");
   write(path.join(home, "ai-gateway", "docker-compose.yml"), [
     "services:",
     "  litellm:",
@@ -82,6 +106,14 @@ function run() {
   assert(ids.has("pcpjack-xsync-persistence-marker"));
   assert(ids.has("pcpjack-relay-file-name"));
   assert(ids.has("pcpjack-relay-text-indicator"));
+  assert(ids.has("hades-runtime-artifact-path"));
+  assert(ids.has("hades-pypi-package-version"));
+  assert(ids.has("hades-pth-startup-hook-file"));
+  assert(ids.has("hades-pth-bun-loader"));
+  assert(ids.has("hades-syspath-payload-loader"));
+  assert(ids.has("hades-python-payload-filename"));
+  assert(ids.has("hades-text-indicator"));
+  assert(ids.has("hades-known-native-extension"));
   assert(ids.has("litellm-cve-2026-42271-vulnerable-version"));
   assert(ids.has("litellm-starlette-host-header-chain"));
   assert(ids.has("litellm-public-bind"));
