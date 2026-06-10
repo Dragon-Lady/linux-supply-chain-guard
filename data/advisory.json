@@ -2,11 +2,12 @@
   "incident": "Linux supply-chain host exposure guard",
   "lastUpdated": "2026-06-10",
   "scope": {
-    "postureChecks": "Read-only Linux host checks for vulnerable kernel posture, risky module state, known supply-chain persistence paths, selected DPRK npm RAT dependency indicators, Hades PyPI/Miasma indicators, and TeamPCP/Dynatrace weak-signal exposure indicators.",
+    "postureChecks": "Read-only Linux host checks for vulnerable kernel posture, risky module state, known supply-chain persistence paths, selected compromised npm package references, DPRK npm RAT dependency indicators, Hades PyPI/Miasma indicators, and TeamPCP/Dynatrace weak-signal exposure indicators.",
     "notInScope": "No exploit testing, malware execution, automatic cleanup, token revocation, or claims that a host is clean.",
     "fragnesia": "CVE-2026-46300 affects supported AlmaLinux releases through esp4, esp6, and in some AlmaLinux 9/10 cases rxrpc. Built-in patched kernel thresholds follow AlmaLinux's May 13, 2026 disclosure.",
     "dynatraceTeamPcp": "Weak-signal checks flag Dynatrace token-shaped values and TeamPCP/Dynatrace screenshot repo/service strings in scanned metadata. These findings are correlation leads and do not prove compromise by themselves.",
-    "hadesPyPi": "Checks for affected PyPI package versions, executable .pth startup hooks, Bun/_index.js loader behavior, native .abi3.so launcher layouts, and Hades GitHub/CI exfiltration markers from June 2026 Socket/SecurityWeek reporting."
+    "hadesPyPi": "Checks for affected PyPI package versions, executable .pth startup hooks, Bun/_index.js loader behavior, native .abi3.so launcher layouts, and Hades GitHub/CI exfiltration markers from June 2026 Socket/SecurityWeek reporting.",
+    "csc154InternalDepend": "Checks for npm package csc154-internall-depend from GitHub Advisory GHSA-m3gw-x6rc-fp3r; all versions are treated as compromised."
   },
   "sources": [
     "https://almalinux.org/blog/2026-05-13-fragnesia-cve-2026-46300/",
@@ -16,6 +17,8 @@
     "https://www.ox.security/blog/north-korean-npm-infostealer-rat/",
     "https://socket.dev/blog/shai-hulud-descends-to-hades-miasma-pypi-wave",
     "https://socket.dev/blog/mini-shai-hulud-miasma-and-hades-worms-target-bioinformatics-and-mcp-developers-via-malicious",
-    "https://www.securityweek.com/over-100-npm-pypi-packages-hit-in-new-shai-hulud-supply-chain-attacks/"
+    "https://www.securityweek.com/over-100-npm-pypi-packages-hit-in-new-shai-hulud-supply-chain-attacks/",
+    "https://github.com/advisories/GHSA-m3gw-x6rc-fp3r",
+    "https://supplychainattack.org/incident/malware-in-csc154-internall-depend-dytyon"
   ]
 }
