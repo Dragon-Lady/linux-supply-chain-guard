@@ -23,6 +23,7 @@ const KNOWN_DPRK_NPM_PACKAGES = [
 
 const KNOWN_COMPROMISED_NPM_PACKAGES = [
   "csc154-internall-depend",
+  "@validate-sdk/v2",
 ];
 
 const HADES_PYPI_PACKAGES = {
