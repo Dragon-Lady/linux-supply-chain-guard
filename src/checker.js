@@ -21,6 +21,10 @@ const KNOWN_DPRK_NPM_PACKAGES = [
   "pinno-loggers",
 ];
 
+const KNOWN_COMPROMISED_NPM_PACKAGES = [
+  "csc154-internall-depend",
+];
+
 const HADES_PYPI_PACKAGES = {
   bramin: ["0.0.2", "0.0.3", "0.0.4"],
   cmd2func: ["0.2.2", "0.2.3"],
@@ -233,6 +237,7 @@ function scanHost(options = {}) {
   checkAlmaFragnesia(findings, osRelease, kernelRelease);
   checkKernelModules(findings, targetRoot);
   checkPersistence(findings, targetRoot, homePath);
+  checkCompromisedNpmPackages(findings, targetRoot, homePath);
   checkDprkNpmRat(findings, targetRoot, homePath);
   checkHadesPyPi(findings, targetRoot, homePath);
   checkDynatraceTeamPcpWatch(findings, targetRoot, homePath);
@@ -362,6 +367,33 @@ function checkDprkNpmRat(findings, targetRoot, homePath) {
     for (const indicator of DPRK_NPM_TEXT_INDICATORS) {
       if (text.includes(indicator)) {
         addFinding(findings, "warning", "dprk-npm-rat-text-indicator", "DPRK npm RAT behavior indicator appears in dependency metadata.", `${relative}: ${indicator}`, "Review the referenced package scripts and lockfile entries before running package manager commands.");
+      }
+    }
+  }
+}
+
+function checkCompromisedNpmPackages(findings, targetRoot, homePath) {
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const roots = [
+    homeRelative,
+    "/opt",
+    "/srv",
+    "/var/www",
+    "/usr/local/lib/node_modules",
+  ].filter(Boolean);
+  const files = [];
+  for (const root of roots) {
+    files.push(...findDependencyFiles(mapLinuxPath(targetRoot, root), 25000 - files.length));
+    if (files.length >= 25000) break;
+  }
+
+  for (const filePath of files) {
+    const text = readText(filePath);
+    if (!text) continue;
+    const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+    for (const packageName of KNOWN_COMPROMISED_NPM_PACKAGES) {
+      if (text.includes(packageName)) {
+        addFinding(findings, "critical", "compromised-npm-package-reference", "Known compromised npm package appears in dependency metadata.", `${relative}: ${packageName}`, "Do not run npm install/build/test in this tree. Isolate affected systems if execution is suspected and rotate secrets from a clean posture.");
       }
     }
   }
