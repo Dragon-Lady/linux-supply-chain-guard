@@ -24,6 +24,11 @@ Sliver/Chisel relay artifacts, `xsync` watchdog persistence, relay CSV/verifier
 files, and high-signal IP/path strings. These checks are review signals for
 mounted Linux hosts and cloud runners; they do not scan remote infrastructure.
 
+The June 2026 Hades / Miasma PyPI watch pack adds local checks for affected
+package versions, executable `*-setup.pth` startup hooks, Bun bootstrap and
+`_index.js` loader behavior, `.abi3.so` native-extension launcher layouts, and
+GitHub/CI exfiltration markers reported by Socket and SecurityWeek.
+
 This project also tracks urgent Linux advisories as operator guidance when they
 intersect supply-chain response hosts. NGINX Rift / `CVE-2026-42945` and Sudo
 `CVE-2026-35535` are currently documented as advisory-only context; this guard
@@ -110,6 +115,15 @@ Exit codes:
   - `pinno-loggers`
   - `utils.cjs`
   - `/api/validate/keyboard-events`
+- Hades / Miasma PyPI indicators:
+  - affected package versions including `langchain-core-mcp`, `openai-mcp`,
+    `instructor-mcp`, `tiktoken-mcp`, `ray-mcp-server`, and reported
+    bioinformatics package versions
+  - `*-setup.pth`, `_index.js`, `.bun_ran`, `oven-sh/bun/releases/download`,
+    `subprocess.run`, and `sys.path` loader patterns
+  - native `.abi3.so` extension layouts paired with `_index.js`
+  - GitHub/CI markers including `Run Copilot`, `format-results`, and
+    `Hades - The End for the Damned`
 - TeamPCP/Dynatrace weak-signal exposure indicators:
   - Dynatrace token-shaped values such as `dt0c01.*` and `dt0s01.*`
   - `hard-copilot`, `hard-csc`, `hard-iam`, `local-cluster-setup`
@@ -159,6 +173,12 @@ the known indicators it checks.
   https://research.jfrog.com/post/shai-hulud-here-we-go-again/
 - OX Security DPRK npm RAT writeup:
   https://www.ox.security/blog/north-korean-npm-infostealer-rat/
+- Socket Hades PyPI wave analysis:
+  https://socket.dev/blog/shai-hulud-descends-to-hades-miasma-pypi-wave
+- Socket newer Miasma/Hades PyPI wave analysis:
+  https://socket.dev/blog/mini-shai-hulud-miasma-and-hades-worms-target-bioinformatics-and-mcp-developers-via-malicious
+- SecurityWeek Shai-Hulud Miasma/Hades summary:
+  https://www.securityweek.com/over-100-npm-pypi-packages-hit-in-new-shai-hulud-supply-chain-attacks/
 - The Hacker News on NGINX CVE-2026-42945 active exploitation:
   https://thehackernews.com/2026/05/nginx-cve-2026-42945-exploited-in-wild.html
 - The Register on NGINX Rift exploitation:

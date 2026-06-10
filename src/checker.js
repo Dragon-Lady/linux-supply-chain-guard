@@ -21,6 +21,73 @@ const KNOWN_DPRK_NPM_PACKAGES = [
   "pinno-loggers",
 ];
 
+const HADES_PYPI_PACKAGES = {
+  bramin: ["0.0.2", "0.0.3", "0.0.4"],
+  cmd2func: ["0.2.2", "0.2.3"],
+  coolbox: ["0.4.1", "0.4.2"],
+  dreamgen: ["1.8.1"],
+  "dynamo-release": ["1.5.4"],
+  embiggen: ["0.11.97"],
+  ensmallen: ["0.8.101"],
+  "executor-engine": ["0.3.4", "0.3.5"],
+  "executor-http": ["0.1.3", "0.1.4"],
+  funcdesc: ["0.2.2", "0.2.3"],
+  gpsea: ["0.9.14"],
+  "instructor-mcp": ["1.15.2", "1.15.3"],
+  "langchain-core-mcp": ["1.4.2", "1.4.3"],
+  magique: ["0.6.8", "0.6.9"],
+  "magique-ai": ["0.4.4", "0.4.5"],
+  mem8: ["6.0.1"],
+  "mflux-streamlit": ["0.0.3", "0.0.4"],
+  mrbios: ["0.1.1", "0.1.2"],
+  "napari-ufish": ["0.0.2", "0.0.3"],
+  nucbox: ["0.1.2", "0.1.3"],
+  okite: ["0.0.7", "0.0.8"],
+  "openai-mcp": ["2.41.1", "2.41.2"],
+  "orchestr8-platform": ["3.3.2"],
+  "pantheon-agents": ["0.6.1", "0.6.2"],
+  "pantheon-toolsets": ["0.5.5", "0.5.6"],
+  "phenopacket-store-toolkit": ["0.1.7"],
+  ppkt2synergy: ["0.1.1"],
+  pyphetools: ["0.9.120"],
+  "ray-mcp-server": ["0.2.1"],
+  rlask: ["3.1.7"],
+  rsquests: ["2.34.3"],
+  "spateo-release": ["1.1.2"],
+  synago: ["0.1.1", "0.1.2"],
+  "tiktoken-mcp": ["0.13.1", "0.13.2"],
+  tlask: ["3.1.4"],
+  ufish: ["0.1.2", "0.1.3"],
+  uprobe: ["0.1.3", "0.1.4"],
+};
+
+const HADES_TEXT_INDICATORS = [
+  joinParts("Hades - The End for the ", "Damned"),
+  joinParts("IfYouYankThisToken", "ItWillNukeTheComputerOfTheOwnerFully"),
+  joinParts("results/results-", "*.json"),
+  joinParts("format", "-results"),
+  joinParts("Run ", "Copilot"),
+  joinParts(".bun", "_ran"),
+  joinParts("bun-v1.3.", "13"),
+  joinParts("bun-v1.3.", "14"),
+  joinParts("oven-sh/bun/releases/", "download"),
+  "urllib.request",
+  "urlretrieve",
+  "tempfile.gettempdir",
+  "subprocess.run",
+  "langchain_core-setup.pth",
+  joinParts("thebeautiful", "marchoftime"),
+  joinParts("thebeautiful", "snadsoftime"),
+  joinParts("/tmp/.sshu", "-setup.js"),
+  "/var/run/docker.sock",
+  "harden-runner",
+];
+
+const HADES_NATIVE_EXTENSION_FILES = new Set([
+  "ensmallen_haswell.abi3.so",
+  "ensmallen_core2.abi3.so",
+]);
+
 const DPRK_NPM_TEXT_INDICATORS = [
   "utils.cjs",
   "/api/validate/keyboard-events",
@@ -121,6 +188,7 @@ const WATCH_FILE_NAMES = new Set([
   "poetry.lock",
   "Pipfile",
   "Pipfile.lock",
+  "uv.lock",
   "Dockerfile",
   "docker-compose.yml",
   "docker-compose.yaml",
@@ -144,6 +212,8 @@ const WATCH_FILE_EXTENSIONS = new Set([
   ".lock",
   ".md",
   ".py",
+  ".pth",
+  ".so",
   ".csv",
   ".txt",
   ".env",
@@ -164,6 +234,7 @@ function scanHost(options = {}) {
   checkKernelModules(findings, targetRoot);
   checkPersistence(findings, targetRoot, homePath);
   checkDprkNpmRat(findings, targetRoot, homePath);
+  checkHadesPyPi(findings, targetRoot, homePath);
   checkDynatraceTeamPcpWatch(findings, targetRoot, homePath);
   checkPcpJackRelayArtifacts(findings, targetRoot, homePath);
   checkLiteLlmGatewayExposure(findings, targetRoot, homePath);
@@ -291,6 +362,79 @@ function checkDprkNpmRat(findings, targetRoot, homePath) {
     for (const indicator of DPRK_NPM_TEXT_INDICATORS) {
       if (text.includes(indicator)) {
         addFinding(findings, "warning", "dprk-npm-rat-text-indicator", "DPRK npm RAT behavior indicator appears in dependency metadata.", `${relative}: ${indicator}`, "Review the referenced package scripts and lockfile entries before running package manager commands.");
+      }
+    }
+  }
+}
+
+function checkHadesPyPi(findings, targetRoot, homePath) {
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const runtimePaths = [
+    joinParts("/tmp/.bun", "_ran"),
+    "/tmp/b.zip",
+    "/tmp/b/bun",
+    joinParts("/tmp/.sshu", "-setup.js"),
+    joinParts("/var/tmp/.bun", "_ran"),
+    "/var/tmp/b.zip",
+    "/var/tmp/b/bun",
+  ];
+  for (const runtimePath of runtimePaths) {
+    if (exists(mapLinuxPath(targetRoot, runtimePath))) {
+      addFinding(findings, "warning", "hades-runtime-artifact-path", "Hades Bun/SSH runtime artifact path exists.", runtimePath, "Preserve evidence before cleanup. If package execution is suspected, isolate the host and rotate developer/package/cloud credentials from a clean posture.");
+    }
+  }
+
+  const roots = [
+    homeRelative,
+    "/root",
+    "/tmp",
+    "/var/tmp",
+    "/opt",
+    "/srv",
+    "/var/www",
+    "/usr/local/lib",
+    "/usr/lib/python3",
+    "/usr/lib64/python3",
+  ].filter(Boolean);
+  const files = [];
+  for (const root of roots) {
+    files.push(...findHadesFiles(mapLinuxPath(targetRoot, root), 30000 - files.length));
+    if (files.length >= 30000) break;
+  }
+
+  for (const filePath of files) {
+    const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+    const base = path.basename(filePath);
+    if (/-setup\.pth$/i.test(base)) {
+      addFinding(findings, "warning", "hades-pth-startup-hook-file", "Hades-style Python startup hook filename appears in scanned host tree.", relative, "Review the .pth file before starting Python in this environment. Executable .pth lines can run on Python startup.");
+    }
+    if (base === "_index.js" && /site-packages|\.venv|\/venv\/|\.dist-info|\.whl|py3-none-any/i.test(relative)) {
+      addFinding(findings, "warning", "hades-python-payload-filename", "Hades-style _index.js payload filename appears in a Python package context.", relative, "Treat this environment as suspicious until the package provenance and payload content are reviewed.");
+    }
+    if (HADES_NATIVE_EXTENSION_FILES.has(base)) {
+      addFinding(findings, "critical", "hades-known-native-extension", "Native extension filename reported in Hades PyPI artifacts exists.", relative, "Contain the environment and preserve the wheel/site-packages directory for incident response.");
+    } else if (base.endsWith(".abi3.so") && exists(path.join(path.dirname(filePath), "_index.js"))) {
+      addFinding(findings, "warning", "hades-native-extension-payload-pair", "Python native extension is paired with _index.js.", relative, "Review for Hades-style import-time JavaScript launcher behavior before importing the package.");
+    }
+
+    const text = readText(filePath);
+    if (!text) continue;
+    for (const [packageName, versions] of Object.entries(HADES_PYPI_PACKAGES)) {
+      for (const version of versions) {
+        if (pythonPackageVersionInText(text, packageName, version)) {
+          addFinding(findings, "critical", "hades-pypi-package-version", "Known Hades PyPI package version appears in scanned metadata.", `${relative}: ${packageName}==${version}`, "Do not run Python/package-manager commands in this environment. Pin away from the affected version and rotate credentials if execution may have occurred.");
+        }
+      }
+    }
+    if (isHadesPthBunLoader(text)) {
+      addFinding(findings, "critical", "hades-pth-bun-loader", "Executable Python startup hook appears to bootstrap Bun and launch _index.js.", relative, "Treat Python startup in this environment as possible payload execution. Preserve artifacts and rotate exposed credentials from a clean machine.");
+    }
+    if (/sys\.path/i.test(text) && /_index\.js/i.test(text) && /bun|subprocess/i.test(text)) {
+      addFinding(findings, "critical", "hades-syspath-payload-loader", "Python code searches sys.path for _index.js and attempts Bun/subprocess execution.", relative, "Review for the Hades loader/payload split before running Python or package tools.");
+    }
+    for (const indicator of HADES_TEXT_INDICATORS) {
+      if (text.includes(indicator)) {
+        addFinding(findings, "warning", "hades-text-indicator", "Hades PyPI campaign indicator appears in scanned host metadata.", `${relative}: ${indicator}`, "Correlate with installed package versions, Python startup hooks, CI artifacts, and credential exposure.");
       }
     }
   }
@@ -611,6 +755,32 @@ function findWatchFiles(dirPath, maxFiles) {
   return files;
 }
 
+function findHadesFiles(dirPath, maxFiles) {
+  const files = [];
+  if (maxFiles <= 0 || !exists(dirPath)) return files;
+  const stack = [dirPath];
+  const skipDirs = new Set([".git", ".hg", ".svn", ".next", "dist", "build", "coverage", "node_modules"]);
+  while (stack.length > 0 && files.length < maxFiles) {
+    const current = stack.pop();
+    let entries = [];
+    try {
+      entries = fs.readdirSync(current, { withFileTypes: true });
+    } catch (_error) {
+      continue;
+    }
+    for (const entry of entries) {
+      const fullPath = path.join(current, entry.name);
+      if (entry.isDirectory()) {
+        if (!skipDirs.has(entry.name)) stack.push(fullPath);
+      } else if (entry.isFile() && isHadesWatchFile(entry.name, fullPath)) {
+        files.push(fullPath);
+        if (files.length >= maxFiles) break;
+      }
+    }
+  }
+  return files;
+}
+
 function isWatchFile(fileName, filePath) {
   if (WATCH_FILE_NAMES.has(fileName)) return true;
   const extension = path.extname(fileName);
@@ -620,6 +790,13 @@ function isWatchFile(fileName, filePath) {
   } catch (_error) {
     return false;
   }
+}
+
+function isHadesWatchFile(fileName, filePath) {
+  if (isWatchFile(fileName, filePath)) return true;
+  if (fileName === "_index.js" || /-setup\.pth$/i.test(fileName) || HADES_NATIVE_EXTENSION_FILES.has(fileName)) return true;
+  if (fileName.endsWith(".abi3.so")) return true;
+  return false;
 }
 
 function redactDynatraceToken(token) {
@@ -709,6 +886,38 @@ function packageVersionsInText(text, packageName) {
     }
   }
   return Array.from(versions);
+}
+
+function pythonPackageVersionInText(text, packageName, version) {
+  const escapedPkg = escapeRegExp(packageName);
+  const escapedVersion = escapeRegExp(version);
+  const normalized = text.toLowerCase();
+  const patterns = [
+    new RegExp(`(^|[\\s"'\\[]|name\\s*=\\s*["'])${escapedPkg}(["'\\]\\s]|\\s*(==|===|~=|>=|<=|=)\\s*${escapedVersion})`, "im"),
+    new RegExp(`${escapedPkg}[^\\n\\r]{0,200}${escapedVersion}`, "i"),
+  ];
+  return patterns.some((pattern) => pattern.test(normalized));
+}
+
+function isHadesPthBunLoader(text) {
+  const hasExecutablePthImport = /^\s*import[ \t]/m.test(text);
+  const hasBunBootstrap = matchesAnyPattern(text, [
+    ["oven-sh\\/bun\\/releases\\/", "download"],
+    ["bun-v\\d+\\.\\d+\\.\\d+"],
+    ["bun\\.sh\\/", "install"],
+    ["Bun\\/1\\.3\\."]
+  ]);
+  const hasPythonExecution = /subprocess\.(run|Popen|call)|os\.system|exec\(/i.test(text);
+  const hasPythonNetworkFetch = /urllib\.request|urlretrieve|requests\.get|curl\b|wget\b|fetch\(/i.test(text);
+  return hasExecutablePthImport && /_index\.js/i.test(text) && hasPythonExecution && (hasBunBootstrap || hasPythonNetworkFetch);
+}
+
+function joinParts(...parts) {
+  return parts.join("");
+}
+
+function matchesAnyPattern(text, patternParts) {
+  return patternParts.some((parts) => new RegExp(parts.join(""), "i").test(text));
 }
 
 function isVersionInRange(version, inclusiveMin, exclusiveMax) {

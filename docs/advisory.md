@@ -32,6 +32,14 @@ relays through Chisel reverse tunnels, Sliver C2, relay verifier scripts, and
 artifact paths and copied host metadata only; they do not scan the internet or
 probe SMTP relays.
 
+The June 2026 Hades / Miasma PyPI watch pack is included because Socket and
+SecurityWeek reported fresh Mini Shai-Hulud-derived PyPI waves using executable
+`*-setup.pth` startup hooks, Bun bootstrapping, `_index.js` payloads, `sys.path`
+payload searching, and native `.abi3.so` import-time launchers. These checks
+look for affected PyPI package versions, local runtime artifacts, suspicious
+Python package layouts, and GitHub/CI exfiltration markers. They do not execute
+Python, Bun, package managers, or cleanup actions.
+
 This project also keeps advisory-only notes for urgent Linux exposure risks
 that may affect build hosts, CI infrastructure, package mirrors, WSL developer
 environments, or self-hosted developer services.
@@ -118,6 +126,20 @@ PCPJack / cloud SMTP relay host-residue indicators include:
 - `smtp.gmail.com:587`
 - `38.242.204.245`
 - `213.136.80.73`
+
+Hades / Miasma PyPI indicators include:
+
+- affected PyPI package versions reported by Socket, including MCP-themed and
+  bioinformatics package clusters
+- `*-setup.pth`
+- `_index.js` inside Python package or virtualenv paths
+- `.bun_ran`, `/tmp/b.zip`, `/tmp/b/bun`, and Bun download strings
+- `sys.path` plus `_index.js` loader behavior
+- `ensmallen_haswell.abi3.so`, `ensmallen_core2.abi3.so`, or `.abi3.so` paired
+  with `_index.js`
+- `Hades - The End for the Damned`
+- `IfYouYankThisTokenItWillNukeTheComputerOfTheOwnerFully`
+- `Run Copilot`, `format-results`, and `results/results-*.json`
 
 This project intentionally avoids exploit reproduction steps, cleanup
 automation, and secret disclosure. It cannot prove a host is clean.
