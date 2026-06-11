@@ -28,22 +28,22 @@ const KNOWN_COMPROMISED_NPM_PACKAGES = [
 ];
 
 const OTTERCOOKIE_NPM_PACKAGES = [
-  "bjs-lint-builders",
-  "bjs-lint-builder",
-  "bjs-biginteger",
-  "hjs-lint-builders",
-  "sjs-builders",
-  "sjs-builder",
-  "npm-doc-builder",
+  "bjs-lint-builders", // push-guard: ignore
+  "bjs-lint-builder", // push-guard: ignore
+  "bjs-biginteger", // push-guard: ignore
+  "hjs-lint-builders", // push-guard: ignore
+  "sjs-builders", // push-guard: ignore
+  "sjs-builder", // push-guard: ignore
+  "npm-doc-builder", // push-guard: ignore
 ];
 
 const OTTERCOOKIE_TEXT_INDICATORS = [
-  "cloudflareinsights.vercel.app",
-  "cloudflarefirewall.vercel.app",
-  "cloudflaresecurity.vercel.app",
-  "cloudflareinsights[.]vercel[.]app",
-  "cloudflarefirewall[.]vercel[.]app",
-  "cloudflaresecurity[.]vercel[.]app",
+  "cloudflareinsights.vercel.app", // push-guard: ignore
+  "cloudflarefirewall.vercel.app", // push-guard: ignore
+  "cloudflaresecurity.vercel.app", // push-guard: ignore
+  "cloudflareinsights[.]vercel[.]app", // push-guard: ignore
+  "cloudflarefirewall[.]vercel[.]app", // push-guard: ignore
+  "cloudflaresecurity[.]vercel[.]app", // push-guard: ignore
   "node test.js",
   "postinstall",
 ];
@@ -498,13 +498,13 @@ function checkOtterCookieNpm(findings, targetRoot, homePath) {
 
     for (const packageName of OTTERCOOKIE_NPM_PACKAGES) {
       if (text.includes(packageName)) {
-        addFinding(findings, "critical", "ottercookie-npm-package-reference", "Panther OtterCookie npm campaign package appears in scanned metadata.", `${relative}: ${packageName}`, "Do not run npm install/build/test in this tree. If install occurred, inspect for Vercel C2 traffic, SSH authorized_keys modification, and rotate developer secrets from a clean posture.");
+        addFinding(findings, "critical", "ottercookie-npm-package-reference", "Panther OtterCookie npm campaign package appears in scanned metadata.", `${relative}: ${packageName}`, "Do not run npm install/build/test in this tree. If install occurred, inspect for Vercel C2 traffic, SSH authorized_keys modification, and rotate developer secrets from a clean posture."); // push-guard: ignore
       }
     }
 
     for (const indicator of OTTERCOOKIE_TEXT_INDICATORS) {
       if (text.includes(indicator)) {
-        addFinding(findings, "warning", "ottercookie-text-indicator", "OtterCookie npm behavior or C2 indicator appears in scanned host metadata.", `${relative}: ${indicator}`, "Correlate with npm install history, outbound traffic, shell history, ~/.ssh/authorized_keys, and firewall changes before cleanup.");
+        addFinding(findings, "warning", "ottercookie-text-indicator", "OtterCookie npm behavior or C2 indicator appears in scanned host metadata.", `${relative}: ${indicator}`, "Correlate with npm install history, outbound traffic, shell history, ~/.ssh/authorized_keys, and firewall changes before cleanup."); // push-guard: ignore
       }
     }
   }

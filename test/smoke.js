@@ -57,17 +57,17 @@ function run() {
   write(path.join(home, "ai-gateway", "requirements.txt"), "litellm==1.83.6\nstarlette==1.0.0\n");
   write(path.join(home, "ottercookie", "package.json"), JSON.stringify({
     dependencies: {
-      "bjs-biginteger": "5.0.6",
-      "bjs-lint-builder": "1.0.5"
+      "bjs-biginteger": "5.0.6", // push-guard: ignore
+      "bjs-lint-builder": "1.0.5" // push-guard: ignore
     },
     scripts: {
       postinstall: "node test.js"
     }
   }));
   write(path.join(home, "ottercookie", "test.js"), [
-    "const primary = 'https://cloudflareinsights.vercel.app/api/v1';",
-    "const secondary = 'https://cloudflarefirewall.vercel.app/api/v1';",
-    "const legacy = 'https://cloudflaresecurity.vercel.app/api/ssh-key';"
+    "const primary = 'https://cloudflareinsights.vercel.app/api/v1';", // push-guard: ignore
+    "const secondary = 'https://cloudflarefirewall.vercel.app/api/v1';", // push-guard: ignore
+    "const legacy = 'https://cloudflaresecurity.vercel.app/api/ssh-key';" // push-guard: ignore
   ].join("\n"));
   write(path.join(home, "solana-fakefix", "package.json"), JSON.stringify({
     dependencies: {
