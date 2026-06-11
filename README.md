@@ -29,6 +29,12 @@ package versions, executable `*-setup.pth` startup hooks, Bun bootstrap and
 `_index.js` loader behavior, `.abi3.so` native-extension launcher layouts, and
 GitHub/CI exfiltration markers reported by Socket and SecurityWeek.
 
+The June 2026 JFrog Solana FakeFix / CMS Windows loader watch pack adds checks
+for malicious Solana-themed npm/PyPI package names, CMS-themed npm loader names,
+Solana wallet/keypair paths, Telegram exfiltration, suspicious Solana RPC
+redirection, Deno remote-loader execution, Windows Registry Run-key persistence,
+mutex markers, and EXE-dropper filenames.
+
 This project also tracks urgent Linux advisories as operator guidance when they
 intersect supply-chain response hosts. NGINX Rift / `CVE-2026-42945` and Sudo
 `CVE-2026-35535` are currently documented as advisory-only context; this guard
@@ -124,6 +130,16 @@ Exit codes:
   - native `.abi3.so` extension layouts paired with `_index.js`
   - GitHub/CI markers including `Run Copilot`, `format-results`, and
     `Hades - The End for the Damned`
+- Solana FakeFix / CMS Windows loader indicators:
+  - Solana-themed npm names such as `@solana-labs/web3.js`,
+    `solana-web3-stable`, `solana-rpc-client`, and `solana-mev-bot`
+  - PyPI names `solana-cli-py`, `solana-web3`, `solana-web3-py`, and
+    `spl-token-py`
+  - CMS loader names `cms-storehub`, `cms-helpgit`, `cms-github`, `to-cms`,
+    and `shopifyto-cms`
+  - Solana keypair/wallet path strings, Telegram API exfil paths, Deno
+    `run -A`, fake RPC `104.239.66.223:8899`, and Windows Run-key/persistence
+    markers
 - TeamPCP/Dynatrace weak-signal exposure indicators:
   - Dynatrace token-shaped values such as `dt0c01.*` and `dt0s01.*`
   - `hard-copilot`, `hard-csc`, `hard-iam`, `local-cluster-setup`
@@ -179,6 +195,8 @@ the known indicators it checks.
   https://socket.dev/blog/mini-shai-hulud-miasma-and-hades-worms-target-bioinformatics-and-mcp-developers-via-malicious
 - SecurityWeek Shai-Hulud Miasma/Hades summary:
   https://www.securityweek.com/over-100-npm-pypi-packages-hit-in-new-shai-hulud-supply-chain-attacks/
+- JFrog Solana FakeFix / CMS Windows loader report:
+  https://research.jfrog.com/post/solana-fakefix/
 - The Hacker News on NGINX CVE-2026-42945 active exploitation:
   https://thehackernews.com/2026/05/nginx-cve-2026-42945-exploited-in-wild.html
 - The Register on NGINX Rift exploitation:
