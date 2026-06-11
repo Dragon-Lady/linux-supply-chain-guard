@@ -121,6 +121,10 @@ Exit codes:
   - `pinno-loggers`
   - `utils.cjs`
   - `/api/validate/keyboard-events`
+- GitHub Advisory npm malware packages with all versions affected:
+  - `csc154-internall-depend`
+  - `@validate-sdk/v2`
+  - `google-cloud-secret-manager-config-poc`
 - Hades / Miasma PyPI indicators:
   - affected package versions including `langchain-core-mcp`, `openai-mcp`,
     `instructor-mcp`, `tiktoken-mcp`, `ray-mcp-server`, and reported
@@ -197,6 +201,8 @@ the known indicators it checks.
   https://www.securityweek.com/over-100-npm-pypi-packages-hit-in-new-shai-hulud-supply-chain-attacks/
 - JFrog Solana FakeFix / CMS Windows loader report:
   https://research.jfrog.com/post/solana-fakefix/
+- GitHub Advisory for `google-cloud-secret-manager-config-poc`:
+  https://github.com/advisories/GHSA-g6v5-9xpp-6hpx
 - The Hacker News on NGINX CVE-2026-42945 active exploitation:
   https://thehackernews.com/2026/05/nginx-cve-2026-42945-exploited-in-wild.html
 - The Register on NGINX Rift exploitation:
