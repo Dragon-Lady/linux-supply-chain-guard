@@ -54,6 +54,27 @@ function run() {
   write(path.join(root, "root", "excalibur", "smtp_proxies.csv"), "213.136.80.73,25,38.242.204.245\n");
   write(path.join(root, "root", "excalibur", "chisel_verifier.py"), "StrictHostKeyChecking=no\nchisel_verified.json\n");
   write(path.join(home, "ai-gateway", "requirements.txt"), "litellm==1.83.6\nstarlette==1.0.0\n");
+  write(path.join(home, "solana-fakefix", "package.json"), JSON.stringify({
+    dependencies: {
+      "@solana-labs/web3.js": "^2.0.0",
+      "cms-storehub": "^1.0.0"
+    },
+    scripts: {
+      postinstall: "node install.js"
+    }
+  }));
+  write(path.join(home, "solana-fakefix", "requirements.txt"), "solana-web3-py==0.0.1\nspl-token-py\n");
+  write(path.join(home, "solana-fakefix", "__init__.py"), [
+    ".config/solana/id.json",
+    ".solana/id.json",
+    "wallet.json",
+    "https://api.telegram.org/bot<redacted>/sendMessage",
+    "http://104.239.66.223:8899",
+    "http://77.90.185.225/v026a4a141fd9e7d2dd.js",
+    "deno run -A",
+    "conhost.exe --headless",
+    "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Run"
+  ].join("\n"));
   const hadesBunSentinel = [".bun", "_ran"].join("");
   const hadesBunUrl = ["https://github.com/oven-sh/bun/releases/", "download/bun-v1.3.", "13/bun-linux-x64.zip"].join("");
   const hadesTitle = ["Hades - The End for the ", "Damned"].join("");
@@ -100,6 +121,9 @@ function run() {
   assert(ids.has("transformers-pyz-present"));
   assert(ids.has("developer-secret-surfaces-present"));
   assert(ids.has("compromised-npm-package-reference"));
+  assert(ids.has("solana-fakefix-npm-package-reference"));
+  assert(ids.has("solana-fakefix-pypi-package-reference"));
+  assert(ids.has("solana-fakefix-text-indicator"));
   assert(ids.has("dprk-npm-rat-package-reference"));
   assert(ids.has("dprk-npm-rat-text-indicator"));
   assert(ids.has("dynatrace-token-exposure"));

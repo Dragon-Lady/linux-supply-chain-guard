@@ -26,6 +26,55 @@ const KNOWN_COMPROMISED_NPM_PACKAGES = [
   "@validate-sdk/v2",
 ];
 
+const SOLANA_FAKEFIX_NPM_PACKAGES = [
+  "@solana-labs/ancor",
+  "@solana-labs/etherjs",
+  "@solana-labs/spl-toke",
+  "@solana-labs/web3-js",
+  "@solana-labs/web3.js",
+  "@solana-labs/web3js",
+  "cms-github",
+  "cms-helpgit",
+  "cms-storehub",
+  "shopifyto-cms",
+  "solana-js-client",
+  "solana-mev-bot",
+  "solana-rpc-client",
+  "solana-web3-community",
+  "solana-web3-fixed",
+  "solana-web3-fork",
+  "solana-web3-lts",
+  "solana-web3-patched",
+  "solana-web3-stable",
+  "solana-web3-v1",
+  "to-cms",
+];
+
+const SOLANA_FAKEFIX_PYPI_PACKAGES = [
+  "solana-cli-py",
+  "solana-web3",
+  "solana-web3-py",
+  "spl-token-py",
+];
+
+const SOLANA_FAKEFIX_TEXT_INDICATORS = [
+  ".config/solana/id.json",
+  ".solana/id.json",
+  "wallet.json",
+  "keypair.json",
+  "api.telegram.org/bot",
+  "104.239.66.223:8899",
+  "77.90.185.225",
+  "raw.githubusercontent.com/PassWord1337/updates/main/install.js",
+  "Deno.Command",
+  "deno run -A",
+  "conhost.exe --headless",
+  "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Run",
+  "127.0.0.1:10092",
+  "ChromeSetup.exe",
+  "aCpsuydgwbasd.exe",
+];
+
 const HADES_PYPI_PACKAGES = {
   bramin: ["0.0.2", "0.0.3", "0.0.4"],
   cmd2func: ["0.2.2", "0.2.3"],
@@ -240,6 +289,7 @@ function scanHost(options = {}) {
   checkPersistence(findings, targetRoot, homePath);
   checkCompromisedNpmPackages(findings, targetRoot, homePath);
   checkDprkNpmRat(findings, targetRoot, homePath);
+  checkSolanaFakeFix(findings, targetRoot, homePath);
   checkHadesPyPi(findings, targetRoot, homePath);
   checkDynatraceTeamPcpWatch(findings, targetRoot, homePath);
   checkPcpJackRelayArtifacts(findings, targetRoot, homePath);
@@ -395,6 +445,51 @@ function checkCompromisedNpmPackages(findings, targetRoot, homePath) {
     for (const packageName of KNOWN_COMPROMISED_NPM_PACKAGES) {
       if (text.includes(packageName)) {
         addFinding(findings, "critical", "compromised-npm-package-reference", "Known compromised npm package appears in dependency metadata.", `${relative}: ${packageName}`, "Do not run npm install/build/test in this tree. Isolate affected systems if execution is suspected and rotate secrets from a clean posture.");
+      }
+    }
+  }
+}
+
+function checkSolanaFakeFix(findings, targetRoot, homePath) {
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const roots = [
+    homeRelative,
+    "/root",
+    "/tmp",
+    "/var/tmp",
+    "/opt",
+    "/srv",
+    "/var/www",
+    "/usr/local/lib/node_modules",
+    "/usr/local/lib/python3",
+    "/usr/lib/python3",
+  ].filter(Boolean);
+  const files = [];
+  for (const root of roots) {
+    files.push(...findWatchFiles(mapLinuxPath(targetRoot, root), 30000 - files.length));
+    if (files.length >= 30000) break;
+  }
+
+  for (const filePath of files) {
+    const text = readText(filePath);
+    if (!text) continue;
+    const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+
+    for (const packageName of SOLANA_FAKEFIX_NPM_PACKAGES) {
+      if (text.includes(packageName)) {
+        addFinding(findings, "critical", "solana-fakefix-npm-package-reference", "JFrog Solana FakeFix / CMS loader npm package appears in scanned metadata.", `${relative}: ${packageName}`, "Do not run npm install/build/test in this tree. If install/import occurred, rotate Solana wallets, SSH keys, cloud credentials, source-control tokens, npm tokens, and CI secrets from a clean posture.");
+      }
+    }
+
+    for (const packageName of SOLANA_FAKEFIX_PYPI_PACKAGES) {
+      if (pythonPackageNameInText(text, packageName)) {
+        addFinding(findings, "critical", "solana-fakefix-pypi-package-reference", "JFrog Solana FakeFix PyPI package appears in scanned metadata.", `${relative}: ${packageName}`, "Do not import this package or run Python package-manager commands in this environment. If import occurred, rotate Solana wallets, SSH keys, cloud credentials, source-control tokens, PyPI tokens, and CI secrets from a clean posture.");
+      }
+    }
+
+    for (const indicator of SOLANA_FAKEFIX_TEXT_INDICATORS) {
+      if (text.includes(indicator)) {
+        addFinding(findings, "warning", "solana-fakefix-text-indicator", "Solana FakeFix / CMS loader behavior indicator appears in scanned host metadata.", `${relative}: ${indicator}`, "Correlate with package metadata, npm/PyPI install history, shell profiles, cron, LaunchAgents, Registry/Run-key equivalents, and network telemetry before cleanup.");
       }
     }
   }
@@ -928,6 +1023,16 @@ function pythonPackageVersionInText(text, packageName, version) {
   const patterns = [
     new RegExp(`(^|[\\s"'\\[]|name\\s*=\\s*["'])${escapedPkg}(["'\\]\\s]|\\s*(==|===|~=|>=|<=|=)\\s*${escapedVersion})`, "im"),
     new RegExp(`${escapedPkg}[^\\n\\r]{0,200}${escapedVersion}`, "i"),
+  ];
+  return patterns.some((pattern) => pattern.test(normalized));
+}
+
+function pythonPackageNameInText(text, packageName) {
+  const escapedPkg = escapeRegExp(packageName);
+  const normalized = text.toLowerCase();
+  const patterns = [
+    new RegExp(`(^|[\\s"'\\[]|name\\s*=\\s*["'])${escapedPkg}(["'\\]\\s]|\\s*(==|===|~=|>=|<=|=)\\s*[^\\n\\r]+)`, "im"),
+    new RegExp(`\\b${escapedPkg}\\b`, "i"),
   ];
   return patterns.some((pattern) => pattern.test(normalized));
 }
