@@ -125,6 +125,11 @@ Exit codes:
   - `csc154-internall-depend`
   - `@validate-sdk/v2`
   - `google-cloud-secret-manager-config-poc`
+- Panther OtterCookie npm indicators:
+  - package names including `bjs-biginteger`, `bjs-lint-builder(s)`,
+    `hjs-lint-builders`, `sjs-builder(s)`, and `npm-doc-builder`
+  - Vercel-hosted C2 domains used for config retrieval and file upload
+  - install-time `node test.js` / `postinstall` behavior markers
 - Hades / Miasma PyPI indicators:
   - affected package versions including `langchain-core-mcp`, `openai-mcp`,
     `instructor-mcp`, `tiktoken-mcp`, `ray-mcp-server`, and reported
@@ -203,6 +208,8 @@ the known indicators it checks.
   https://research.jfrog.com/post/solana-fakefix/
 - GitHub Advisory for `google-cloud-secret-manager-config-poc`:
   https://github.com/advisories/GHSA-g6v5-9xpp-6hpx
+- Panther OtterCookie npm campaign:
+  https://panther.com/blog/tracking-an-ottercookie-infostealer-campaign-across-npm
 - The Hacker News on NGINX CVE-2026-42945 active exploitation:
   https://thehackernews.com/2026/05/nginx-cve-2026-42945-exploited-in-wild.html
 - The Register on NGINX Rift exploitation:
