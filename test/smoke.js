@@ -55,6 +55,20 @@ function run() {
   write(path.join(root, "root", "excalibur", "smtp_proxies.csv"), "213.136.80.73,25,38.242.204.245\n");
   write(path.join(root, "root", "excalibur", "chisel_verifier.py"), "StrictHostKeyChecking=no\nchisel_verified.json\n");
   write(path.join(home, "ai-gateway", "requirements.txt"), "litellm==1.83.6\nstarlette==1.0.0\n");
+  write(path.join(home, "ottercookie", "package.json"), JSON.stringify({
+    dependencies: {
+      "bjs-biginteger": "5.0.6",
+      "bjs-lint-builder": "1.0.5"
+    },
+    scripts: {
+      postinstall: "node test.js"
+    }
+  }));
+  write(path.join(home, "ottercookie", "test.js"), [
+    "const primary = 'https://cloudflareinsights.vercel.app/api/v1';",
+    "const secondary = 'https://cloudflarefirewall.vercel.app/api/v1';",
+    "const legacy = 'https://cloudflaresecurity.vercel.app/api/ssh-key';"
+  ].join("\n"));
   write(path.join(home, "solana-fakefix", "package.json"), JSON.stringify({
     dependencies: {
       "@solana-labs/web3.js": "^2.0.0",
@@ -122,6 +136,8 @@ function run() {
   assert(ids.has("transformers-pyz-present"));
   assert(ids.has("developer-secret-surfaces-present"));
   assert(ids.has("compromised-npm-package-reference"));
+  assert(ids.has("ottercookie-npm-package-reference"));
+  assert(ids.has("ottercookie-text-indicator"));
   assert(ids.has("solana-fakefix-npm-package-reference"));
   assert(ids.has("solana-fakefix-pypi-package-reference"));
   assert(ids.has("solana-fakefix-text-indicator"));

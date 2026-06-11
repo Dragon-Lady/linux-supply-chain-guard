@@ -27,6 +27,27 @@ const KNOWN_COMPROMISED_NPM_PACKAGES = [
   "google-cloud-secret-manager-config-poc",
 ];
 
+const OTTERCOOKIE_NPM_PACKAGES = [
+  "bjs-lint-builders",
+  "bjs-lint-builder",
+  "bjs-biginteger",
+  "hjs-lint-builders",
+  "sjs-builders",
+  "sjs-builder",
+  "npm-doc-builder",
+];
+
+const OTTERCOOKIE_TEXT_INDICATORS = [
+  "cloudflareinsights.vercel.app",
+  "cloudflarefirewall.vercel.app",
+  "cloudflaresecurity.vercel.app",
+  "cloudflareinsights[.]vercel[.]app",
+  "cloudflarefirewall[.]vercel[.]app",
+  "cloudflaresecurity[.]vercel[.]app",
+  "node test.js",
+  "postinstall",
+];
+
 const SOLANA_FAKEFIX_NPM_PACKAGES = [
   "@solana-labs/ancor",
   "@solana-labs/etherjs",
@@ -290,6 +311,7 @@ function scanHost(options = {}) {
   checkPersistence(findings, targetRoot, homePath);
   checkCompromisedNpmPackages(findings, targetRoot, homePath);
   checkDprkNpmRat(findings, targetRoot, homePath);
+  checkOtterCookieNpm(findings, targetRoot, homePath);
   checkSolanaFakeFix(findings, targetRoot, homePath);
   checkHadesPyPi(findings, targetRoot, homePath);
   checkDynatraceTeamPcpWatch(findings, targetRoot, homePath);
@@ -446,6 +468,43 @@ function checkCompromisedNpmPackages(findings, targetRoot, homePath) {
     for (const packageName of KNOWN_COMPROMISED_NPM_PACKAGES) {
       if (text.includes(packageName)) {
         addFinding(findings, "critical", "compromised-npm-package-reference", "Known compromised npm package appears in dependency metadata.", `${relative}: ${packageName}`, "Do not run npm install/build/test in this tree. Isolate affected systems if execution is suspected and rotate secrets from a clean posture.");
+      }
+    }
+  }
+}
+
+function checkOtterCookieNpm(findings, targetRoot, homePath) {
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const roots = [
+    homeRelative,
+    "/root",
+    "/tmp",
+    "/var/tmp",
+    "/opt",
+    "/srv",
+    "/var/www",
+    "/usr/local/lib/node_modules",
+  ].filter(Boolean);
+  const files = [];
+  for (const root of roots) {
+    files.push(...findWatchFiles(mapLinuxPath(targetRoot, root), 25000 - files.length));
+    if (files.length >= 25000) break;
+  }
+
+  for (const filePath of files) {
+    const text = readText(filePath);
+    if (!text) continue;
+    const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+
+    for (const packageName of OTTERCOOKIE_NPM_PACKAGES) {
+      if (text.includes(packageName)) {
+        addFinding(findings, "critical", "ottercookie-npm-package-reference", "Panther OtterCookie npm campaign package appears in scanned metadata.", `${relative}: ${packageName}`, "Do not run npm install/build/test in this tree. If install occurred, inspect for Vercel C2 traffic, SSH authorized_keys modification, and rotate developer secrets from a clean posture.");
+      }
+    }
+
+    for (const indicator of OTTERCOOKIE_TEXT_INDICATORS) {
+      if (text.includes(indicator)) {
+        addFinding(findings, "warning", "ottercookie-text-indicator", "OtterCookie npm behavior or C2 indicator appears in scanned host metadata.", `${relative}: ${indicator}`, "Correlate with npm install history, outbound traffic, shell history, ~/.ssh/authorized_keys, and firewall changes before cleanup.");
       }
     }
   }
