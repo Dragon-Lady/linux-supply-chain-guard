@@ -14,6 +14,10 @@ const KNOWN_HASHES = new Set([
   "5245eb032e336b85cff0dbb3450d591826bf2ef214fd30d7eba1a763664e151b",
 ]);
 
+const OPENCLAW_FIXED = "2026.4.23";
+const OPENCLAW_CONFIG_FILES = new Set([".crabbox.yaml", ".crabbox.yml"]);
+const NPM_V12_PREPARE_MIN = "11.16.0";
+
 const KNOWN_DPRK_NPM_PACKAGES = [
   "terminal-logger-utils",
   "pretty-logger-utils",
@@ -224,6 +228,57 @@ const PCPJACK_FILE_NAMES = new Set([
   "sliver-client.cfg",
 ]);
 
+const PEOPLESOFT_MESH_AGENT_FILES = new Set([
+  "meshagent32-azure-ops.exe",
+  "meshagent64-azure-ops.exe",
+  "meshagent64-v2.exe",
+]);
+
+const PEOPLESOFT_EXTORTION_MARKER = "README-IF-YOU-SEE-THIS-YOUVE-BEEN-HACKED.TXT";
+
+const PEOPLESOFT_CAMPAIGN_NETWORK_INDICATORS = [
+  "azurenetfiles.net",
+  "wss://azurenetfiles.net:443/agent.ashx",
+  "142.11.200.186",
+  "142.11.200.187",
+  "142.11.200.188",
+  "142.11.200.189",
+  "142.11.200.190",
+  "176.120.22.24",
+];
+
+const GENTLEMEN_KNOWN_HASHES = new Map([
+  ["22b38dad7da097ea03aa28d0614164cd25fafeb1383dbc15047e34c8050f6f67", "Gentlemen ransomware encryptor"],
+  ["078163d5c16f64caa5a14784323fd51451b8c831c73396b967b4e35e6879937b", "PsExec binary embedded/dropped by Gentlemen ransomware"],
+  ["fe1033335a045c696c900d435119d210361966e2fb5cd1ba3382608cfa2c8e68", "Gentlemen ransomware wallpaper bitmap"],
+]);
+
+const GENTLEMEN_TOOLKIT_FILES = new Set([
+  "dControl.exe",
+  "ConfigureDefender.exe",
+  "PCHunter64_new.exe",
+  "PowerRun_x64.exe",
+  "PowerTool64_new.exe",
+  "netscan.exe",
+  "WinDefGpo_Reg.ps1",
+  "def1.bat",
+  "z.bat",
+  "z1.bat",
+  "clearlog.bat",
+  "enable_dump_pass.reg",
+  "VmManagedSetup.exe",
+  "5541.exe",
+  "ngrok.exe",
+  "rustdesk.exe",
+]);
+
+const GENTLEMEN_NETWORK_INDICATORS = [
+  "176.120.22.127",
+  "176.120.22[.]127",
+  "2gkRUQNkJyaGkvuDziSq1RGIrwl_4bGyJtv6ez2Hk8Hrd5zvq",
+  "2ozoAve91tpILCwKCbRDNz7us8e_2qLk1aLKZoV4Y6TfrcfjK",
+];
+
 const LITELLM_AFFECTED_MIN = "1.74.2";
 const LITELLM_FIXED = "1.83.7";
 const STARLETTE_FIXED = "1.0.1";
@@ -272,6 +327,15 @@ const WATCH_FILE_NAMES = new Set([
   ".pypirc",
   "README.md",
   "SECURITY.md",
+  ".gitignore",
+  PEOPLESOFT_EXTORTION_MARKER,
+  "psappsrv.cfg",
+  "config.xml",
+  ...PEOPLESOFT_MESH_AGENT_FILES,
+  "gentlemen.bmp",
+  "README-GENTLEMEN.txt",
+  "psexec.exe",
+  ...GENTLEMEN_TOOLKIT_FILES,
 ]);
 
 const WATCH_FILE_EXTENSIONS = new Set([
@@ -292,9 +356,24 @@ const WATCH_FILE_EXTENSIONS = new Set([
   ".so",
   ".csv",
   ".txt",
+  ".cfg",
+  ".xml",
+  ".log",
+  ".jsp",
+  ".bat",
+  ".ps1",
+  ".reg",
+  ".cmd",
+  ".bmp",
   ".env",
   ".tf",
 ]);
+
+const ASTRO_GITIGNORE_HIDE_FILES = [
+  "branch_structure.json",
+  "temp_auto_push.bat",
+  "temp_interactive_push.bat",
+];
 
 function scanHost(options = {}) {
   const targetRoot = path.resolve(options.targetRoot || "/");
@@ -313,10 +392,15 @@ function scanHost(options = {}) {
   checkDprkNpmRat(findings, targetRoot, homePath);
   checkOtterCookieNpm(findings, targetRoot, homePath);
   checkSolanaFakeFix(findings, targetRoot, homePath);
+  checkAstroConfigC2(findings, targetRoot, homePath);
   checkHadesPyPi(findings, targetRoot, homePath);
   checkDynatraceTeamPcpWatch(findings, targetRoot, homePath);
   checkPcpJackRelayArtifacts(findings, targetRoot, homePath);
+  checkGentlemenRansomware(findings, targetRoot, homePath);
+  checkPeopleSoftCve202635273(findings, targetRoot, homePath);
   checkLiteLlmGatewayExposure(findings, targetRoot, homePath);
+  checkOpenClawAgentExposure(findings, targetRoot, homePath);
+  checkNpmV12Readiness(findings, targetRoot, homePath);
   checkTransformersPayload(findings, targetRoot);
   checkSecretSurfaces(findings, targetRoot, homePath);
 
@@ -332,6 +416,62 @@ function scanHost(options = {}) {
     summary: summarize(findings),
     findings,
   };
+}
+
+function checkAstroConfigC2(findings, targetRoot, homePath) {
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const roots = [
+    homeRelative,
+    "/opt",
+    "/srv",
+    "/var/www",
+    "/tmp",
+    "/var/tmp",
+  ].filter(Boolean);
+  const files = [];
+  for (const root of roots) {
+    files.push(...findWatchFiles(mapLinuxPath(targetRoot, root), 25000 - files.length));
+    if (files.length >= 25000) break;
+  }
+
+  for (const filePath of files) {
+    const base = path.basename(filePath);
+    const text = readText(filePath);
+    if (!text) continue;
+    const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+
+    if (isAstroConfigFileName(base)) {
+      const hasCreateRequire = /\bcreateRequire\s*\(/i.test(text);
+      const hasEvalSink = /\b(eval|Function)\s*\(/i.test(text);
+      const hasNetworkLoader = /\brequire\s*\(\s*['"](?:node:)?https?['"]\s*\)|\bfrom\s+['"](?:node:)?https?['"]|\bhttps?\s*\.\s*(?:request|get)\s*\(|\bfetch\s*\(/i.test(text);
+      const hasGlobalMutation = /global\s*(?:\.|\[)/i.test(text);
+      const hasBlockchainRelay = /trongrid|aptoslabs|bsc-dataseed|publicnode|eth_getTransactionByHash|Sec-V|TMfKQEd7TJJa5xNZJZ2Lep838vrzrs7mAP/i.test(text);
+      const hasHiddenExecutableLine = text
+        .split(/\r?\n/)
+        .some((line) => line.length > 300 && /[ \t]{80,}\S/.test(line) && astroConfigLineHasLoaderSignal(line));
+
+      if (hasCreateRequire && (hasEvalSink || hasNetworkLoader || hasGlobalMutation || hasBlockchainRelay)) {
+        addFinding(findings, "critical", "astro-config-require-loader", "Astro config reconstructs require and also contains executable loader behavior.", relative, "Do not run astro dev/build/preview in this tree until the config diff and branch provenance are reviewed.");
+      }
+      if (hasNetworkLoader && hasEvalSink) {
+        addFinding(findings, "critical", "astro-config-network-eval-loader", "Astro config combines network retrieval with eval/function execution behavior.", relative, "Treat any prior Astro build/dev/preview from this tree as potential payload execution and rotate exposed developer credentials from a clean posture.");
+      }
+      if (hasBlockchainRelay) {
+        addFinding(findings, "warning", "astro-config-blockchain-c2-marker", "Astro config references blockchain/C2 relay markers reported in config-as-code supply-chain attacks.", relative, "Correlate with branch history, outbound network logs, and build/dev server execution.");
+      }
+      if (hasHiddenExecutableLine) {
+        addFinding(findings, "warning", "astro-config-hidden-payload-line", "Astro config contains a long horizontally hidden executable-looking payload line.", relative, "Review the full line with wrapping disabled before running Astro commands.");
+      }
+    }
+
+    if (base === ".gitignore") {
+      for (const artifact of ASTRO_GITIGNORE_HIDE_FILES) {
+        if (text.includes(artifact)) {
+          addFinding(findings, "warning", "gitignore-hidden-pr-tooling", ".gitignore hides PR automation/helper artifact names reported with Astro config C2 injection.", `${relative}: ${artifact}`, "Review branch provenance and local ignored files before building or opening this repo in an agent.");
+        }
+      }
+    }
+  }
 }
 
 function checkPlatform(findings, osRelease, kernelRelease) {
@@ -730,6 +870,145 @@ function checkPcpJackRelayArtifacts(findings, targetRoot, homePath) {
   }
 }
 
+function checkGentlemenRansomware(findings, targetRoot, homePath) {
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const roots = [
+    homeRelative,
+    "/home",
+    "/root",
+    "/tmp",
+    "/var/tmp",
+    "/opt",
+    "/srv",
+    "/var/www",
+    "/etc",
+    "/mnt",
+    "/media",
+    "/ProgramData",
+    "/Users",
+  ].filter(Boolean);
+  const files = [];
+  for (const root of roots) {
+    files.push(...findWatchFiles(mapLinuxPath(targetRoot, root), 30000 - files.length));
+    if (files.length >= 30000) break;
+  }
+
+  for (const filePath of files) {
+    const base = path.basename(filePath);
+    const baseLower = base.toLowerCase();
+    const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+    const size = fileSizeBytes(filePath);
+
+    if (baseLower === "gentlemen.bmp" || base === "README-GENTLEMEN.txt") {
+      addFinding(findings, "critical", "gentlemen-ransomware-note-wallpaper", "Gentlemen ransomware ransom-note or wallpaper filename exists.", relative, "Treat this as a high-confidence ransomware artifact. Isolate the host, preserve timestamps and file metadata, and review clean backups before any cleanup.");
+    }
+
+    if (GENTLEMEN_TOOLKIT_FILES.has(base)) {
+      addFinding(findings, "warning", "gentlemen-toolkit-file-name", "Gentlemen exposed operator-toolkit filename exists.", relative, "Review for staged defense-evasion, remote-access, network-scan, or credential-dump tooling. Preserve evidence before deleting files.");
+    }
+
+    if (baseLower === "psexec.exe") {
+      addFinding(findings, "review", "gentlemen-psexec-dropper-name", "PsExec filename appears in a scanned host or mounted-root tree.", relative, "PsExec can be legitimate. Correlate with Gentlemen spread flags, remote execution logs, and surrounding toolkit files before treating it as malicious.");
+    }
+
+    if (shouldHashGentlemenArtifact(base) && size > 0 && size <= 100 * 1024 * 1024) {
+      const digest = sha256File(filePath);
+      const label = GENTLEMEN_KNOWN_HASHES.get(digest);
+      if (label) {
+        addFinding(findings, "critical", "gentlemen-known-hash", "Known Gentlemen ransomware-related SHA-256 observed.", `${relative}: ${label}; sha256=${digest}`, "Contain the host and preserve the file for incident response. Do not execute the file.");
+      }
+    }
+
+    const text = size <= 1024 * 1024 ? readText(filePath) : "";
+    if (!text) continue;
+
+    if (/\bgentlemen_system\b|LOCKER_BACKGROUND=1|README-GENTLEMEN\.txt|gentlemen\.bmp|\b(?:UpdateSystem|UpdateUser|GupdateS|GupdateU)\b/i.test(text)) {
+      addFinding(findings, "warning", "gentlemen-encryptor-runtime-marker", "Gentlemen ransomware runtime marker appears in scanned host metadata.", relative, "Review process, service, scheduled-task, wallpaper, ransom-note, and filesystem activity around this path.");
+    }
+
+    if (/\bpsexec(?:\.exe)?\b[\s\S]{0,240}(?:--spread|--ip|--login|--password)|(?:--spread|--ip|--login|--password)[\s\S]{0,240}\bpsexec(?:\.exe)?\b/i.test(text)) {
+      addFinding(findings, "warning", "gentlemen-self-propagation-marker", "Gentlemen-style PsExec self-propagation marker appears in scanned text.", relative, "Correlate with Windows event logs, SMB/admin-share access, command history, and lateral-movement evidence.");
+    }
+
+    if (/(?:vssadmin\s+delete\s+shadows|wbadmin\s+delete|bcdedit\s+\/set|wevtutil\s+cl|cipher\s+\/w|taskkill\b|sc\s+stop\b|net\s+stop\b|dControl\.exe|ConfigureDefender\.exe|PCHunter64_new\.exe|PowerTool64_new\.exe|WinDefGpo_Reg\.ps1|enable_dump_pass\.reg)/i.test(text)) {
+      addFinding(findings, "warning", "gentlemen-defense-evasion-command-marker", "Gentlemen toolkit or ransomware defense-evasion command marker appears in scanned text.", relative, "Review whether this is approved administration, attacker staging, or ransomware pre-encryption activity.");
+    }
+
+    for (const indicator of GENTLEMEN_NETWORK_INDICATORS) {
+      if (text.includes(indicator)) {
+        addFinding(findings, "critical", "gentlemen-network-indicator", "Gentlemen ransomware campaign network or session indicator appears in scanned host metadata.", `${relative}: ${indicator}`, "Correlate with firewall, proxy, EDR, and remote-access logs. Preserve evidence and rotate credentials from a clean posture if compromise is confirmed.");
+      }
+    }
+  }
+}
+
+function checkPeopleSoftCve202635273(findings, targetRoot, homePath) {
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const roots = [
+    homeRelative,
+    "/u01",
+    "/opt",
+    "/srv",
+    "/var/www",
+    "/etc",
+    "/root",
+    "/tmp",
+    "/var/tmp",
+  ].filter(Boolean);
+  const files = [];
+  for (const root of roots) {
+    files.push(...findWatchFiles(mapLinuxPath(targetRoot, root), 30000 - files.length));
+    if (files.length >= 30000) break;
+  }
+
+  for (const filePath of files) {
+    const base = path.basename(filePath);
+    const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+    const loweredRelative = relative.toLowerCase();
+
+    if (base === PEOPLESOFT_EXTORTION_MARKER) {
+      addFinding(findings, "critical", "peoplesoft-shinyhunters-extortion-marker", "PeopleSoft/ShinyHunters extortion marker filename exists.", relative, "Contain the affected PeopleSoft/WebLogic host, preserve evidence, and review Oracle/Mandiant remediation guidance before cleanup.");
+    }
+
+    if (PEOPLESOFT_MESH_AGENT_FILES.has(base)) {
+      addFinding(findings, "critical", "peoplesoft-meshcentral-masquerade-agent", "MeshCentral agent filename used in the PeopleSoft/ShinyHunters campaign exists.", relative, "Treat as possible remote-management persistence. Isolate the host and preserve the binary for incident response.");
+    }
+
+    if (loweredRelative.includes("/psemhub.war/") && loweredRelative.endsWith(".jsp")) {
+      addFinding(findings, "critical", "peoplesoft-psemhub-unexpected-jsp", "JSP file exists under PSEMHUB.war.", relative, "Mandiant recommends reviewing PSEMHUB.war for JSP files not shipped with the product. Treat unexpected JSP files as potential web shells.");
+    }
+
+    if (loweredRelative.includes("/psemhub.war/envmetadata/transactions/")) {
+      addFinding(findings, "warning", "peoplesoft-psemhub-transaction-artifact", "File exists under PSEMHUB.war envmetadata transaction paths.", relative, "Review for CVE-2026-35273 exploitation artifacts and preserve timestamps before cleanup.");
+    }
+
+    if (/\/psemhub\.war\/(?:logs|persistantstorage|scratchpad)(?:\/|$)/i.test(relative)) {
+      addFinding(findings, "warning", "peoplesoft-psemhub-unexpected-directory", "Unexpected PSEMHUB.war directory path reported in exploitation triage exists.", relative, "Review the directory contents and correlate with PeopleSoft/WebLogic access logs.");
+    }
+
+    const text = readText(filePath);
+    if (!text) continue;
+
+    if (/PeopleTools[^0-9]{0,40}8\.6[12]\b|PeopleSoft Enterprise PeopleTools[^0-9]{0,80}8\.6[12]\b/i.test(text)) {
+      addFinding(findings, "warning", "peoplesoft-cve-2026-35273-affected-version", "Text references PeopleSoft PeopleTools 8.61 or 8.62, affected by CVE-2026-35273.", relative, "Apply Oracle's June 10, 2026 Security Alert mitigation or patch guidance and restrict PSEMHUB access.");
+    }
+
+    if (/\/PSEMHUB\/hub|\/PSIGW\/HttpListeningConnector/i.test(text)) {
+      addFinding(findings, "warning", "peoplesoft-psemhub-route-review", "File references PeopleSoft PSEMHUB or PSIGW routes used in CVE-2026-35273 triage.", relative, "Review whether these routes are externally reachable or appear in PIA WebLogic access logs from untrusted IPs.");
+    }
+
+    for (const indicator of PEOPLESOFT_CAMPAIGN_NETWORK_INDICATORS) {
+      if (text.includes(indicator)) {
+        addFinding(findings, "critical", "peoplesoft-shinyhunters-network-indicator", "PeopleSoft/ShinyHunters campaign network indicator appears in scanned host metadata.", `${relative}: ${indicator}`, "Correlate with outbound firewall, NetFlow, WebLogic, and MeshCentral activity. Preserve evidence before rotating credentials from a clean posture.");
+      }
+    }
+
+    if (/meshctrl\.js\s+RunCommand|README-IF-YOU-SEE-THIS-YOUVE-BEEN-HACKED\.TXT|_fanout\.sh|psappsrv\.cfg|\/etc\/hosts.*csprd/i.test(text)) {
+      addFinding(findings, "warning", "peoplesoft-shinyhunters-operator-artifact", "Text contains PeopleSoft/ShinyHunters operator or reconnaissance artifacts.", relative, "Review shell history, WebLogic logs, process scheduler paths, and lateral movement evidence.");
+    }
+  }
+}
+
 function checkLiteLlmGatewayExposure(findings, targetRoot, homePath) {
   const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
   const roots = [
@@ -786,6 +1065,115 @@ function checkLiteLlmGatewayExposure(findings, targetRoot, homePath) {
       const keyTerms = PROVIDER_KEY_ENV_TERMS.filter((term) => text.includes(term));
       if (keyTerms.length > 0) {
         addFinding(findings, "review", "litellm-provider-key-blast-radius", "LiteLLM-related config references provider credential environment names.", `${relative}: ${keyTerms.join(", ")}`, "Do not print secret values. If the proxy was exposed, rotate provider/proxy keys from a clean posture.");
+      }
+    }
+  }
+}
+
+function checkOpenClawAgentExposure(findings, targetRoot, homePath) {
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const roots = [
+    homeRelative,
+    "/opt",
+    "/srv",
+    "/var/www",
+    "/etc",
+    "/root",
+    "/usr/local/lib/node_modules",
+  ].filter(Boolean);
+  const files = [];
+  for (const root of roots) {
+    files.push(...findWatchFiles(mapLinuxPath(targetRoot, root), 25000 - files.length));
+    if (files.length >= 25000) break;
+  }
+
+  for (const filePath of files) {
+    const text = readText(filePath);
+    if (!text) continue;
+    const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+    const maybeOpenClaw =
+      /\bopenclaw\b/i.test(text) ||
+      isOpenClawConfigFileName(path.basename(filePath)) ||
+      relative.toLowerCase().includes("/openclaw/") ||
+      /\bdmPolicy\b|\ballowFrom\b|agents\.defaults\.sandbox/i.test(text);
+    if (!maybeOpenClaw) continue;
+
+    const openClawVersions = packageVersionsInText(text, "openclaw");
+    for (const version of openClawVersions) {
+      if (compareDottedVersion(version, OPENCLAW_FIXED) < 0) {
+        addFinding(findings, "warning", "openclaw-vulnerable-version", "OpenClaw version predates the message-object prompt-boundary fix.", `${relative}: openclaw ${version}`, `Upgrade OpenClaw to ${OPENCLAW_FIXED} or newer before exposing message channels.`);
+      }
+    }
+
+    const hasOpenDmPolicy = /\bdmPolicy["']?\s*[:=]\s*["']open["']/i.test(text);
+    const hasWildcardAllowFrom = /\ballowFrom["']?\s*[:=][\s\S]{0,160}["']\*["']/i.test(text);
+    const hasDisabledSandbox = /(?:agents\.defaults\.sandbox\.mode|sandbox[\s\S]{0,80}\bmode)["']?\s*[:=]\s*["'](?:none|off|host|main|disabled)["']/i.test(text);
+
+    if (hasOpenDmPolicy && hasWildcardAllowFrom) {
+      addFinding(findings, "warning", "openclaw-open-dm-wildcard", "OpenClaw config appears to allow public inbound DMs with a wildcard allowlist.", relative, "Require pairing or stable sender allowlists before enabling agent actions from messaging channels.");
+    }
+
+    if (hasOpenDmPolicy && hasDisabledSandbox) {
+      addFinding(findings, "warning", "openclaw-open-dm-unsandboxed", "OpenClaw config appears to combine open inbound DMs with host/main/disabled sandbox mode.", relative, "Route untrusted channels to sandboxed non-main agents and gate outbound mail, credential forwarding, shell, and file actions.");
+    }
+  }
+}
+
+function checkNpmV12Readiness(findings, targetRoot, homePath) {
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const roots = [
+    homeRelative,
+    "/opt",
+    "/srv",
+    "/var/www",
+    "/etc",
+    "/root",
+  ].filter(Boolean);
+  const files = [];
+  for (const root of roots) {
+    files.push(...findWatchFiles(mapLinuxPath(targetRoot, root), 25000 - files.length));
+    if (files.length >= 25000) break;
+  }
+
+  for (const filePath of files) {
+    const text = readText(filePath);
+    if (!text) continue;
+    const base = path.basename(filePath);
+    const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+
+    if (base === "package.json") {
+      const npmVersions = npmVersionsInText(text);
+      for (const version of npmVersions) {
+        if (compareDottedVersion(version, NPM_V12_PREPARE_MIN) < 0) {
+          addFinding(findings, "review", "npm-v12-prep-old-npm-pin", "Project pins npm older than the npm v12 migration-warning release.", `${relative}: npm ${version}`, `Use npm ${NPM_V12_PREPARE_MIN} or newer to review install-script and non-registry-source warnings before npm v12.`);
+        }
+      }
+    }
+
+    if (DEPENDENCY_FILE_NAMES.has(base)) {
+      if (/"hasInstallScript"\s*:\s*true/i.test(text) && !/"allowScripts"\s*:/i.test(text)) {
+        addFinding(findings, "review", "npm-v12-install-script-approval-review", "Dependency metadata records install scripts without visible npm approval metadata.", relative, "Run npm 11.16+ and review npm approve-scripts output before npm v12.");
+      }
+      if (/"https?:\/\/[^"]+\.(?:tgz|tar\.gz)(?:[?#][^"]*)?"/i.test(text)) {
+        addFinding(findings, "review", "npm-v12-remote-tarball-review", "Dependency metadata references a remote tarball URL.", relative, "npm v12 requires explicit --allow-remote approval for remote URL dependencies.");
+      }
+      if (/github\.com[:/][^\s"']+|(?:git\+https?|git):\/\/[^\s"']+|github:/i.test(text)) {
+        addFinding(findings, "review", "npm-v12-git-dependency-review", "Dependency metadata references a Git dependency source.", relative, "npm v12 requires explicit --allow-git approval for Git dependencies.");
+      }
+    }
+
+    if (base === ".npmrc") {
+      if (/^\s*ignore-scripts\s*=\s*true\s*$/im.test(text)) {
+        addFinding(findings, "info", "npm-v12-ignore-scripts-migration-note", ".npmrc uses ignore-scripts=true.", relative, "npm approve-scripts can still list pending approvals, but ignore-scripts takes precedence until removed.");
+      }
+      if (/^\s*allow-git\s*=\s*(?:true|all|\*)\s*$/im.test(text)) {
+        addFinding(findings, "review", "npm-v12-broad-allow-git", ".npmrc broadly allows Git dependency resolution.", relative, "npm v12 defaults --allow-git to none; keep approvals narrow and intentional.");
+      }
+      if (/^\s*allow-remote\s*=\s*(?:true|all|\*)\s*$/im.test(text)) {
+        addFinding(findings, "review", "npm-v12-broad-allow-remote", ".npmrc broadly allows remote URL dependency resolution.", relative, "npm v12 defaults --allow-remote to none; keep approvals narrow and intentional.");
+      }
+      if (/^\s*allow-scripts\s*=\s*(?:true|all|\*)\s*$/im.test(text)) {
+        addFinding(findings, "review", "npm-v12-broad-allow-scripts", ".npmrc broadly allows install scripts.", relative, "npm v12 moves install-script execution to explicit package approvals.");
       }
     }
   }
@@ -987,6 +1375,23 @@ function isHadesWatchFile(fileName, filePath) {
   return false;
 }
 
+function isAstroConfigFileName(fileName) {
+  return /^astro\.config\.(js|cjs|mjs|ts|mts|cts)$/i.test(fileName);
+}
+
+function isOpenClawConfigFileName(fileName) {
+  return OPENCLAW_CONFIG_FILES.has(fileName.toLowerCase()) || /^openclaw\.(json|jsonc|yaml|yml|toml)$/i.test(fileName);
+}
+
+function shouldHashGentlemenArtifact(fileName) {
+  const lower = fileName.toLowerCase();
+  return GENTLEMEN_TOOLKIT_FILES.has(fileName) || lower === "psexec.exe" || lower === "gentlemen.bmp" || lower.endsWith(".exe") || lower.endsWith(".bmp");
+}
+
+function astroConfigLineHasLoaderSignal(line) {
+  return /createRequire|eval\s*\(|Function\s*\(|global\s*(?:\.|\[)|Buffer\.from|https?\.|\.request\s*\(|\.get\s*\(|fetch\s*\(|trongrid|aptoslabs|bsc-dataseed|publicnode/i.test(line);
+}
+
 function redactDynatraceToken(token) {
   const parts = token.split(".");
   if (parts.length < 3) return "dt0***";
@@ -1048,6 +1453,14 @@ function isFile(filePath) {
   }
 }
 
+function fileSizeBytes(filePath) {
+  try {
+    return fs.statSync(filePath).size;
+  } catch (_error) {
+    return 0;
+  }
+}
+
 function escapeRegExp(value) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
@@ -1067,6 +1480,20 @@ function packageVersionsInText(text, packageName) {
     new RegExp(`\\b${escaped}\\b\\s*(?:==|===|=|~=|>=|<=|>|<)\\s*["']?([0-9]+\\.[0-9]+\\.[0-9]+)`, "gi"),
     new RegExp(`\\b${escaped}\\b["']?\\s*[:=]\\s*["']?[^0-9\\n\\r]{0,12}([0-9]+\\.[0-9]+\\.[0-9]+)`, "gi"),
     new RegExp(`name\\s*=\\s*["']${escaped}["'][\\s\\S]{0,300}?version\\s*=\\s*["']([0-9]+\\.[0-9]+\\.[0-9]+)["']`, "gi"),
+  ];
+  for (const pattern of patterns) {
+    for (const match of text.matchAll(pattern)) {
+      versions.add(match[1]);
+    }
+  }
+  return Array.from(versions);
+}
+
+function npmVersionsInText(text) {
+  const versions = new Set();
+  const patterns = [
+    /"packageManager"\s*:\s*"npm@([0-9]+\.[0-9]+\.[0-9]+)"/gi,
+    /"npm"\s*:\s*"[^"]*?([0-9]+\.[0-9]+\.[0-9]+)[^"]*"/gi,
   ];
   for (const pattern of patterns) {
     for (const match of text.matchAll(pattern)) {

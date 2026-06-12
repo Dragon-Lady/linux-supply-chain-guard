@@ -12,6 +12,16 @@
 - Socket Hades PyPI wave analysis: https://socket.dev/blog/shai-hulud-descends-to-hades-miasma-pypi-wave
 - Socket newer Miasma/Hades PyPI wave analysis: https://socket.dev/blog/mini-shai-hulud-miasma-and-hades-worms-target-bioinformatics-and-mcp-developers-via-malicious
 - SecurityWeek Shai-Hulud Miasma/Hades summary: https://www.securityweek.com/over-100-npm-pypi-packages-hit-in-new-shai-hulud-supply-chain-attacks/
+- SafeDep Astro config blockchain C2 supply-chain report: https://safedep.io/astro-config-blockchain-c2-supply-chain/
+- The Hacker News OpenClaw prompt-injection and agent-phishing report: https://thehackernews.com/2026/06/new-attacks-trick-openclaw-ai-agent.html
+- GitHub npm v12 breaking changes notice: https://github.blog/changelog/2026-06-09-upcoming-breaking-changes-for-npm-v12/
+- The Hacker News npm v12 install-script default change summary: https://thehackernews.com/2026/06/github-to-disable-npm-install-scripts.html
+- Oracle Security Alert Advisory for CVE-2026-35273: https://www.oracle.com/security-alerts/alert-cve-2026-35273.html
+- Google Cloud / Mandiant PeopleSoft ShinyHunters campaign analysis: https://cloud.google.com/blog/topics/threat-intelligence/shinyhunters-targets-education-sector-oracle-exploit
+- Cyber Security News PeopleSoft CVE-2026-35273 exploitation summary: https://cybersecuritynews.com/oracle-peoplesoft-0-day-rce-vulnerability/
+- The Hacker News Gentlemen ransomware victim-claim summary: https://thehackernews.com/2026/06/the-gentlemen-ransomware-claims-478.html
+- Microsoft Threat Intelligence Gentlemen ransomware analysis: https://www.microsoft.com/en-us/security/blog/2026/05/28/the-gentlemen-ransomware-dissecting-a-self-propagating-go-encryptor/
+- Hunt.io Gentlemen ransomware exposed toolkit analysis: https://hunt.io/blog/ransomware-exposed-gentlemen-ransomware-toolkit-leaks-publicly
 - The Hacker News, NGINX CVE-2026-42945 exploited in the wild: https://thehackernews.com/2026/05/nginx-cve-2026-42945-exploited-in-wild.html
 - The Register, NGINX Rift exploitation activity: https://www.theregister.com/security/2026/05/18/nginx-rift-attackers-waste-no-time-targeting-exposed-servers/
 - CSO Online, NGINX Rift disclosure and patches: https://www.csoonline.com/article/4171437/ai-agent-finds-18-year-old-remote-code-execution-flaw-in-nginx.html
