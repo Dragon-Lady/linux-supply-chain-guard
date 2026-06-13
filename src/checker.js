@@ -292,6 +292,109 @@ const LITELLM_CONFIG_TERMS = [
   "LITELLM",
   "mcp-rest",
 ];
+
+const OPERATION_HIGHLAND_SHA1_HASHES = loadHashSet("operation-highland-sha1.json");
+const OPERATION_HIGHLAND_IOC_PATHS = [
+  "/usr/share/man9/ph/.ph.man",
+  "/usr/share/man9/ph",
+  "/lib/systemd/system/chrom.service",
+  "/etc/init.d/chrom",
+  "/usr/bin/mlx",
+  "/usr/bin/pnscan",
+  "/usr/bin/stats",
+  "/usr/bin/vlra",
+  "/usr/lib/eth-scsi/libethscsi.so",
+  "/usr/lib/psliba.so.7",
+  "/usr/lib/psliba.so.7b",
+  "/usr/lib/sslsh.ko",
+  "/usr/sbin/.ssh.log",
+  "/usr/sbin/auditdb",
+  "/usr/sbin/land",
+  "/usr/sbin/pnscan",
+  "/usr/sbin/pscan",
+  "/usr/share/nginx/cgi/cgi-bin/uptime",
+  "/var/lib/sam",
+];
+
+const OPERATION_HIGHLAND_LOWER_CONFIDENCE_PATHS = new Set([
+  "/usr/bin/mlx",
+  "/usr/bin/pnscan",
+  "/usr/bin/stats",
+  "/usr/bin/vlra",
+  "/usr/sbin/land",
+  "/usr/sbin/pnscan",
+  "/usr/sbin/pscan",
+]);
+
+const OPERATION_HIGHLAND_AUTH_FILES = [
+  "/usr/bin/scp",
+  "/usr/bin/sftp",
+  "/usr/bin/ssh",
+  "/usr/bin/ssh-keygen",
+  "/usr/lib/security/pam_unix.so",
+  "/usr/lib/x86_64-linux-gnu/security/pam_unix.so",
+  "/usr/sbin/sshd",
+  "/lib/security/pam_unix.so",
+  "/lib/x86_64-linux-gnu/security/pam_unix.so",
+];
+
+const OPERATION_HIGHLAND_FILE_NAMES = new Set([
+  ".ph.man",
+  ".ssh.log",
+  "auditdb",
+  "chrom.service",
+  "cln",
+  "collect.sh",
+  "land",
+  "mlx",
+  "p.sh",
+  "pnscan",
+  "pscan",
+  "psliba.so.7",
+  "psliba.so.7b",
+  "sslsh.ko",
+  "stats",
+  "uudecode.pl",
+  "uuencode.sh",
+  "vlra",
+]);
+
+const OPERATION_HIGHLAND_NETWORK_INDICATORS = [
+  "gs.thc.org",
+  "gs.thc[.]org",
+  "mobi.urgpt.dev",
+  "mobi.urgpt[.]dev",
+  "135.125.107.221",
+  "135.125.107[.]221",
+  "15.197.240.20",
+  "15.197.240[.]20",
+  "172.233.218.87",
+  "172.233.218[.]87",
+  "192.145.44.201",
+  "192.145.44[.]201",
+  "23.239.3.135",
+  "23.239.3[.]135",
+];
+
+const OPERATION_HIGHLAND_TEXT_INDICATORS = [
+  "Pamauth@123456",
+  "/usr/share/man9/ph/.ph.man",
+  "/usr/share/man9/ph/",
+  "/usr/sbin/.ssh.log",
+  "/usr/lib/eth-scsi/libethscsi.so",
+  "/var/lib/sam",
+  "/usr/sbin/auditdb",
+  "/usr/share/nginx/cgi/cgi-bin/uptime",
+  "fcgiwrap",
+  "fastcgi_pass",
+];
+
+const OPERATION_HIGHLAND_PROCESS_MASQUERADE = [
+  "[khubd]",
+  "[kauditd] -sh",
+  "smbd -D",
+];
+
 const PROVIDER_KEY_ENV_TERMS = [
   "OPENAI_API_KEY",
   "ANTHROPIC_API_KEY",
@@ -336,6 +439,7 @@ const WATCH_FILE_NAMES = new Set([
   "README-GENTLEMEN.txt",
   "psexec.exe",
   ...GENTLEMEN_TOOLKIT_FILES,
+  ...OPERATION_HIGHLAND_FILE_NAMES,
 ]);
 
 const WATCH_FILE_EXTENSIONS = new Set([
@@ -401,6 +505,7 @@ function scanHost(options = {}) {
   checkLiteLlmGatewayExposure(findings, targetRoot, homePath);
   checkOpenClawAgentExposure(findings, targetRoot, homePath);
   checkNpmV12Readiness(findings, targetRoot, homePath);
+  checkOperationHighlandAuthStack(findings, targetRoot, homePath);
   checkTransformersPayload(findings, targetRoot);
   checkSecretSurfaces(findings, targetRoot, homePath);
 
@@ -1179,6 +1284,81 @@ function checkNpmV12Readiness(findings, targetRoot, homePath) {
   }
 }
 
+function checkOperationHighlandAuthStack(findings, targetRoot, homePath) {
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+
+  for (const candidate of OPERATION_HIGHLAND_IOC_PATHS) {
+    const resolved = mapLinuxPath(targetRoot, candidate);
+    if (exists(resolved)) {
+      const severity = OPERATION_HIGHLAND_LOWER_CONFIDENCE_PATHS.has(candidate) ? "warning" : "critical";
+      addFinding(findings, severity, "operation-highland-ioc-path", "Sygnia Operation Highland / Velvet Ant IOC path exists.", candidate, "Treat as possible Linux authentication-stack compromise. Isolate or snapshot the host, preserve evidence, and validate PAM/OpenSSH from trusted media before rotating credentials.");
+    }
+  }
+
+  const hashCandidates = new Set([...OPERATION_HIGHLAND_AUTH_FILES, ...OPERATION_HIGHLAND_IOC_PATHS]);
+  if (OPERATION_HIGHLAND_SHA1_HASHES.size > 0) {
+    for (const candidate of hashCandidates) {
+      const resolved = mapLinuxPath(targetRoot, candidate);
+      const size = fileSizeBytes(resolved);
+      if (!isFile(resolved) || size <= 0 || size > 250 * 1024 * 1024) continue;
+      const digest = sha1File(resolved);
+      if (OPERATION_HIGHLAND_SHA1_HASHES.has(digest)) {
+        addFinding(findings, "critical", "operation-highland-known-sha1", "Known Sygnia Operation Highland / Velvet Ant SHA-1 observed.", `${candidate}: sha1=${digest}`, "Preserve the file and compare package ownership/integrity from a clean environment. Do not trust local credentials until persistence is removed.");
+      }
+    }
+  }
+
+  const roots = [
+    homeRelative,
+    "/etc",
+    "/root",
+    "/tmp",
+    "/var/tmp",
+    "/opt",
+    "/srv",
+    "/var/www",
+    "/usr/bin",
+    "/usr/sbin",
+    "/usr/lib",
+    "/usr/share/nginx",
+  ].filter(Boolean);
+  const files = [];
+  for (const root of roots) {
+    files.push(...findWatchFiles(mapLinuxPath(targetRoot, root), 30000 - files.length));
+    if (files.length >= 30000) break;
+  }
+
+  for (const filePath of files) {
+    const base = path.basename(filePath);
+    const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+    const text = readText(filePath);
+
+    if (OPERATION_HIGHLAND_FILE_NAMES.has(base)) {
+      addFinding(findings, "warning", "operation-highland-tool-filename", "Operation Highland / Velvet Ant filename appears in scanned host tree.", relative, "Review the file provenance, ownership, package integrity, timestamps, and surrounding persistence before cleanup.");
+    }
+
+    if (!text) continue;
+
+    for (const indicator of OPERATION_HIGHLAND_NETWORK_INDICATORS) {
+      if (text.includes(indicator)) {
+        addFinding(findings, "critical", "operation-highland-network-indicator", "Operation Highland / Velvet Ant C2 or infrastructure indicator appears in scanned metadata.", `${relative}: ${indicator}`, "Correlate with DNS, proxy, firewall, SSH, and process telemetry. Preserve evidence and avoid credential rotation until persistence has been removed.");
+      }
+    }
+
+    for (const indicator of OPERATION_HIGHLAND_TEXT_INDICATORS) {
+      if (text.includes(indicator)) {
+        addFinding(findings, "warning", "operation-highland-text-indicator", "Operation Highland / Velvet Ant behavior indicator appears in scanned metadata.", `${relative}: ${indicator}`, "Review for backdoored PAM/OpenSSH logging, FastCGI bridge execution, and hidden credential-log paths.");
+      }
+    }
+
+    for (const indicator of OPERATION_HIGHLAND_PROCESS_MASQUERADE) {
+      if (text.includes(indicator)) {
+        addFinding(findings, "warning", "operation-highland-process-masquerade-indicator", "Operation Highland / Velvet Ant process-masquerade marker appears in scanned metadata.", `${relative}: ${indicator}`, "Correlate with process listings, systemd/init entries, shell history, and recovered binaries.");
+      }
+    }
+  }
+}
+
 function checkTransformersPayload(findings, targetRoot) {
   const payloadPath = mapLinuxPath(targetRoot, "/tmp/transformers.pyz");
   if (!exists(payloadPath) || !isFile(payloadPath)) {
@@ -1434,6 +1614,21 @@ function sha256File(filePath) {
   const hash = crypto.createHash("sha256");
   hash.update(fs.readFileSync(filePath));
   return hash.digest("hex");
+}
+
+function sha1File(filePath) {
+  const hash = crypto.createHash("sha1");
+  hash.update(fs.readFileSync(filePath));
+  return hash.digest("hex");
+}
+
+function loadHashSet(fileName) {
+  try {
+    const raw = fs.readFileSync(path.join(__dirname, "..", "data", fileName), "utf8");
+    return new Set(JSON.parse(raw));
+  } catch (_error) {
+    return new Set();
+  }
 }
 
 function exists(filePath) {

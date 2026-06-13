@@ -29,6 +29,9 @@
 - NVD CVE-2026-35535 record: https://nvd.nist.gov/vuln/detail/CVE-2026-35535
 - Hunt.io, PCPJack exposed SMTP relay network: https://hunt.io/blog/pcpjack-230-cloud-servers-smtp-proxy-network-sliver-chisel
 - Security Affairs, PCPJack summary: https://securityaffairs.com/193189/cyber-crime/pcpjack-exposed-researchers-uncover-230-node-cloud-email-relay-network.html
+- Sygnia, Operation Highland / Velvet Ant report: https://www.sygnia.co/blog/operation-highland-velvet-ant/
+- Sygnia, Operation Highland / Velvet Ant IOC appendix: https://www.sygnia.co/wp-content/uploads/2026/06/Appendix_Indicators-of-Compromise.pdf
+- The Hacker News, China-linked hackers backdoored Linux login software summary: https://thehackernews.com/2026/06/china-linked-hackers-backdoored-linux.html
 
 These links are retained for defensive host posture and incident-response
 context. This project intentionally avoids exploit reproduction steps or malware

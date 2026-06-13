@@ -2,7 +2,7 @@
   "incident": "Linux supply-chain host exposure guard",
   "lastUpdated": "2026-06-11",
   "scope": {
-    "postureChecks": "Read-only Linux host checks for vulnerable kernel posture, risky module state, known supply-chain persistence paths, selected compromised npm package references, DPRK npm RAT dependency indicators, OtterCookie npm indicators, Hades PyPI/Miasma indicators, Solana FakeFix/CMS loader indicators, and TeamPCP/Dynatrace weak-signal exposure indicators.",
+    "postureChecks": "Read-only Linux host checks for vulnerable kernel posture, risky module state, known supply-chain persistence paths, selected compromised npm package references, DPRK npm RAT dependency indicators, OtterCookie npm indicators, Hades PyPI/Miasma indicators, Solana FakeFix/CMS loader indicators, Operation Highland / Velvet Ant auth-stack indicators, and TeamPCP/Dynatrace weak-signal exposure indicators.",
     "notInScope": "No exploit testing, malware execution, automatic cleanup, token revocation, or claims that a host is clean.",
     "fragnesia": "CVE-2026-46300 affects supported AlmaLinux releases through esp4, esp6, and in some AlmaLinux 9/10 cases rxrpc. Built-in patched kernel thresholds follow AlmaLinux's May 13, 2026 disclosure.",
     "dynatraceTeamPcp": "Weak-signal checks flag Dynatrace token-shaped values and TeamPCP/Dynatrace screenshot repo/service strings in scanned metadata. These findings are correlation leads and do not prove compromise by themselves.",
@@ -11,7 +11,8 @@
     "validateSdkV2": "Checks for npm package @validate-sdk/v2 from GitHub Advisory GHSA-vqg9-785x-8j39; all versions are treated as compromised.",
     "googleCloudSecretManagerConfigPoc": "Checks for npm package google-cloud-secret-manager-config-poc from GitHub Advisory GHSA-g6v5-9xpp-6hpx; all versions are treated as compromised.",
     "otterCookieNpm": "Checks for Panther April 2026 OtterCookie npm package names, Vercel-hosted C2 domains, and install-time behavior indicators.",
-    "solanaFakeFix": "Checks for JFrog Solana FakeFix and CMS Windows loader npm/PyPI package names plus Solana wallet, Telegram, Deno, fake RPC, and Windows persistence indicators."
+    "solanaFakeFix": "Checks for JFrog Solana FakeFix and CMS Windows loader npm/PyPI package names plus Solana wallet, Telegram, Deno, fake RPC, and Windows persistence indicators.",
+    "operationHighland": "Checks Sygnia Operation Highland / Velvet Ant indicators including published SHA-1 values, hidden credential-log paths, GS-Netcat/auditdb staging, Nginx/FastCGI bridge artifacts, C2/infrastructure strings, and process-masquerade markers."
   },
   "sources": [
     "https://almalinux.org/blog/2026-05-13-fragnesia-cve-2026-46300/",
@@ -29,6 +30,9 @@
     "https://github.com/advisories/GHSA-g6v5-9xpp-6hpx",
     "https://supplychainattack.org/incident/malware-in-google-cloud-secret-manager-config-poc-1fs99l",
     "https://panther.com/blog/tracking-an-ottercookie-infostealer-campaign-across-npm",
-    "https://research.jfrog.com/post/solana-fakefix/"
+    "https://research.jfrog.com/post/solana-fakefix/",
+    "https://www.sygnia.co/blog/operation-highland-velvet-ant/",
+    "https://www.sygnia.co/wp-content/uploads/2026/06/Appendix_Indicators-of-Compromise.pdf",
+    "https://thehackernews.com/2026/06/china-linked-hackers-backdoored-linux.html"
   ]
 }
