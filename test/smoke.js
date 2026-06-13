@@ -149,6 +149,21 @@ function run() {
     "176.120.22.127",
     "2gkRUQNkJyaGkvuDziSq1RGIrwl_4bGyJtv6ez2Hk8Hrd5zvq"
   ].join("\n"));
+  write(path.join(root, "usr", "share", "man9", "ph", ".ph.man"), "captured ssh credential log placeholder\n");
+  write(path.join(root, "lib", "systemd", "system", "chrom.service"), [
+    "[Service]",
+    "ExecStart=/usr/sbin/auditdb"
+  ].join("\n"));
+  write(path.join(root, "usr", "sbin", "auditdb"), [
+    "hardcoded relay: a.gs.thc.org",
+    "argv disguise: [khubd]",
+    "legacy auth bypass: Pamauth@123456"
+  ].join("\n"));
+  write(path.join(root, "usr", "share", "nginx", "cgi", "cgi-bin", "uptime"), [
+    "#!/bin/sh",
+    "fastcgi_pass unix:/run/fcgiwrap.socket;",
+    "/usr/share/nginx/cgi/cgi-bin/uptime"
+  ].join("\n"));
   write(path.join(home, "solana-fakefix", "package.json"), JSON.stringify({
     dependencies: {
       "@solana-labs/web3.js": "^2.0.0",
@@ -248,6 +263,11 @@ function run() {
   assert(ids.has("gentlemen-self-propagation-marker"));
   assert(ids.has("gentlemen-defense-evasion-command-marker"));
   assert(ids.has("gentlemen-network-indicator"));
+  assert(ids.has("operation-highland-ioc-path"));
+  assert(ids.has("operation-highland-tool-filename"));
+  assert(ids.has("operation-highland-network-indicator"));
+  assert(ids.has("operation-highland-text-indicator"));
+  assert(ids.has("operation-highland-process-masquerade-indicator"));
   assert(ids.has("solana-fakefix-npm-package-reference"));
   assert(ids.has("solana-fakefix-pypi-package-reference"));
   assert(ids.has("solana-fakefix-text-indicator"));

@@ -64,6 +64,12 @@ markers, defense-evasion toolkit filenames, exposed operator toolkit scripts,
 and reported network/session indicators. These are local operator notifications
 only.
 
+The June 2026 Operation Highland / Velvet Ant watch pack adds Sygnia-reported
+Linux authentication-stack compromise checks for replaced PAM/OpenSSH
+components, hidden credential-log paths, GS-Netcat staging, Nginx/FastCGI bridge
+artifacts, process-masquerade strings, and the published SHA-1 IOC set. These
+are local operator notifications only.
+
 This project also tracks urgent Linux advisories as operator guidance when they
 intersect supply-chain response hosts. NGINX Rift / `CVE-2026-42945` and Sudo
 `CVE-2026-35535` are currently documented as advisory-only context; this guard
@@ -215,6 +221,16 @@ Exit codes:
     `WinDefGpo_Reg.ps1`, `def1.bat`, `clearlog.bat`, `ngrok.exe`, and
     `rustdesk.exe`
   - reported network/session indicators including `176.120.22.127`
+- Operation Highland / Velvet Ant Linux auth-stack indicators:
+  - Sygnia-published SHA-1 values checked against PAM/OpenSSH and high-signal
+    campaign paths
+  - hidden credential-log paths including `/usr/share/man9/ph/.ph.man` and
+    `/usr/sbin/.ssh.log`
+  - GS-Netcat and staging artifacts including `/usr/sbin/auditdb`,
+    `/lib/systemd/system/chrom.service`, `gs.thc.org`, and `mobi.urgpt.dev`
+  - Nginx/FastCGI bridge path `/usr/share/nginx/cgi/cgi-bin/uptime`
+  - process-masquerade markers including `[khubd]`, `[kauditd] -sh`, and
+    `smbd -D`
 - TeamPCP/Dynatrace weak-signal exposure indicators:
   - Dynatrace token-shaped values such as `dt0c01.*` and `dt0s01.*`
   - `hard-copilot`, `hard-csc`, `hard-iam`, `local-cluster-setup`
@@ -308,3 +324,9 @@ the known indicators it checks.
   https://hunt.io/blog/pcpjack-230-cloud-servers-smtp-proxy-network-sliver-chisel
 - Security Affairs PCPJack summary:
   https://securityaffairs.com/193189/cyber-crime/pcpjack-exposed-researchers-uncover-230-node-cloud-email-relay-network.html
+- Sygnia Operation Highland / Velvet Ant report:
+  https://www.sygnia.co/blog/operation-highland-velvet-ant/
+- Sygnia Operation Highland / Velvet Ant IOC appendix:
+  https://www.sygnia.co/wp-content/uploads/2026/06/Appendix_Indicators-of-Compromise.pdf
+- The Hacker News Operation Highland / Velvet Ant summary:
+  https://thehackernews.com/2026/06/china-linked-hackers-backdoored-linux.html
