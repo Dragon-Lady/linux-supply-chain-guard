@@ -865,6 +865,13 @@ function checkHadesPyPi(findings, targetRoot, homePath) {
     if (/sys\.path/i.test(text) && /_index\.js/i.test(text) && /bun|subprocess/i.test(text)) {
       addFinding(findings, "critical", "hades-syspath-payload-loader", "Python code searches sys.path for _index.js and attempts Bun/subprocess execution.", relative, "Review for the Hades loader/payload split before running Python or package tools.");
     }
+    if (
+      base === "_index.js" &&
+      /(?:unrestricted\s+mode|safety\s+guidelines|guardrails)/i.test(text) &&
+      /(?:biological|nuclear)\s+weapons?/i.test(text)
+    ) {
+      addFinding(findings, "warning", "hades-llm-anti-analysis-bait", "Hades-style LLM refusal-bait appears in a Python package JavaScript payload.", relative, "Do not feed the raw payload to an LLM triage flow. Use static extraction, YARA, deobfuscation, and behavioral review from a clean posture.");
+    }
     for (const indicator of HADES_TEXT_INDICATORS) {
       if (text.includes(indicator)) {
         addFinding(findings, "warning", "hades-text-indicator", "Hades PyPI campaign indicator appears in scanned host metadata.", `${relative}: ${indicator}`, "Correlate with installed package versions, Python startup hooks, CI artifacts, and credential exposure.");
