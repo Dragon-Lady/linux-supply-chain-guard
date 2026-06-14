@@ -292,6 +292,18 @@ const LITELLM_CONFIG_TERMS = [
   "LITELLM",
   "mcp-rest",
 ];
+const AGENTJACKING_SENTRY_TERMS = [
+  "sentry",
+  "Sentry",
+  "SENTRY_DSN",
+  "sentry_dsn",
+  "ingest.sentry.io",
+];
+const AGENTJACKING_MCP_TERMS = [
+  "mcp",
+  "MCP",
+  "Model Context Protocol",
+];
 
 const OPERATION_HIGHLAND_SHA1_HASHES = loadHashSet("operation-highland-sha1.json");
 const OPERATION_HIGHLAND_IOC_PATHS = [
@@ -504,6 +516,7 @@ function scanHost(options = {}) {
   checkPeopleSoftCve202635273(findings, targetRoot, homePath);
   checkLiteLlmGatewayExposure(findings, targetRoot, homePath);
   checkOpenClawAgentExposure(findings, targetRoot, homePath);
+  checkAgentjackingSentryMcpExposure(findings, targetRoot, homePath);
   checkNpmV12Readiness(findings, targetRoot, homePath);
   checkOperationHighlandAuthStack(findings, targetRoot, homePath);
   checkTransformersPayload(findings, targetRoot);
@@ -1227,6 +1240,47 @@ function checkOpenClawAgentExposure(findings, targetRoot, homePath) {
 
     if (hasOpenDmPolicy && hasDisabledSandbox) {
       addFinding(findings, "warning", "openclaw-open-dm-unsandboxed", "OpenClaw config appears to combine open inbound DMs with host/main/disabled sandbox mode.", relative, "Route untrusted channels to sandboxed non-main agents and gate outbound mail, credential forwarding, shell, and file actions.");
+    }
+  }
+}
+
+function checkAgentjackingSentryMcpExposure(findings, targetRoot, homePath) {
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const roots = [
+    homeRelative,
+    "/opt",
+    "/srv",
+    "/var/www",
+    "/etc",
+    "/root",
+  ].filter(Boolean);
+  const files = [];
+  for (const root of roots) {
+    files.push(...findWatchFiles(mapLinuxPath(targetRoot, root), 25000 - files.length));
+    if (files.length >= 25000) break;
+  }
+
+  for (const filePath of files) {
+    const text = readText(filePath);
+    if (!text) continue;
+    const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+    const hasSentry = hasAnyTerm(text, AGENTJACKING_SENTRY_TERMS);
+    const hasMcp = hasAnyTerm(text, AGENTJACKING_MCP_TERMS);
+
+    if (hasSentry && hasMcp) {
+      addFinding(findings, "review", "agentjacking-sentry-mcp-review", "Sentry appears wired into an MCP/agent context.", relative, "Treat Sentry event content as untrusted tool output. Require human approval before agents execute commands suggested by Sentry issues.");
+    }
+
+    if (
+      /(?:##\s*Resolution|resolution\s*:)/i.test(text) &&
+      /\bnpx\b/i.test(text) &&
+      /sentry|Sentry|event|issue|error/i.test(text)
+    ) {
+      addFinding(findings, "warning", "agentjacking-sentry-resolution-npx", "Sentry-style resolution content attempts npm execution.", relative, "Review for Agentjacking-style indirect prompt injection before giving this content to a coding agent.");
+    }
+
+    if (/advisory-tracker\.com|X-Tenet-Security|ResponsibleDisclosure\s*\[SECURITY SCAN\]/i.test(text)) {
+      addFinding(findings, "review", "agentjacking-tenet-validation-marker", "Tenet Agentjacking validation marker appears in scanned host metadata.", relative, "Correlate with Sentry events, agent command history, package-manager logs, and developer credential exposure.");
     }
   }
 }

@@ -174,6 +174,12 @@ Exit codes:
   - native `.abi3.so` extension layouts paired with `_index.js`
   - GitHub/CI markers including `Run Copilot`, `format-results`, and
     `Hades - The End for the Damned`
+- Agentjacking / Sentry MCP indicators:
+  - Sentry DSN or ingest surfaces wired into MCP/agent context
+  - Sentry-style fake `## Resolution` content that asks an agent to run `npx`
+    diagnostics before inspecting source
+  - Tenet validation markers such as `X-Tenet-Security` and
+    `ResponsibleDisclosure [SECURITY SCAN]`
 - Solana FakeFix / CMS Windows loader indicators:
   - Solana-themed npm names such as `@solana-labs/web3.js`,
     `solana-web3-stable`, `solana-rpc-client`, and `solana-mev-bot`
@@ -286,6 +292,10 @@ the known indicators it checks.
   https://socket.dev/blog/mini-shai-hulud-miasma-and-hades-worms-target-bioinformatics-and-mcp-developers-via-malicious
 - SecurityWeek Shai-Hulud Miasma/Hades summary:
   https://www.securityweek.com/over-100-npm-pypi-packages-hit-in-new-shai-hulud-supply-chain-attacks/
+- Tenet Agentjacking Sentry/MCP writeup:
+  https://tenetsecurity.ai/blog/agentjacking-coding-agents-with-fake-sentry-errors/
+- Cyber Security News Agentjacking summary:
+  https://cybersecuritynews.com/agentjacking-attack-hijacks-ai-coding-agent/
 - JFrog Solana FakeFix / CMS Windows loader report:
   https://research.jfrog.com/post/solana-fakefix/
 - GitHub Advisory for `google-cloud-secret-manager-config-poc`:
