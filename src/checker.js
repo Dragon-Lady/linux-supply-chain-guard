@@ -27,6 +27,7 @@ const KNOWN_DPRK_NPM_PACKAGES = [
 
 const KNOWN_COMPROMISED_NPM_PACKAGES = [
   "csc154-internall-depend",
+  "ecto-flag-read",
   "@validate-sdk/v2",
   "google-cloud-secret-manager-config-poc",
 ];
