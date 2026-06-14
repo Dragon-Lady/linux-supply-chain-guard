@@ -158,6 +158,7 @@ Exit codes:
   - `/api/validate/keyboard-events`
 - GitHub Advisory npm malware packages with all versions affected:
   - `csc154-internall-depend`
+  - `ecto-flag-read`
   - `@validate-sdk/v2`
   - `google-cloud-secret-manager-config-poc`
 - Panther OtterCookie npm indicators:
@@ -300,6 +301,8 @@ the known indicators it checks.
   https://research.jfrog.com/post/solana-fakefix/
 - GitHub Advisory for `google-cloud-secret-manager-config-poc`:
   https://github.com/advisories/GHSA-g6v5-9xpp-6hpx
+- SupplyChainAttack incident for `ecto-flag-read`:
+  https://supplychainattack.org/incident/malware-in-ecto-flag-read-m7p2-zqvzsn
 - Panther OtterCookie npm campaign:
   https://panther.com/blog/tracking-an-ottercookie-infostealer-campaign-across-npm
 - SafeDep Astro config blockchain C2 supply-chain report:
