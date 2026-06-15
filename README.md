@@ -157,10 +157,19 @@ Exit codes:
   - `utils.cjs`
   - `/api/validate/keyboard-events`
 - GitHub Advisory npm malware packages with all versions affected:
+  - `atomic-lockfile`
   - `csc154-internall-depend`
   - `ecto-flag-read`
   - `@validate-sdk/v2`
   - `google-cloud-secret-manager-config-poc`
+- AtomicArch / IronWorm AUR indicators:
+  - AUR `PKGBUILD`, `.SRCINFO`, and `.install` metadata that references
+    `atomic-lockfile`
+  - AUR build/install scripts that invoke `npm` or `npx` while referencing
+    `atomic-lockfile`
+  - payload-behavior terms near `atomic-lockfile`, including eBPF/rootkit,
+    `deps`, browser cookie, Vault, Docker/Podman, Slack, Discord, and Teams
+    targeting language
 - Panther OtterCookie npm indicators:
   - package names including `bjs-biginteger`, `bjs-lint-builder(s)`,
     `hjs-lint-builders`, `sjs-builder(s)`, and `npm-doc-builder`
@@ -293,6 +302,8 @@ the known indicators it checks.
   https://socket.dev/blog/mini-shai-hulud-miasma-and-hades-worms-target-bioinformatics-and-mcp-developers-via-malicious
 - SecurityWeek Shai-Hulud Miasma/Hades summary:
   https://www.securityweek.com/over-100-npm-pypi-packages-hit-in-new-shai-hulud-supply-chain-attacks/
+- BleepingComputer AtomicArch / AUR compromise summary:
+  https://www.bleepingcomputer.com/news/security/over-400-arch-linux-packages-compromised-to-push-rootkit-infostealer/
 - Tenet Agentjacking Sentry/MCP writeup:
   https://tenetsecurity.ai/blog/agentjacking-coding-agents-with-fake-sentry-errors/
 - Cyber Security News Agentjacking summary:
