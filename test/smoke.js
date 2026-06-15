@@ -161,6 +161,15 @@ function run() {
   write(path.join(root, "u01", "app", "psoft", "ps_config_homes", "csprd", "webserv", "CSPRD02", "applications", "peoplesoft", "PSEMHUB.war", "persistantstorage", "marker.txt"), "unexpected directory");
   write(path.join(root, "u01", "app", "psoft", "meshagent64-azure-ops.exe"), "placeholder");
   write(path.join(root, "u01", "app", "psoft", "ps_config_homes", "csprd", "webserv", "CSPRD02", "README-IF-YOU-SEE-THIS-YOUVE-BEEN-HACKED.TXT"), "extortion marker");
+  write(path.join(root, "var", "log", "globalprotect.log"), [
+    "PAN-OS GlobalProtect gateway-connected event",
+    "source=23.128.228.6",
+    "host-id=aa:bb:cc:dd:ee:ff",
+    "device_name=WINDOWS-LAPTOP-001",
+    "endpoint_os_version: Microsoft Windows 10 Pro 64-bit",
+    "source_user_info.domain: empty",
+    "successful gateway connection established"
+  ].join("\n"));
   write(path.join(root, "usr", "share", "roundcube", "program", "include", "iniset.php"), [
     "<?php",
     "define('RCMAIL_VERSION', '1.6.10');",
@@ -330,6 +339,9 @@ function run() {
   assert(ids.has("peoplesoft-shinyhunters-network-indicator"));
   assert(ids.has("peoplesoft-shinyhunters-operator-artifact"));
   assert(ids.has("peoplesoft-shinyhunters-extortion-marker"));
+  assert(ids.has("paloalto-globalprotect-cve-2026-0257-ip-indicator"));
+  assert(ids.has("paloalto-globalprotect-cve-2026-0257-client-indicator"));
+  assert(ids.has("paloalto-globalprotect-cve-2026-0257-poc-client-config"));
   assert(ids.has("roundcube-cve-2025-49113-vulnerable-version"));
   assert(ids.has("roundcube-cve-2025-49113-poc-artifact"));
   assert(ids.has("gentlemen-ransomware-note-wallpaper"));
