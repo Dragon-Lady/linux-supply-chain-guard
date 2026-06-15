@@ -258,6 +258,13 @@ Exit codes:
     `WinDefGpo_Reg.ps1`, `def1.bat`, `clearlog.bat`, `ngrok.exe`, and
     `rustdesk.exe`
   - reported network/session indicators including `176.120.22.127`
+- Heaven's Gate / WOW64 evasion review indicators:
+  - analysis-note terms such as `Wow64Transition`, `HeavensGate`, or
+    `Heaven's Gate`
+  - co-occurring 32-bit/64-bit process context plus shellcode, injection, EDR
+    evasion, or malware language
+  - stronger transition markers such as far jump/call/return or selector
+    `0x33` context
 - Operation Highland / Velvet Ant Linux auth-stack indicators:
   - Sygnia-published SHA-1 values checked against PAM/OpenSSH and high-signal
     campaign paths
@@ -360,6 +367,8 @@ the known indicators it checks.
   https://www.microsoft.com/en-us/security/blog/2026/05/28/the-gentlemen-ransomware-dissecting-a-self-propagating-go-encryptor/
 - Hunt.io Gentlemen ransomware exposed toolkit analysis:
   https://hunt.io/blog/ransomware-exposed-gentlemen-ransomware-toolkit-leaks-publicly
+- Huntress Heaven's Gate defensive overview:
+  https://www.huntress.com/cybersecurity-101/topic/what-is-heavens-gate
 - The Hacker News on NGINX CVE-2026-42945 active exploitation:
   https://thehackernews.com/2026/05/nginx-cve-2026-42945-exploited-in-wild.html
 - The Register on NGINX Rift exploitation:

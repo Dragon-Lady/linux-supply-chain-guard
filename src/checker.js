@@ -311,6 +311,17 @@ const GENTLEMEN_NETWORK_INDICATORS = [
   "2ozoAve91tpILCwKCbRDNz7us8e_2qLk1aLKZoV4Y6TfrcfjK",
 ];
 
+const HEAVENS_GATE_EVASION_TERMS = [
+  "Wow64Transition",
+  "HeavensGate",
+  "Heaven's Gate",
+  "heavens gate",
+  "WOW64 mode switch",
+  "x86 to x64",
+  "32-bit process",
+  "64-bit shellcode",
+];
+
 const ARGAMAL_FILE_NAMES = new Set([
   "natives2_blob.bin",
   "zaesdl.dat",
@@ -566,6 +577,7 @@ function scanHost(options = {}) {
   checkDynatraceTeamPcpWatch(findings, targetRoot, homePath);
   checkPcpJackRelayArtifacts(findings, targetRoot, homePath);
   checkGentlemenRansomware(findings, targetRoot, homePath);
+  checkHeavensGateEvasion(findings, targetRoot, homePath);
   checkArgamalGameRat(findings, targetRoot, homePath);
   checkPeopleSoftCve202635273(findings, targetRoot, homePath);
   checkRoundcubeCve202549113(findings, targetRoot, homePath);
@@ -1223,6 +1235,47 @@ function checkGentlemenRansomware(findings, targetRoot, homePath) {
       if (text.includes(indicator)) {
         addFinding(findings, "critical", "gentlemen-network-indicator", "Gentlemen ransomware campaign network or session indicator appears in scanned host metadata.", `${relative}: ${indicator}`, "Correlate with firewall, proxy, EDR, and remote-access logs. Preserve evidence and rotate credentials from a clean posture if compromise is confirmed.");
       }
+    }
+  }
+}
+
+function checkHeavensGateEvasion(findings, targetRoot, homePath) {
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const roots = [
+    homeRelative,
+    "/home",
+    "/root",
+    "/tmp",
+    "/var/tmp",
+    "/opt",
+    "/srv",
+    "/var/www",
+    "/etc",
+    "/mnt",
+    "/media",
+    "/ProgramData",
+    "/Users",
+  ].filter(Boolean);
+  const files = [];
+  for (const root of roots) {
+    files.push(...findWatchFiles(mapLinuxPath(targetRoot, root), 25000 - files.length));
+    if (files.length >= 25000) break;
+  }
+
+  for (const filePath of files) {
+    const size = fileSizeBytes(filePath);
+    if (size <= 0 || size > 1024 * 1024) continue;
+    const text = readText(filePath);
+    if (!text) continue;
+    const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+
+    const matched = HEAVENS_GATE_EVASION_TERMS.filter((term) => text.toLowerCase().includes(term.toLowerCase()));
+    const hasModeSwitchContext = /wow64|syswow64|32-bit|x86|64-bit|x64/i.test(text)
+      && /shellcode|injection|inject|syscall|edr|evasion|bypass|malware|ransomware|payload|process hollow/i.test(text);
+    const hasTransitionMarker = /Wow64Transition|HeavensGate|Heaven's Gate|heavens gate/i.test(text)
+      && /(?:selector|segment|cs)\s*0x33|far\s+(?:jump|call|return)|\bretf\b/i.test(text);
+    if (matched.length > 0 && hasModeSwitchContext && hasTransitionMarker) {
+      addFinding(findings, "review", "heavens-gate-wow64-evasion-marker", "Heaven's Gate-style WOW64 mode-switching evasion terms appear in scanned metadata.", `${relative}: ${matched.slice(0, 3).join(", ")}`, "Review as a malware-analysis lead only. Correlate with EDR telemetry, memory scans, suspicious 32-bit processes launching 64-bit execution, and endpoint containment state.");
     }
   }
 }

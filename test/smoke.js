@@ -187,6 +187,11 @@ function run() {
     "176.120.22.127",
     "2gkRUQNkJyaGkvuDziSq1RGIrwl_4bGyJtv6ez2Hk8Hrd5zvq"
   ].join("\n"));
+  write(path.join(root, "opt", "triage", "wow64-evasion-note.txt"), [
+    "Heaven's Gate / Wow64Transition suspected.",
+    "32-bit process launches 64-bit shellcode for EDR evasion after injection.",
+    "Triage note mentions far jump selector 0x33 from WOW64 context."
+  ].join("\n"));
   write(path.join(root, "Users", "alice", "Downloads", "visual-novel", "natives2_blob.bin"), "encrypted payload placeholder");
   write(path.join(root, "Users", "alice", "Downloads", "visual-novel", "zaesdl.dat"), "second stage placeholder");
   write(path.join(root, "Users", "alice", "Downloads", "visual-novel", "install-log.txt"), [
@@ -333,6 +338,7 @@ function run() {
   assert(ids.has("gentlemen-self-propagation-marker"));
   assert(ids.has("gentlemen-defense-evasion-command-marker"));
   assert(ids.has("gentlemen-network-indicator"));
+  assert(ids.has("heavens-gate-wow64-evasion-marker"));
   assert(ids.has("argamal-game-rat-file-name"));
   assert(ids.has("argamal-game-rat-network-indicator"));
   assert(ids.has("argamal-game-rat-bitsadmin-stage"));

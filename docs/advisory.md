@@ -48,6 +48,13 @@ look for affected PyPI package versions, local runtime artifacts, suspicious
 Python package layouts, and GitHub/CI exfiltration markers. They do not execute
 Python, Bun, package managers, or cleanup actions.
 
+Huntress' Heaven's Gate overview is included as weak-signal Windows evasion
+context. The guard looks for analysis-note references to WOW64 mode-switching
+or Heaven's Gate terms only when they co-occur with shellcode, injection, EDR
+evasion, malware, or payload language plus stronger transition markers such as
+far jump/call/return or selector `0x33` context. These findings are triage
+leads and do not prove active compromise.
+
 This project also keeps advisory-only notes for urgent Linux exposure risks
 that may affect build hosts, CI infrastructure, package mirrors, WSL developer
 environments, or self-hosted developer services.
