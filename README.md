@@ -193,6 +193,11 @@ Exit codes:
     diagnostics before inspecting source
   - Tenet validation markers such as `X-Tenet-Security` and
     `ResponsibleDisclosure [SECURITY SCAN]`
+- Roundcube `CVE-2025-49113` webmail exposure indicators:
+  - installed Roundcube versions below `1.5.10` or `1.6.11`
+  - local PoC/exploit-runner artifacts referencing `CVE-2025-49113`
+  - upload/session code-path review terms such as
+    `program/actions/settings/upload.php`, `_from`, and `rcube_session`
 - Solana FakeFix / CMS Windows loader indicators:
   - Solana-themed npm names such as `@solana-labs/web3.js`,
     `solana-web3-stable`, `solana-rpc-client`, and `solana-mev-bot`

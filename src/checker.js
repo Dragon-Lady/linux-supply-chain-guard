@@ -17,6 +17,9 @@ const KNOWN_HASHES = new Set([
 const OPENCLAW_FIXED = "2026.4.23";
 const OPENCLAW_CONFIG_FILES = new Set([".crabbox.yaml", ".crabbox.yml"]);
 const NPM_V12_PREPARE_MIN = "11.16.0";
+const ROUNDCUBE_15_FIXED = "1.5.10";
+const ROUNDCUBE_16_FIXED = "1.6.11";
+const ROUNDCUBE_VULNERABLE_MIN = "1.1.0";
 
 const KNOWN_DPRK_NPM_PACKAGES = [
   "terminal-logger-utils",
@@ -184,6 +187,24 @@ const DPRK_SOCKET_IO_LOADER_TERMS = [
   "/api/service",
   "0001.dat",
 ];
+
+const ROUNDCUBE_ROOT_HINTS = [
+  "roundcube",
+  "roundcubemail",
+  "psa-roundcube",
+  "3rdparty/roundcube",
+  "/webmail/",
+];
+
+const ROUNDCUBE_CANDIDATE_FILE_NAMES = new Set([
+  "composer.json",
+  "composer.lock",
+  "index.php",
+  "iniset.php",
+  "package.xml",
+  "CHANGELOG.md",
+  "README.md",
+]);
 
 const DYNATRACE_TOKEN_PATTERN = /dt0[cs][0-9]{2}\.[A-Z0-9]{24}\.[A-Z0-9]{64,}/gi;
 
@@ -528,6 +549,7 @@ function scanHost(options = {}) {
   checkPcpJackRelayArtifacts(findings, targetRoot, homePath);
   checkGentlemenRansomware(findings, targetRoot, homePath);
   checkPeopleSoftCve202635273(findings, targetRoot, homePath);
+  checkRoundcubeCve202549113(findings, targetRoot, homePath);
   checkLiteLlmGatewayExposure(findings, targetRoot, homePath);
   checkOpenClawAgentExposure(findings, targetRoot, homePath);
   checkAgentjackingSentryMcpExposure(findings, targetRoot, homePath);
@@ -1212,6 +1234,51 @@ function checkPeopleSoftCve202635273(findings, targetRoot, homePath) {
   }
 }
 
+function checkRoundcubeCve202549113(findings, targetRoot, homePath) {
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const roots = [
+    homeRelative,
+    "/usr/share",
+    "/usr/local",
+    "/var/www",
+    "/var/lib",
+    "/opt",
+    "/srv",
+    "/etc",
+    "/root",
+    "/tmp",
+    "/var/tmp",
+  ].filter(Boolean);
+  const files = [];
+  for (const root of roots) {
+    files.push(...findRoundcubeFiles(mapLinuxPath(targetRoot, root), 30000 - files.length));
+    if (files.length >= 30000) break;
+  }
+
+  for (const filePath of files) {
+    const text = readText(filePath);
+    if (!text) continue;
+    const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+    const loweredRelative = relative.toLowerCase();
+
+    if (hasRoundcube49113PocShape(text, loweredRelative)) {
+      addFinding(findings, "warning", "roundcube-cve-2025-49113-poc-artifact", "Roundcube CVE-2025-49113 PoC or exploit-runner artifact appears on disk.", relative, "Keep exploit tooling out of production hosts. Preserve context if unexpected, then remove from a trusted administrative posture.");
+    }
+
+    if (!hasRoundcubeInstallSignal(text, loweredRelative)) continue;
+
+    for (const version of roundcubeVersionsInText(text)) {
+      if (isRoundcube49113Vulnerable(version)) {
+        addFinding(findings, "critical", "roundcube-cve-2025-49113-vulnerable-version", "Roundcube version is affected by CVE-2025-49113 post-auth RCE.", `${relative}: Roundcube ${version}`, `Upgrade Roundcube to ${ROUNDCUBE_16_FIXED} on 1.6.x or ${ROUNDCUBE_15_FIXED} on 1.5.x, or follow distro/control-panel vendor backport guidance. Review authenticated webmail access logs if exposure is suspected.`);
+      }
+    }
+
+    if (/program\/actions\/settings\/upload\.php|_from\b|session_decode|rcube_session/i.test(text) && loweredRelative.includes("roundcube")) {
+      addFinding(findings, "review", "roundcube-cve-2025-49113-code-path-review", "Roundcube upload/session code-path terms appear in scanned files.", relative, "Correlate with installed Roundcube version and vendor package state; the vulnerable range is before 1.5.10 and 1.6.x before 1.6.11.");
+    }
+  }
+}
+
 function checkLiteLlmGatewayExposure(findings, targetRoot, homePath) {
   const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
   const roots = [
@@ -1676,6 +1743,42 @@ function findHadesFiles(dirPath, maxFiles) {
   return files;
 }
 
+function findRoundcubeFiles(dirPath, maxFiles) {
+  const files = [];
+  if (maxFiles <= 0 || !exists(dirPath)) return files;
+  const stack = [dirPath];
+  const skipDirs = new Set([".git", ".hg", ".svn", ".next", "dist", "build", "coverage", "node_modules", ".venv", "venv"]);
+  while (stack.length > 0 && files.length < maxFiles) {
+    const current = stack.pop();
+    let entries = [];
+    try {
+      entries = fs.readdirSync(current, { withFileTypes: true });
+    } catch (_error) {
+      continue;
+    }
+    for (const entry of entries) {
+      const fullPath = path.join(current, entry.name);
+      if (entry.isDirectory()) {
+        if (!skipDirs.has(entry.name)) stack.push(fullPath);
+      } else if (entry.isFile() && isRoundcubeCandidateFile(entry.name, fullPath)) {
+        files.push(fullPath);
+        if (files.length >= maxFiles) break;
+      }
+    }
+  }
+  return files;
+}
+
+function isRoundcubeCandidateFile(fileName, filePath) {
+  const normalized = filePath.replace(/\\/g, "/").toLowerCase();
+  if (/cve-2025-49113.*\.php$/i.test(fileName) || /roundcube.*49113.*\.php$/i.test(fileName)) return true;
+  if (normalized.endsWith("/program/include/iniset.php")) return true;
+  if (normalized.endsWith("/program/actions/settings/upload.php")) return true;
+  if (!ROUNDCUBE_CANDIDATE_FILE_NAMES.has(fileName)) return false;
+  if (ROUNDCUBE_ROOT_HINTS.some((hint) => normalized.includes(hint))) return true;
+  return fileName === "composer.json" || fileName === "composer.lock";
+}
+
 function isWatchFile(fileName, filePath) {
   if (WATCH_FILE_NAMES.has(fileName)) return true;
   const extension = path.extname(fileName);
@@ -1701,6 +1804,40 @@ function hasDprkSocketIoLoaderShape(text) {
   const hasPayloadWrite = /\b(?:writeFile|writeFileSync|createWriteStream|appendFileSync)\s*\(|\bfs\s*\.\s*(?:writeFile|writeFileSync|createWriteStream)\s*\(/i.test(text);
 
   return hasNetworkLoader && (hasNodeExecution || hasPayloadWrite);
+}
+
+function hasRoundcubeInstallSignal(text, relativePath) {
+  return relativePath.includes("roundcube")
+    || /roundcube\/roundcubemail|rcmail_version|Roundcube Webmail|rcube_session|program\/actions\/settings\/upload\.php/i.test(text);
+}
+
+function roundcubeVersionsInText(text) {
+  const versions = new Set();
+  const patterns = [
+    /RCMAIL_VERSION['"]?\s*,\s*['"]([0-9]+\.[0-9]+\.[0-9]+)['"]/gi,
+    /(?:Roundcube Webmail|roundcube\/roundcubemail|roundcubemail)[^0-9]{0,80}([0-9]+\.[0-9]+\.[0-9]+)/gi,
+    /["']name["']\s*:\s*["']roundcube\/roundcubemail["'][\s\S]{0,300}?["']version["']\s*:\s*["']([0-9]+\.[0-9]+\.[0-9]+)["']/gi,
+    /<name>roundcubemail<\/name>[\s\S]{0,500}?<release>([0-9]+\.[0-9]+\.[0-9]+)<\/release>/gi,
+  ];
+  for (const pattern of patterns) {
+    for (const match of text.matchAll(pattern)) {
+      versions.add(match[1]);
+    }
+  }
+  return Array.from(versions);
+}
+
+function isRoundcube49113Vulnerable(version) {
+  if (compareDottedVersion(version, ROUNDCUBE_VULNERABLE_MIN) < 0) return false;
+  if (compareDottedVersion(version, "1.5.0") < 0) return true;
+  if (compareDottedVersion(version, "1.6.0") < 0) return compareDottedVersion(version, ROUNDCUBE_15_FIXED) < 0;
+  if (compareDottedVersion(version, "1.7.0") < 0) return compareDottedVersion(version, ROUNDCUBE_16_FIXED) < 0;
+  return false;
+}
+
+function hasRoundcube49113PocShape(text, relativePath) {
+  return /cve-2025-49113/i.test(relativePath + "\n" + text)
+    && /target_url|username\s+password\s+command|program\/actions\/settings\/upload\.php|_from|php\s+CVE-2025-49113\.php/i.test(text);
 }
 
 function isHadesWatchFile(fileName, filePath) {

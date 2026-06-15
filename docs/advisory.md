@@ -135,6 +135,14 @@ PCPJack / cloud SMTP relay host-residue indicators include:
 - `38.242.204.245`
 - `213.136.80.73`
 
+Roundcube `CVE-2025-49113` webmail exposure checks include:
+
+- versions before `1.5.10`
+- `1.6.x` versions before `1.6.11`
+- local PoC/exploit-runner artifacts mentioning `CVE-2025-49113`
+- upload/session code-path review terms around
+  `program/actions/settings/upload.php`, `_from`, and `rcube_session`
+
 Hades / Miasma PyPI indicators include:
 
 - affected PyPI package versions reported by Socket, including MCP-themed and
