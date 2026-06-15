@@ -198,6 +198,11 @@ Exit codes:
   - local PoC/exploit-runner artifacts referencing `CVE-2025-49113`
   - upload/session code-path review terms such as
     `program/actions/settings/upload.php`, `_from`, and `rcube_session`
+- Argamal game-RAT residue indicators:
+  - `natives2_blob.bin` and `zaesdl.dat` artifact names
+  - C2 domains `asper1.freeddns.org` and `Winst0.kozow.com`
+  - delayed `bitsadmin` second-stage fetch markers
+  - Windows Color System Calibration Loader COM-hijack persistence terms
 - Solana FakeFix / CMS Windows loader indicators:
   - Solana-themed npm names such as `@solana-labs/web3.js`,
     `solana-web3-stable`, `solana-rpc-client`, and `solana-mev-bot`

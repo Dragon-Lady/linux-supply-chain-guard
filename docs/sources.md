@@ -36,6 +36,7 @@
 - NVD CVE-2025-49113 record: https://nvd.nist.gov/vuln/detail/CVE-2025-49113
 - CISA Known Exploited Vulnerabilities entry for CVE-2025-49113: https://www.cisa.gov/known-exploited-vulnerabilities-catalog?field_cve=CVE-2025-49113
 - Hackers Arise Roundcube CVE-2025-49113 RCE walkthrough: https://hackers-arise.com/critical-remote-code-execution-rce-in-roundcube-cve-2025-49113-your-email-is-not-safe/
+- Hackread, Argamal malware hidden in working hentai games: https://hackread.com/hackers-hide-argamal-malware-hentai-games/
 
 These links are retained for defensive host posture and incident-response
 context. This project intentionally avoids exploit reproduction steps or malware
