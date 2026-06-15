@@ -55,6 +55,13 @@ evasion, malware, or payload language plus stronger transition markers such as
 far jump/call/return or selector `0x33` context. These findings are triage
 leads and do not prove active compromise.
 
+Unit 42's PAN-OS GlobalProtect / `CVE-2026-0257` active exploitation brief is
+included as a local log-hunting lane. The guard looks for reported source IPs,
+reported client host ID/MAC/device-name values, and PoC client configuration
+values in GlobalProtect or PAN-OS log metadata. Successful gateway-connected
+events are prioritized because Unit 42 reported that only a small portion of
+probed devices established VPN sessions.
+
 This project also keeps advisory-only notes for urgent Linux exposure risks
 that may affect build hosts, CI infrastructure, package mirrors, WSL developer
 environments, or self-hosted developer services.

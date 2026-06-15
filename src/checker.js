@@ -311,6 +311,35 @@ const GENTLEMEN_NETWORK_INDICATORS = [
   "2ozoAve91tpILCwKCbRDNz7us8e_2qLk1aLKZoV4Y6TfrcfjK",
 ];
 
+const GLOBALPROTECT_0257_IPS = [
+  "23.128.228.6",
+  "23.128.228[.]6",
+  "104.207.144.154",
+  "104.207.144[.]154",
+  "146.19.216.119",
+  "146.19.216[.]119",
+  "146.19.216.120",
+  "146.19.216[.]120",
+  "146.19.216.125",
+  "146.19.216[.]125",
+  "179.43.172.213",
+  "179.43.172[.]213",
+  "185.195.232.139",
+  "185.195.232[.]139",
+  "198.12.106.60",
+  "198.12.106[.]60",
+  "202.144.192.47",
+  "202.144.192[.]47",
+];
+
+const GLOBALPROTECT_0257_CLIENT_VALUES = [
+  "aa:bb:cc:dd:ee:ff",
+  "00:11:22:33:44:55",
+  "WINDOWS-LAPTOP-001",
+  "DESKTOP-GP01",
+  "GP-CLIENT",
+];
+
 const HEAVENS_GATE_EVASION_TERMS = [
   "Wow64Transition",
   "HeavensGate",
@@ -580,6 +609,7 @@ function scanHost(options = {}) {
   checkHeavensGateEvasion(findings, targetRoot, homePath);
   checkArgamalGameRat(findings, targetRoot, homePath);
   checkPeopleSoftCve202635273(findings, targetRoot, homePath);
+  checkPaloAltoGlobalProtect0257(findings, targetRoot, homePath);
   checkRoundcubeCve202549113(findings, targetRoot, homePath);
   checkLiteLlmGatewayExposure(findings, targetRoot, homePath);
   checkOpenClawAgentExposure(findings, targetRoot, homePath);
@@ -1332,6 +1362,52 @@ function checkArgamalGameRat(findings, targetRoot, homePath) {
 
     if (/(?:Sandboxie|Procmon64|Process Monitor)[\s\S]{0,220}(?:PowerShell|zaesdl\.dat|natives2_blob\.bin|Argamal)|(?:PowerShell|zaesdl\.dat|natives2_blob\.bin|Argamal)[\s\S]{0,220}(?:Sandboxie|Procmon64|Process Monitor)/i.test(text)) {
       addFinding(findings, "warning", "argamal-game-rat-anti-analysis-marker", "Argamal-style anti-analysis check terms appear near loader behavior.", relative, "Treat as suspicious loader logic until proven benign; review in isolation and do not launch the game executable.");
+    }
+  }
+}
+
+function checkPaloAltoGlobalProtect0257(findings, targetRoot, homePath) {
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const roots = [
+    homeRelative,
+    "/home",
+    "/root",
+    "/var/log",
+    "/opt",
+    "/srv",
+    "/etc",
+    "/tmp",
+    "/var/tmp",
+  ].filter(Boolean);
+  const files = [];
+  for (const root of roots) {
+    files.push(...findWatchFiles(mapLinuxPath(targetRoot, root), 25000 - files.length));
+    if (files.length >= 25000) break;
+  }
+
+  for (const filePath of files) {
+    const size = fileSizeBytes(filePath);
+    if (size <= 0 || size > 2 * 1024 * 1024) continue;
+    const text = readText(filePath);
+    if (!text || !/GlobalProtect|PAN-OS|gateway-connected|gateway connected|source_user_info|endpoint_os_version/i.test(text)) continue;
+    const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+    const hasSuccessfulGateway = /gateway[-\s]?connected|successful\s+(?:login|connection|gateway)|established\s+VPN/i.test(text);
+
+    const matchedIps = GLOBALPROTECT_0257_IPS.filter((indicator) => text.includes(indicator));
+    if (matchedIps.length > 0) {
+      const severity = hasSuccessfulGateway ? "warning" : "review";
+      addFinding(findings, severity, "paloalto-globalprotect-cve-2026-0257-ip-indicator", "GlobalProtect log metadata references CVE-2026-0257 exploitation IP indicators.", `${relative}: ${matchedIps.slice(0, 4).join(", ")}`, "Search GlobalProtect logs for successful gateway-connected events from these IPs, then follow Palo Alto Networks advisory guidance, patch or mitigate PAN-OS, and start incident response for successful sessions.");
+    }
+
+    const matchedClients = GLOBALPROTECT_0257_CLIENT_VALUES.filter((indicator) => text.includes(indicator));
+    if (matchedClients.length > 0 && hasSuccessfulGateway) {
+      addFinding(findings, "warning", "paloalto-globalprotect-cve-2026-0257-client-indicator", "Successful GlobalProtect gateway event references client values reported with CVE-2026-0257 exploitation.", `${relative}: ${matchedClients.slice(0, 4).join(", ")}`, "Treat these as Unit 42 hunting indicators. Review associated user, source IP, portal/gateway, and session activity before clearing the event.");
+    }
+
+    const hasPocOs = /endpoint_os_version\s*[:=]\s*["']?Microsoft Windows 10 Pro 64-bit/i.test(text);
+    const hasEmptyDomain = /source_user_info\.domain\s*[:=]\s*(?:["']{2}|empty|null|none|\s*(?:[,}\n]|$))/i.test(text);
+    if (hasPocOs && hasEmptyDomain && hasSuccessfulGateway) {
+      addFinding(findings, "warning", "paloalto-globalprotect-cve-2026-0257-poc-client-config", "Successful GlobalProtect gateway event matches CVE-2026-0257 PoC client configuration values.", `${relative}: endpoint_os_version + empty source_user_info.domain`, "Investigate the VPN session as potentially unauthorized, validate affected PAN-OS versions and mitigations, and preserve GlobalProtect logs before cleanup.");
     }
   }
 }

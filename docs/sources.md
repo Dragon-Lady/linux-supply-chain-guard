@@ -24,6 +24,8 @@
 - Microsoft Threat Intelligence Gentlemen ransomware analysis: https://www.microsoft.com/en-us/security/blog/2026/05/28/the-gentlemen-ransomware-dissecting-a-self-propagating-go-encryptor/
 - Hunt.io Gentlemen ransomware exposed toolkit analysis: https://hunt.io/blog/ransomware-exposed-gentlemen-ransomware-toolkit-leaks-publicly
 - Huntress Heaven's Gate defensive overview: https://www.huntress.com/cybersecurity-101/topic/what-is-heavens-gate
+- Unit 42 PAN-OS CVE-2026-0257 active exploitation brief: https://unit42.paloaltonetworks.com/active-exploitation-of-pan-os-cve-2026-0257/
+- The Hacker News PAN-OS GlobalProtect CVE-2026-0257 summary: https://thehackernews.com/2026/06/palo-alto-warns-of-active-exploitation.html
 - The Hacker News, NGINX CVE-2026-42945 exploited in the wild: https://thehackernews.com/2026/05/nginx-cve-2026-42945-exploited-in-wild.html
 - The Register, NGINX Rift exploitation activity: https://www.theregister.com/security/2026/05/18/nginx-rift-attackers-waste-no-time-targeting-exposed-servers/
 - CSO Online, NGINX Rift disclosure and patches: https://www.csoonline.com/article/4171437/ai-agent-finds-18-year-old-remote-code-execution-flaw-in-nginx.html

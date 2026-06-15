@@ -246,6 +246,12 @@ Exit codes:
   - MeshCentral masquerade filenames such as `meshagent64-azure-ops.exe`
   - ShinyHunters campaign network indicators including `azurenetfiles.net`
   - `README-IF-YOU-SEE-THIS-YOUVE-BEEN-HACKED.TXT`
+- Palo Alto PAN-OS GlobalProtect / `CVE-2026-0257` log-hunting indicators:
+  - Unit 42-reported source IP indicators in GlobalProtect logs
+  - reported client host ID, MAC, and device-name values in successful
+    gateway-connected events
+  - PoC client configuration values: `endpoint_os_version` set to
+    `Microsoft Windows 10 Pro 64-bit` and empty `source_user_info.domain`
 - Gentlemen ransomware indicators:
   - known SHA-256 values for reported encryptor, PsExec, and wallpaper artifacts
   - `README-GENTLEMEN.txt`, `gentlemen.bmp`, and `gentlemen_system` markers
@@ -369,6 +375,10 @@ the known indicators it checks.
   https://hunt.io/blog/ransomware-exposed-gentlemen-ransomware-toolkit-leaks-publicly
 - Huntress Heaven's Gate defensive overview:
   https://www.huntress.com/cybersecurity-101/topic/what-is-heavens-gate
+- Unit 42 PAN-OS CVE-2026-0257 active exploitation brief:
+  https://unit42.paloaltonetworks.com/active-exploitation-of-pan-os-cve-2026-0257/
+- The Hacker News PAN-OS GlobalProtect CVE-2026-0257 summary:
+  https://thehackernews.com/2026/06/palo-alto-warns-of-active-exploitation.html
 - The Hacker News on NGINX CVE-2026-42945 active exploitation:
   https://thehackernews.com/2026/05/nginx-cve-2026-42945-exploited-in-wild.html
 - The Register on NGINX Rift exploitation:
