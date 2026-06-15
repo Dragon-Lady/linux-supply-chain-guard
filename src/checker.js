@@ -179,6 +179,12 @@ const DPRK_NPM_TEXT_INDICATORS = [
   "Telegram Desktop",
 ];
 
+const DPRK_SOCKET_IO_LOADER_TERMS = [
+  "socket.io",
+  "/api/service",
+  "0001.dat",
+];
+
 const DYNATRACE_TOKEN_PATTERN = /dt0[cs][0-9]{2}\.[A-Z0-9]{24}\.[A-Z0-9]{64,}/gi;
 
 const DYNATRACE_TEAMPCP_REPO_TERMS = [
@@ -513,6 +519,7 @@ function scanHost(options = {}) {
   checkCompromisedNpmPackages(findings, targetRoot, homePath);
   checkAtomicArchAurCompromise(findings, targetRoot, homePath);
   checkDprkNpmRat(findings, targetRoot, homePath);
+  checkDprkSocketIoLoader(findings, targetRoot, homePath);
   checkOtterCookieNpm(findings, targetRoot, homePath);
   checkSolanaFakeFix(findings, targetRoot, homePath);
   checkAstroConfigC2(findings, targetRoot, homePath);
@@ -707,6 +714,32 @@ function checkDprkNpmRat(findings, targetRoot, homePath) {
       if (text.includes(indicator)) {
         addFinding(findings, "warning", "dprk-npm-rat-text-indicator", "DPRK npm RAT behavior indicator appears in dependency metadata.", `${relative}: ${indicator}`, "Review the referenced package scripts and lockfile entries before running package manager commands.");
       }
+    }
+  }
+}
+
+function checkDprkSocketIoLoader(findings, targetRoot, homePath) {
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const roots = [
+    homeRelative,
+    "/opt",
+    "/srv",
+    "/var/www",
+    "/usr/local/lib/node_modules",
+  ].filter(Boolean);
+  const files = [];
+  for (const root of roots) {
+    files.push(...findWatchFiles(mapLinuxPath(targetRoot, root), 25000 - files.length));
+    if (files.length >= 25000) break;
+  }
+
+  for (const filePath of files) {
+    const text = readText(filePath);
+    if (!text) continue;
+    const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+    if (isDocumentationPath(relative)) continue;
+    if (hasDprkSocketIoLoaderShape(text)) {
+      addFinding(findings, "critical", "dprk-socketio-loader-behavior", "DPRK/Famous Chollima-style Socket.IO npm loader behavior appears in scanned code.", `${relative}: socket.io + /api/service + 0001.dat`, "Do not run npm install/build/test in this tree. Preserve the package, inspect from a clean posture, and rotate developer/browser/package credentials if execution is suspected.");
     }
   }
 }
@@ -1652,6 +1685,22 @@ function isWatchFile(fileName, filePath) {
   } catch (_error) {
     return false;
   }
+}
+
+function isDocumentationPath(relativePath) {
+  return /\.(?:md|mdx|rst|txt)$/i.test(relativePath);
+}
+
+function hasDprkSocketIoLoaderShape(text) {
+  const lowered = text.toLowerCase();
+  const hasCoreTerms = DPRK_SOCKET_IO_LOADER_TERMS.every((term) => lowered.includes(term));
+  if (!hasCoreTerms) return false;
+
+  const hasNetworkLoader = /\b(?:fetch|axios|request)\s*\(|\bhttps?\s*\.\s*(?:get|request)\s*\(/i.test(text);
+  const hasNodeExecution = /\bchild_process\b|\b(?:spawn|spawnSync|exec|execFile|execSync)\s*\(|\bprocess\.execPath\b|\bnode\s+[^;&|]*0001\.dat\b/i.test(text);
+  const hasPayloadWrite = /\b(?:writeFile|writeFileSync|createWriteStream|appendFileSync)\s*\(|\bfs\s*\.\s*(?:writeFile|writeFileSync|createWriteStream)\s*\(/i.test(text);
+
+  return hasNetworkLoader && (hasNodeExecution || hasPayloadWrite);
 }
 
 function isHadesWatchFile(fileName, filePath) {
