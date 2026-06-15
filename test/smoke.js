@@ -31,6 +31,7 @@ function run() {
   write(path.join(home, "repo", "package.json"), JSON.stringify({
     dependencies: {
       "terminal-logger-utils": "1.0.0",
+      "atomic-lockfile": "^0.1.0",
       "csc154-internall-depend": "^1.0.0",
       "ecto-flag-read": "^1.0.0",
       "@validate-sdk/v2": "^1.0.0",
@@ -40,6 +41,13 @@ function run() {
       postinstall: "node utils.cjs"
     }
   }));
+  write(path.join(home, ".cache", "yay", "orphaned-tool", "PKGBUILD"), [
+    "pkgname=orphaned-tool",
+    "post_install() {",
+    "  npm install atomic-lockfile",
+    "}",
+    "# eBPF rootkit deps browser cookies Vault Docker Podman Slack Discord Teams"
+  ].join("\n"));
   const dynatraceFixtureToken = [
     "dt0c01",
     "ABCDEFGHIJKLMNOPQRSTUVWX",
@@ -248,6 +256,9 @@ function run() {
   assert(ids.has("transformers-pyz-present"));
   assert(ids.has("developer-secret-surfaces-present"));
   assert(ids.has("compromised-npm-package-reference"));
+  assert(ids.has("atomicarch-aur-atomic-lockfile-reference"));
+  assert(ids.has("atomicarch-aur-npm-loader"));
+  assert(ids.has("atomicarch-payload-text-indicator"));
   assert(ids.has("ottercookie-npm-package-reference"));
   assert(ids.has("ottercookie-text-indicator"));
   assert(ids.has("astro-config-require-loader"));

@@ -26,11 +26,14 @@ const KNOWN_DPRK_NPM_PACKAGES = [
 ];
 
 const KNOWN_COMPROMISED_NPM_PACKAGES = [
+  "atomic-lockfile",
   "csc154-internall-depend",
   "ecto-flag-read",
   "@validate-sdk/v2",
   "google-cloud-secret-manager-config-poc",
 ];
+
+const ATOMIC_ARCH_AUR_PACKAGE = "atomic-lockfile";
 
 const OTTERCOOKIE_NPM_PACKAGES = [
   "bjs-lint-builders", // push-guard: ignore
@@ -441,6 +444,8 @@ const WATCH_FILE_NAMES = new Set([
   "docker-compose.yaml",
   ".npmrc",
   ".pypirc",
+  ".SRCINFO",
+  "PKGBUILD",
   "README.md",
   "SECURITY.md",
   ".gitignore",
@@ -506,6 +511,7 @@ function scanHost(options = {}) {
   checkKernelModules(findings, targetRoot);
   checkPersistence(findings, targetRoot, homePath);
   checkCompromisedNpmPackages(findings, targetRoot, homePath);
+  checkAtomicArchAurCompromise(findings, targetRoot, homePath);
   checkDprkNpmRat(findings, targetRoot, homePath);
   checkOtterCookieNpm(findings, targetRoot, homePath);
   checkSolanaFakeFix(findings, targetRoot, homePath);
@@ -728,6 +734,44 @@ function checkCompromisedNpmPackages(findings, targetRoot, homePath) {
       if (text.includes(packageName)) {
         addFinding(findings, "critical", "compromised-npm-package-reference", "Known compromised npm package appears in dependency metadata.", `${relative}: ${packageName}`, "Do not run npm install/build/test in this tree. Isolate affected systems if execution is suspected and rotate secrets from a clean posture.");
       }
+    }
+  }
+}
+
+function checkAtomicArchAurCompromise(findings, targetRoot, homePath) {
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const roots = [
+    homeRelative,
+    "/tmp",
+    "/var/tmp",
+    "/var/cache",
+    "/var/lib/pacman/local",
+    "/opt",
+    "/srv",
+  ].filter(Boolean);
+  const files = [];
+  for (const root of roots) {
+    files.push(...findWatchFiles(mapLinuxPath(targetRoot, root), 25000 - files.length));
+    if (files.length >= 25000) break;
+  }
+
+  for (const filePath of files) {
+    const text = readText(filePath);
+    if (!text || !text.includes(ATOMIC_ARCH_AUR_PACKAGE)) continue;
+    const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+    const base = path.basename(filePath);
+    const isAurBuildFile = base === "PKGBUILD" || base === ".SRCINFO" || base.endsWith(".install");
+
+    if (isAurBuildFile) {
+      addFinding(findings, "critical", "atomicarch-aur-atomic-lockfile-reference", "AUR build metadata references the malicious atomic-lockfile npm package.", `${relative}: ${ATOMIC_ARCH_AUR_PACKAGE}`, "Do not build or install this AUR package. Preserve the PKGBUILD/install hook, remove the package from any build queue, and rotate developer credentials if it may have executed.");
+    }
+
+    if (isAurBuildFile && /\b(?:npm\s+(?:install|i|exec|x)|npx)\b/i.test(text)) {
+      addFinding(findings, "critical", "atomicarch-aur-npm-loader", "AUR build/install script invokes npm while referencing atomic-lockfile.", relative, "Treat as AtomicArch/IronWorm-style AUR supply-chain compromise. If installed, isolate the host and rotate GitHub, npm, SSH, Vault, Docker/Podman, browser, and chat credentials from a clean machine.");
+    }
+
+    if (/eBPF|rootkit|\bdeps\b|browser cookies?|Vault|Docker|Podman|Slack|Discord|Teams/i.test(text)) {
+      addFinding(findings, "warning", "atomicarch-payload-text-indicator", "AtomicArch/IronWorm payload behavior terms appear near atomic-lockfile.", relative, "Correlate with AUR install history, npm cache, package build artifacts, process/module state, and credential exposure.");
     }
   }
 }
