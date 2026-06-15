@@ -34,6 +34,7 @@ Windows scheduled canary task:
 ## Initial Scope
 
 - AlmaLinux Fragnesia / `CVE-2026-46300` kernel posture.
+- ITScape / `CVE-2026-46316` ARM64 KVM exposure posture.
 - Loaded `esp4`, `esp6`, and `rxrpc` module state.
 - Temporary module blacklist visibility.
 - Known Shai-Hulud / Here We Go Again Linux persistence paths.

@@ -20,6 +20,7 @@ const NPM_V12_PREPARE_MIN = "11.16.0";
 const ROUNDCUBE_15_FIXED = "1.5.10";
 const ROUNDCUBE_16_FIXED = "1.6.11";
 const ROUNDCUBE_VULNERABLE_MIN = "1.1.0";
+const ITSCAPE_UPSTREAM_FIXED_KERNEL = "6.15.0";
 
 const KNOWN_DPRK_NPM_PACKAGES = [
   "terminal-logger-utils",
@@ -547,9 +548,11 @@ function scanHost(options = {}) {
   const kernelRelease =
     options.kernelRelease ||
     readText(mapLinuxPath(targetRoot, "/proc/sys/kernel/osrelease")).trim();
+  const architecture = options.architecture || detectArchitecture(targetRoot, kernelRelease);
 
   checkPlatform(findings, osRelease, kernelRelease);
   checkAlmaFragnesia(findings, osRelease, kernelRelease);
+  checkItScapeArm64Kvm(findings, targetRoot, kernelRelease, architecture);
   checkKernelModules(findings, targetRoot);
   checkPersistence(findings, targetRoot, homePath);
   checkCompromisedNpmPackages(findings, targetRoot, homePath);
@@ -582,6 +585,7 @@ function scanHost(options = {}) {
     host: {
       os: osRelease,
       kernelRelease,
+      architecture: architecture || "unknown",
     },
     summary: summarize(findings),
     findings,
@@ -672,6 +676,46 @@ function checkAlmaFragnesia(findings, osRelease, kernelRelease) {
     addFinding(findings, "critical", "alma-fragnesia-vulnerable-kernel", "AlmaLinux kernel appears older than the Fragnesia patched kernel.", `${kernelRelease} < ${patched}`, "Patch the kernel and reboot, or apply vendor-approved temporary module mitigations until reboot is possible.");
   } else {
     addFinding(findings, "info", "alma-fragnesia-kernel-patched", "AlmaLinux kernel is at or above the built-in Fragnesia patched version.", `${kernelRelease} >= ${patched}`, "Keep following vendor advisories for later kernel updates.");
+  }
+}
+
+function checkItScapeArm64Kvm(findings, targetRoot, kernelRelease, architecture) {
+  if (!isArm64Architecture(architecture)) {
+    return;
+  }
+
+  const modulesText = readText(mapLinuxPath(targetRoot, "/proc/modules"));
+  const loaded = new Set(
+    modulesText
+      .split(/\r?\n/)
+      .map((line) => line.split(/\s+/)[0])
+      .filter(Boolean)
+  );
+  const loadedKvm = ["kvm", "kvm_arm", "kvm_arm64"].filter((name) => loaded.has(name));
+  const kernelConfig = readKernelConfig(targetRoot, kernelRelease);
+  const kvmConfigured = /\bCONFIG_KVM=(?:y|m)\b|\bCONFIG_KVM_ARM_HOST=(?:y|m)\b/i.test(kernelConfig);
+  const itsConfigured = /\bCONFIG_ARM_GIC_V3_ITS=(?:y|m)\b|\bCONFIG_KVM_ARM_VGIC_V3=(?:y|m)\b/i.test(kernelConfig);
+
+  if (loadedKvm.length === 0 && !kvmConfigured && !itsConfigured) {
+    return;
+  }
+
+  const evidence = [`arch=${architecture}`];
+  if (loadedKvm.length > 0) evidence.push(`loaded KVM modules: ${loadedKvm.join(", ")}`);
+  if (kvmConfigured) evidence.push("KVM enabled in kernel config");
+  if (itsConfigured) evidence.push("ARM GIC/vGIC ITS support visible in kernel config");
+
+  addFinding(findings, "warning", "itscape-arm64-kvm-exposure", "ARM64 KVM host exposure matches the ITScape / CVE-2026-46316 risk lane.", evidence.join("; "), "Patch to a vendor-fixed kernel, reboot affected hypervisors, and limit untrusted guest workloads until vendor backport status is confirmed.");
+
+  if (!kernelRelease) {
+    addFinding(findings, "review", "itscape-arm64-kvm-kernel-unknown", "ARM64 KVM exposure found but kernel release could not be read.", `arch=${architecture}`, "Confirm whether the running kernel includes the CVE-2026-46316 / ITScape fix or a vendor backport.");
+    return;
+  }
+
+  if (compareKernelRelease(kernelRelease, ITSCAPE_UPSTREAM_FIXED_KERNEL) < 0) {
+    addFinding(findings, "review", "itscape-arm64-kvm-kernel-review", "ARM64 KVM kernel is older than the upstream ITScape fix baseline.", `${kernelRelease} < ${ITSCAPE_UPSTREAM_FIXED_KERNEL}`, "Do not rely on upstream version alone for distro kernels: verify vendor advisory/backport status for CVE-2026-46316 and reboot into the fixed kernel.");
+  } else {
+    addFinding(findings, "info", "itscape-arm64-kvm-upstream-patched", "ARM64 KVM kernel is at or above the upstream ITScape fix baseline.", `${kernelRelease} >= ${ITSCAPE_UPSTREAM_FIXED_KERNEL}`, "Keep following distro/cloud advisories for CVE-2026-46316 and related ARM64 KVM hardening updates.");
   }
 }
 
@@ -1950,6 +1994,34 @@ function readOsRelease(text) {
     result[match[1]] = match[2].replace(/^"/, "").replace(/"$/, "");
   }
   return result;
+}
+
+function detectArchitecture(targetRoot, kernelRelease) {
+  const candidates = [
+    readText(mapLinuxPath(targetRoot, "/proc/sys/kernel/arch")),
+    readText(mapLinuxPath(targetRoot, "/proc/cpuinfo")),
+    kernelRelease,
+  ].join("\n");
+
+  if (/aarch64|arm64/i.test(candidates)) return "arm64";
+  if (/CPU architecture\s*:\s*(?:8|AArch64)/i.test(candidates)) return "arm64";
+  return "";
+}
+
+function isArm64Architecture(value) {
+  return /^(?:aarch64|arm64)$/i.test(String(value || "").trim());
+}
+
+function readKernelConfig(targetRoot, kernelRelease) {
+  const candidates = [
+    kernelRelease ? `/boot/config-${kernelRelease}` : "",
+    "/boot/config",
+    kernelRelease ? `/lib/modules/${kernelRelease}/build/.config` : "",
+  ].filter(Boolean);
+  return candidates
+    .map((candidate) => readText(mapLinuxPath(targetRoot, candidate)))
+    .filter(Boolean)
+    .join("\n");
 }
 
 function compareKernelRelease(a, b) {

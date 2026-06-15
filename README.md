@@ -5,7 +5,8 @@ incident responders reviewing supply-chain exposure on workstations, CI
 runners, and build hosts.
 
 It checks local host posture related to the May 2026 Linux supply-chain response
-lane, including Fragnesia / `CVE-2026-46300` kernel exposure, risky module
+lane, including Fragnesia / `CVE-2026-46300` kernel exposure, ITScape /
+`CVE-2026-46316` ARM64 KVM exposure, risky module
 state, and known developer-tooling persistence paths reported in public
 Shai-Hulud / Here We Go Again analysis. It also checks selected dependency
 metadata for the OX-reported DPRK npm RAT package names that target developer
@@ -143,6 +144,13 @@ Exit codes:
   - AlmaLinux 10: `kernel-6.12.0-124.56.2.el10_1` and above
 - Fragnesia-related module state for `esp4`, `esp6`, and `rxrpc`.
 - Temporary module blacklist confirmation in `/etc/modprobe.d`.
+- ITScape / `CVE-2026-46316` ARM64 KVM posture:
+  - ARM64/aarch64 architecture detection from scanner options, `/proc/cpuinfo`,
+    or kernel metadata
+  - loaded `kvm`, `kvm_arm`, or `kvm_arm64` module exposure
+  - kernel config signals for KVM and ARM GIC/vGIC ITS support
+  - review finding when an exposed ARM64 KVM host is below upstream `6.15.0`
+    and needs vendor backport confirmation
 - Known Shai-Hulud / Here We Go Again persistence and payload paths:
   - `/tmp/transformers.pyz`
   - `gh-token-monitor.service`
@@ -305,6 +313,9 @@ the known indicators it checks.
   https://almalinux.org/blog/2026-05-13-fragnesia-cve-2026-46300/
 - NVD CVE-2026-46300:
   https://nvd.nist.gov/vuln/detail/CVE-2026-46300
+- Cyber Security News on ITScape / CVE-2026-46316 ARM64 KVM guest-to-host
+  escape PoC:
+  https://cybersecuritynews.com/poc-exploit-released-linux-kernel-vulnerability/
 - JFrog Shai-Hulud: Here We Go Again:
   https://research.jfrog.com/post/shai-hulud-here-we-go-again/
 - OX Security DPRK npm RAT writeup:

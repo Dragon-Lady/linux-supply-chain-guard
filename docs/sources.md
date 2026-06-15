@@ -2,6 +2,7 @@
 
 - AlmaLinux Fragnesia / CVE-2026-46300 disclosure: https://almalinux.org/blog/2026-05-13-fragnesia-cve-2026-46300/
 - NVD CVE-2026-46300 record: https://nvd.nist.gov/vuln/detail/CVE-2026-46300
+- Cyber Security News, ITScape / CVE-2026-46316 ARM64 KVM guest-to-host escape PoC: https://cybersecuritynews.com/poc-exploit-released-linux-kernel-vulnerability/
 - JFrog Security Research, Shai-Hulud: Here We Go Again: https://research.jfrog.com/post/shai-hulud-here-we-go-again/
 - Resultsense / Decrypt PyPI malware summary: https://www.resultsense.com/news/2026-05-13-mistral-ai-pypi-supply-chain-malware-shai-hulud/
 - OX Security DPRK npm RAT writeup: https://www.ox.security/blog/north-korean-npm-infostealer-rat/

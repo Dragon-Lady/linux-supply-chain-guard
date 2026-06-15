@@ -9,6 +9,14 @@ The initial posture checks cover AlmaLinux's May 13, 2026 Fragnesia /
 `CVE-2026-46300` disclosure and known Linux persistence paths from public
 Shai-Hulud / Here We Go Again reporting.
 
+The June 2026 ITScape / `CVE-2026-46316` ARM64 KVM guest-to-host escape report
+is now included as a posture lane for hypervisors and cloud-style ARM64 hosts.
+The check does not run the PoC. It looks for ARM64 architecture evidence,
+loaded KVM modules or KVM/ITS kernel configuration, and whether the running
+kernel is below the upstream `6.15.0` fix baseline. Older distro kernels may be
+fixed by vendor backports, so those findings require advisory confirmation
+rather than a simple version-only verdict.
+
 The May 20, 2026 OX Security DPRK npm RAT report is now included because it
 targets developer workstations through npm package installation. This guard
 checks dependency metadata for `terminal-logger-utils`, `pretty-logger-utils`,
@@ -68,6 +76,13 @@ releases through the `esp4`, `esp6`, and, on some AlmaLinux 9/10 systems,
 `rxrpc` modules. This tool does not test exploitability. It checks kernel
 release posture, loaded module state, and whether temporary module blacklist
 mitigations are visible.
+
+ITScape / `CVE-2026-46316` checks include:
+
+- ARM64/aarch64 architecture evidence
+- loaded `kvm`, `kvm_arm`, or `kvm_arm64` modules
+- kernel config evidence for KVM and ARM GIC/vGIC ITS support
+- upstream `6.15.0` baseline review for exposed ARM64 KVM hosts
 
 Known supply-chain persistence checks include:
 
