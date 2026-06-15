@@ -24,7 +24,12 @@ function run() {
   const home = path.join(root, "home", "alice");
   write(path.join(root, "etc", "os-release"), 'ID="almalinux"\nVERSION_ID="9.7"\n');
   write(path.join(root, "proc", "sys", "kernel", "osrelease"), "5.14.0-611.54.3.el9_7\n");
-  write(path.join(root, "proc", "modules"), "esp4 16384 0 - Live 0x0\nrxrpc 204800 0 - Live 0x0\n");
+  write(path.join(root, "proc", "modules"), "esp4 16384 0 - Live 0x0\nrxrpc 204800 0 - Live 0x0\nkvm 1048576 0 - Live 0x0\n");
+  write(path.join(root, "boot", "config-5.14.0-611.54.3.el9_7"), [
+    "CONFIG_KVM=m",
+    "CONFIG_KVM_ARM_HOST=y",
+    "CONFIG_ARM_GIC_V3_ITS=y",
+  ].join("\n"));
   write(path.join(root, "tmp", "transformers.pyz"), "payload");
   write(path.join(home, ".config", "systemd", "user", "gh-token-monitor.service"), "[Service]\n");
   write(path.join(home, ".config", "gh", "hosts.yml"), "github.com:\n");
@@ -280,10 +285,12 @@ function run() {
     "      - trusted_hosts=*",
   ].join("\n"));
 
-  const report = scanHost({ targetRoot: root, homePath: home });
+  const report = scanHost({ targetRoot: root, homePath: home, architecture: "aarch64" });
   const ids = new Set(report.findings.map((finding) => finding.id));
   assert.strictEqual(report.summary.overall, "critical");
   assert(ids.has("alma-fragnesia-vulnerable-kernel"));
+  assert(ids.has("itscape-arm64-kvm-exposure"));
+  assert(ids.has("itscape-arm64-kvm-kernel-review"));
   assert(ids.has("fragnesia-risk-modules-loaded"));
   assert(ids.has("known-supply-chain-persistence-path"));
   assert(ids.has("transformers-pyz-present"));
@@ -378,6 +385,15 @@ function run() {
   const patchedReport = scanHost({ targetRoot: patched, homePath: path.join(patched, "home", "alice") });
   assert(patchedReport.findings.some((finding) => finding.id === "alma-fragnesia-kernel-patched"));
   assert(!patchedReport.findings.some((finding) => finding.id === "fragnesia-risk-modules-loaded"));
+
+  const patchedArm = makeFixture();
+  write(path.join(patchedArm, "etc", "os-release"), 'ID="debian"\nVERSION_ID="13"\n');
+  write(path.join(patchedArm, "proc", "sys", "kernel", "osrelease"), "6.15.0\n");
+  write(path.join(patchedArm, "proc", "modules"), "kvm 1048576 0 - Live 0x0\n");
+  const patchedArmReport = scanHost({ targetRoot: patchedArm, homePath: path.join(patchedArm, "home", "alice"), architecture: "arm64" });
+  assert(patchedArmReport.findings.some((finding) => finding.id === "itscape-arm64-kvm-exposure"));
+  assert(patchedArmReport.findings.some((finding) => finding.id === "itscape-arm64-kvm-upstream-patched"));
+  assert(!patchedArmReport.findings.some((finding) => finding.id === "itscape-arm64-kvm-kernel-review"));
 
   console.log("smoke tests passed");
 }

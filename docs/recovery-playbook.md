@@ -25,6 +25,10 @@ when a Linux host may have executed compromised package payloads.
   mitigations for `esp4`, `esp6`, and `rxrpc`.
 - Do not rely on mitigations if the host requires IPsec ESP or AFS/rxrpc
   workloads; use patched kernels.
+- For ITScape / `CVE-2026-46316`, prioritize ARM64 KVM hosts that run
+  untrusted or multi-tenant guests. Apply vendor-fixed kernels, reboot
+  hypervisors, and verify distro/cloud backport status if the running kernel is
+  below upstream `6.15.0`.
 - For NGINX Rift / `CVE-2026-42945`, patch exposed NGINX Open Source or NGINX
   Plus deployments through vendor packages. Prioritize internet-facing reverse
   proxies, package mirrors, CI/build hosts, and self-hosted developer services.
