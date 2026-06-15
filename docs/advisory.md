@@ -91,6 +91,14 @@ Known DPRK npm RAT dependency indicators include:
 - `pwdKeyString`
 - `Telegram Desktop`
 
+Newer Osj/@inf0stache reported DPRK/Famous Chollima-style loader behavior is
+also covered when multiple execution signals co-occur:
+
+- Socket.IO usage
+- `/api/service` C2 fetch path
+- `0001.dat` second-stage payload name
+- local write and Node execution behavior
+
 TeamPCP/Dynatrace weak-signal exposure indicators include:
 
 - Dynatrace token-shaped values beginning with `dt0c01`, `dt0s01`, or related

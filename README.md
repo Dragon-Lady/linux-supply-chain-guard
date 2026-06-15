@@ -156,6 +156,9 @@ Exit codes:
   - `pinno-loggers`
   - `utils.cjs`
   - `/api/validate/keyboard-events`
+- Osj/@inf0stache reported DPRK/Famous Chollima-style npm loader behavior:
+  - Socket.IO usage paired with `/api/service`
+  - `0001.dat` second-stage fetch/write/Node execution paths
 - GitHub Advisory npm malware packages with all versions affected:
   - `atomic-lockfile`
   - `csc154-internall-depend`

