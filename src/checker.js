@@ -310,6 +310,20 @@ const GENTLEMEN_NETWORK_INDICATORS = [
   "2ozoAve91tpILCwKCbRDNz7us8e_2qLk1aLKZoV4Y6TfrcfjK",
 ];
 
+const ARGAMAL_FILE_NAMES = new Set([
+  "natives2_blob.bin",
+  "zaesdl.dat",
+]);
+
+const ARGAMAL_NETWORK_INDICATORS = [
+  "asper1.freeddns.org",
+  "asper1[.]freeddns[.]org",
+  "Winst0.kozow.com",
+  "Winst0[.]kozow[.]com",
+  "winst0.kozow.com",
+  "winst0[.]kozow[.]com",
+];
+
 const LITELLM_AFFECTED_MIN = "1.74.2";
 const LITELLM_FIXED = "1.83.7";
 const STARLETTE_FIXED = "1.0.1";
@@ -484,6 +498,7 @@ const WATCH_FILE_NAMES = new Set([
   "README-GENTLEMEN.txt",
   "psexec.exe",
   ...GENTLEMEN_TOOLKIT_FILES,
+  ...ARGAMAL_FILE_NAMES,
   ...OPERATION_HIGHLAND_FILE_NAMES,
 ]);
 
@@ -548,6 +563,7 @@ function scanHost(options = {}) {
   checkDynatraceTeamPcpWatch(findings, targetRoot, homePath);
   checkPcpJackRelayArtifacts(findings, targetRoot, homePath);
   checkGentlemenRansomware(findings, targetRoot, homePath);
+  checkArgamalGameRat(findings, targetRoot, homePath);
   checkPeopleSoftCve202635273(findings, targetRoot, homePath);
   checkRoundcubeCve202549113(findings, targetRoot, homePath);
   checkLiteLlmGatewayExposure(findings, targetRoot, homePath);
@@ -1163,6 +1179,62 @@ function checkGentlemenRansomware(findings, targetRoot, homePath) {
       if (text.includes(indicator)) {
         addFinding(findings, "critical", "gentlemen-network-indicator", "Gentlemen ransomware campaign network or session indicator appears in scanned host metadata.", `${relative}: ${indicator}`, "Correlate with firewall, proxy, EDR, and remote-access logs. Preserve evidence and rotate credentials from a clean posture if compromise is confirmed.");
       }
+    }
+  }
+}
+
+function checkArgamalGameRat(findings, targetRoot, homePath) {
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const roots = [
+    homeRelative,
+    "/home",
+    "/root",
+    "/tmp",
+    "/var/tmp",
+    "/opt",
+    "/srv",
+    "/var/www",
+    "/etc",
+    "/mnt",
+    "/media",
+    "/ProgramData",
+    "/Users",
+  ].filter(Boolean);
+  const files = [];
+  for (const root of roots) {
+    files.push(...findWatchFiles(mapLinuxPath(targetRoot, root), 30000 - files.length));
+    if (files.length >= 30000) break;
+  }
+
+  for (const filePath of files) {
+    const base = path.basename(filePath);
+    const baseLower = base.toLowerCase();
+    const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+    const size = fileSizeBytes(filePath);
+
+    if (ARGAMAL_FILE_NAMES.has(baseLower)) {
+      addFinding(findings, "warning", "argamal-game-rat-file-name", "Argamal game-RAT artifact filename exists.", relative, "Review whether this came from an adult-game archive or torrent download. Preserve the surrounding archive/extract path before cleanup.");
+    }
+
+    const text = size <= 1024 * 1024 ? readText(filePath) : "";
+    if (!text) continue;
+
+    for (const indicator of ARGAMAL_NETWORK_INDICATORS) {
+      if (text.includes(indicator)) {
+        addFinding(findings, "critical", "argamal-game-rat-network-indicator", "Argamal RAT network indicator appears in scanned host metadata.", `${relative}: ${indicator}`, "Correlate with DNS, proxy, firewall, and scheduled-task logs. Isolate the host if execution is suspected.");
+      }
+    }
+
+    if (/bitsadmin(?:\.exe)?\b[\s\S]{0,300}zaesdl\.dat|zaesdl\.dat[\s\S]{0,300}bitsadmin(?:\.exe)?\b/i.test(text)) {
+      addFinding(findings, "warning", "argamal-game-rat-bitsadmin-stage", "Argamal-style delayed bitsadmin second-stage fetch marker appears in scanned text.", relative, "Review scheduled tasks, BITS jobs, and GitHub download history for delayed payload retrieval.");
+    }
+
+    if (/(?:Windows Color System Calibration Loader|Color System Calibration|WcsPlugInService|ICM calibration|COM hijack|COM hijacking)/i.test(text)) {
+      addFinding(findings, "warning", "argamal-game-rat-com-hijack-marker", "Argamal-style Windows Color System COM-hijack persistence term appears in scanned text.", relative, "Review HKCU/HKLM COM registration keys, logon persistence, and user-profile registry hives from a clean posture.");
+    }
+
+    if (/(?:Sandboxie|Procmon64|Process Monitor)[\s\S]{0,220}(?:PowerShell|zaesdl\.dat|natives2_blob\.bin|Argamal)|(?:PowerShell|zaesdl\.dat|natives2_blob\.bin|Argamal)[\s\S]{0,220}(?:Sandboxie|Procmon64|Process Monitor)/i.test(text)) {
+      addFinding(findings, "warning", "argamal-game-rat-anti-analysis-marker", "Argamal-style anti-analysis check terms appear near loader behavior.", relative, "Treat as suspicious loader logic until proven benign; review in isolation and do not launch the game executable.");
     }
   }
 }

@@ -143,6 +143,16 @@ Roundcube `CVE-2025-49113` webmail exposure checks include:
 - upload/session code-path review terms around
   `program/actions/settings/upload.php`, `_from`, and `rcube_session`
 
+Argamal game-RAT residue checks include:
+
+- `natives2_blob.bin`
+- `zaesdl.dat`
+- `asper1.freeddns.org`
+- `Winst0.kozow.com`
+- delayed `bitsadmin` second-stage fetch markers
+- Windows Color System Calibration Loader COM-hijack persistence terms
+- anti-analysis terms near loader behavior, including Sandboxie and Procmon64
+
 Hades / Miasma PyPI indicators include:
 
 - affected PyPI package versions reported by Socket, including MCP-themed and

