@@ -156,6 +156,17 @@ function run() {
   write(path.join(root, "u01", "app", "psoft", "ps_config_homes", "csprd", "webserv", "CSPRD02", "applications", "peoplesoft", "PSEMHUB.war", "persistantstorage", "marker.txt"), "unexpected directory");
   write(path.join(root, "u01", "app", "psoft", "meshagent64-azure-ops.exe"), "placeholder");
   write(path.join(root, "u01", "app", "psoft", "ps_config_homes", "csprd", "webserv", "CSPRD02", "README-IF-YOU-SEE-THIS-YOUVE-BEEN-HACKED.TXT"), "extortion marker");
+  write(path.join(root, "usr", "share", "roundcube", "program", "include", "iniset.php"), [
+    "<?php",
+    "define('RCMAIL_VERSION', '1.6.10');",
+    "class rcube_session {}",
+  ].join("\n"));
+  write(path.join(root, "var", "www", "roundcube", "CVE-2025-49113.php"), [
+    "<?php",
+    "// target_url username password command",
+    "$path = 'program/actions/settings/upload.php';",
+    "$from = $_POST['_from'] ?? '';",
+  ].join("\n"));
   write(path.join(root, "tmp", "gentlemen.bmp"), "placeholder");
   write(path.join(root, "opt", "gentlemen", "dControl.exe"), "placeholder");
   write(path.join(root, "opt", "gentlemen", "def1.bat"), [
@@ -298,6 +309,8 @@ function run() {
   assert(ids.has("peoplesoft-shinyhunters-network-indicator"));
   assert(ids.has("peoplesoft-shinyhunters-operator-artifact"));
   assert(ids.has("peoplesoft-shinyhunters-extortion-marker"));
+  assert(ids.has("roundcube-cve-2025-49113-vulnerable-version"));
+  assert(ids.has("roundcube-cve-2025-49113-poc-artifact"));
   assert(ids.has("gentlemen-ransomware-note-wallpaper"));
   assert(ids.has("gentlemen-toolkit-file-name"));
   assert(ids.has("gentlemen-encryptor-runtime-marker"));
