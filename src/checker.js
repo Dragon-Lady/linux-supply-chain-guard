@@ -109,6 +109,36 @@ const SOLANA_FAKEFIX_TEXT_INDICATORS = [
   "aCpsuydgwbasd.exe",
 ];
 
+const GLASSWASM_OPENVSX_PACKAGES = [
+  "exargd/vsblack@0.0.1",
+  "vscode/exargd/vsblack@0.0.1",
+  "exargd.vsblack-0.0.1.vsix",
+  "noellee-doc/flint-debug@0.1.1",
+  "vscode/noellee-doc/flint-debug@0.1.1",
+  "noellee-doc.flint-debug-0.1.1.vsix",
+];
+
+const GLASSWASM_TEXT_INDICATORS = [
+  "snqpkebiwrxmoivl.wasm",
+  "orybbbdsuqmaapel.wasm",
+  "558b4f1d9a263c13756ab0126c09dd080c85ba405b29488e1c4e6aa68b554f1f",
+  "3aa31999398e7f80231c03d7137ffdb554a84b83dbcffc59ce16c9a65f9e5d58",
+  "1e283327ad048bea39f4a8501770858a20f3555e87fe3e202274f2e87f8a3c25",
+  "dodod.lat",
+  "6ExrZayPZzMMSnszc42cH81DpuKT8FhCX9H6Sesn6rpz",
+  "getSignaturesForAddress",
+  "getTransaction",
+  "MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr",
+  "Memo1UhkJRfHyvLMcVucJwxXeuD728EqVDDwQDxFM",
+];
+
+const GLASSWASM_KNOWN_FILE_NAMES = [
+  "snqpkebiwrxmoivl.wasm",
+  "orybbbdsuqmaapel.wasm",
+  "exargd.vsblack-0.0.1.vsix",
+  "noellee-doc.flint-debug-0.1.1.vsix",
+];
+
 const HADES_PYPI_PACKAGES = {
   bramin: ["0.0.2", "0.0.3", "0.0.4"],
   cmd2func: ["0.2.2", "0.2.3"],
@@ -541,6 +571,7 @@ const WATCH_FILE_NAMES = new Set([
   ...GENTLEMEN_TOOLKIT_FILES,
   ...ARGAMAL_FILE_NAMES,
   ...OPERATION_HIGHLAND_FILE_NAMES,
+  ...GLASSWASM_KNOWN_FILE_NAMES,
 ]);
 
 const WATCH_FILE_EXTENSIONS = new Set([
@@ -569,6 +600,8 @@ const WATCH_FILE_EXTENSIONS = new Set([
   ".ps1",
   ".reg",
   ".cmd",
+  ".vsix",
+  ".wasm",
   ".bmp",
   ".env",
   ".tf",
@@ -601,6 +634,7 @@ function scanHost(options = {}) {
   checkDprkSocketIoLoader(findings, targetRoot, homePath);
   checkOtterCookieNpm(findings, targetRoot, homePath);
   checkSolanaFakeFix(findings, targetRoot, homePath);
+  checkGlassWasmOpenVsx(findings, targetRoot, homePath);
   checkAstroConfigC2(findings, targetRoot, homePath);
   checkHadesPyPi(findings, targetRoot, homePath);
   checkDynatraceTeamPcpWatch(findings, targetRoot, homePath);
@@ -1011,6 +1045,59 @@ function checkSolanaFakeFix(findings, targetRoot, homePath) {
       if (text.includes(indicator)) {
         addFinding(findings, "warning", "solana-fakefix-text-indicator", "Solana FakeFix / CMS loader behavior indicator appears in scanned host metadata.", `${relative}: ${indicator}`, "Correlate with package metadata, npm/PyPI install history, shell profiles, cron, LaunchAgents, Registry/Run-key equivalents, and network telemetry before cleanup.");
       }
+    }
+  }
+}
+
+function checkGlassWasmOpenVsx(findings, targetRoot, homePath) {
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const roots = [
+    homeRelative,
+    "/root",
+    "/tmp",
+    "/var/tmp",
+    "/opt",
+    "/srv",
+    "/var/www",
+    "/usr/local/lib/node_modules",
+    "/usr/local/share",
+  ].filter(Boolean);
+  const files = [];
+  for (const root of roots) {
+    files.push(...findWatchFiles(mapLinuxPath(targetRoot, root), 30000 - files.length));
+    if (files.length >= 30000) break;
+  }
+
+  for (const filePath of files) {
+    const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+    const base = path.basename(filePath);
+
+    if (base === "snqpkebiwrxmoivl.wasm" || base === "orybbbdsuqmaapel.wasm") {
+      addFinding(findings, "critical", "glasswasm-openvsx-wasm-payload-file", "GlassWASM Open VSX WASM payload filename exists.", relative, "Remove the affected extension/source and treat any activated editor host as arbitrary code execution until reviewed.");
+    }
+    if (/^(?:exargd\.vsblack-0\.0\.1|noellee-doc\.flint-debug-0\.1\.1)\.vsix$/i.test(base)) {
+      addFinding(findings, "critical", "glasswasm-openvsx-vsix-file", "Known GlassWASM Open VSX trojanized VSIX filename exists.", relative, "Do not install or activate this extension. Preserve the file for hash verification and incident response.");
+    }
+
+    const text = readText(filePath);
+    if (!text) continue;
+
+    for (const packageName of GLASSWASM_OPENVSX_PACKAGES) {
+      if (text.includes(packageName)) {
+        addFinding(findings, "critical", "glasswasm-openvsx-package-reference", "Socket GlassWASM Open VSX affected extension appears in scanned metadata.", `${relative}: ${packageName}`, "Remove Open VSX-sourced copies and treat prior activation as potential second-stage execution.");
+      }
+    }
+
+    for (const indicator of GLASSWASM_TEXT_INDICATORS) {
+      if (text.includes(indicator)) {
+        addFinding(findings, "warning", "glasswasm-openvsx-text-indicator", "GlassWASM Open VSX IOC or C2 dead-drop marker appears in scanned text.", `${relative}: ${indicator}`, "Correlate with editor extension install source, extension host process logs, Solana RPC traffic, and child-process execution.");
+      }
+    }
+
+    if (hasGlassWasmLoaderShape(text)) {
+      addFinding(findings, "critical", "glasswasm-openvsx-loader-shape", "Editor/package code combines WASM loading with GlassWASM-style C2 or child-process execution behavior.", relative, "Do not activate this extension/package. Inspect the WASM and JavaScript loader, then rotate developer credentials if activation occurred.");
+    } else if (hasTinyGoWasmHostShape(text)) {
+      addFinding(findings, "warning", "tinygo-wasm-js-host-review", "TinyGo/WebAssembly JavaScript host fingerprints appear in scanned code.", relative, "Review why this package or extension ships WASM and whether it can reach Node APIs or spawn child processes.");
     }
   }
 }
@@ -2049,6 +2136,17 @@ function hasDprkSocketIoLoaderShape(text) {
   const hasPayloadWrite = /\b(?:writeFile|writeFileSync|createWriteStream|appendFileSync)\s*\(|\bfs\s*\.\s*(?:writeFile|writeFileSync|createWriteStream)\s*\(/i.test(text);
 
   return hasNetworkLoader && (hasNodeExecution || hasPayloadWrite);
+}
+
+function hasTinyGoWasmHostShape(text) {
+  return /wasm_exec\.js|gojs\.syscall\/js|asyncify_(?:start|stop)_(?:unwind|rewind)|new\s+WebAssembly\.(?:Instance|Module)|WebAssembly\.instantiate/i.test(text);
+}
+
+function hasGlassWasmLoaderShape(text) {
+  const hasWasm = /\.wasm|wasm_exec\.js|WebAssembly\.instantiate|gojs\.syscall\/js|asyncify_(?:start|stop)_(?:unwind|rewind)/i.test(text);
+  const hasSolanaDeadDrop = /api\.mainnet\.solana\.com|getSignaturesForAddress|getTransaction|MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr|Memo1UhkJRfHyvLMcVucJwxXeuD728EqVDDwQDxFM|6ExrZayPZzMMSnszc42cH81DpuKT8FhCX9H6Sesn6rpz/i.test(text);
+  const hasDownloadExecute = /child_process|execSync|curl\s+-fsSL[\s\S]{0,120}\|\s*bash|powershell[\s\S]{0,80}\b(?:irm|Invoke-RestMethod)\b[\s\S]{0,80}\b(?:iex|Invoke-Expression)\b|windowsHide/i.test(text);
+  return hasWasm && (hasSolanaDeadDrop || hasDownloadExecute);
 }
 
 function hasRoundcubeInstallSignal(text, relativePath) {

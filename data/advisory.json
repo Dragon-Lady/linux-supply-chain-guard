@@ -1,8 +1,8 @@
 {
   "incident": "Linux supply-chain host exposure guard",
-  "lastUpdated": "2026-06-15",
+  "lastUpdated": "2026-06-16",
   "scope": {
-    "postureChecks": "Read-only Linux host checks for vulnerable kernel posture, risky module state, ITScape ARM64 KVM exposure, known supply-chain persistence paths, selected compromised npm package references, AtomicArch/IronWorm AUR indicators, DPRK npm RAT dependency indicators, OtterCookie npm indicators, Hades PyPI/Miasma indicators, Agentjacking Sentry/MCP exposure indicators, Solana FakeFix/CMS loader indicators, Heaven's Gate WOW64 evasion review indicators, Palo Alto GlobalProtect CVE-2026-0257 log-hunting indicators, Operation Highland / Velvet Ant auth-stack indicators, and TeamPCP/Dynatrace weak-signal exposure indicators.",
+    "postureChecks": "Read-only Linux host checks for vulnerable kernel posture, risky module state, ITScape ARM64 KVM exposure, known supply-chain persistence paths, selected compromised npm package references, AtomicArch/IronWorm AUR indicators, DPRK npm RAT dependency indicators, OtterCookie npm indicators, Hades PyPI/Miasma indicators, Agentjacking Sentry/MCP exposure indicators, Solana FakeFix/CMS loader indicators, GlassWASM/Open VSX extension indicators, Heaven's Gate WOW64 evasion review indicators, Palo Alto GlobalProtect CVE-2026-0257 log-hunting indicators, Operation Highland / Velvet Ant auth-stack indicators, and TeamPCP/Dynatrace weak-signal exposure indicators.",
     "notInScope": "No exploit testing, malware execution, automatic cleanup, token revocation, or claims that a host is clean.",
     "fragnesia": "CVE-2026-46300 affects supported AlmaLinux releases through esp4, esp6, and in some AlmaLinux 9/10 cases rxrpc. Built-in patched kernel thresholds follow AlmaLinux's May 13, 2026 disclosure.",
     "itscapeArm64Kvm": "CVE-2026-46316 / ITScape affects ARM64 KVM hosts through a vGIC-ITS race condition. The guard flags ARM64 KVM exposure and asks operators to verify vendor-fixed kernels or backports, with upstream 6.15.0 used as a review baseline.",
@@ -16,6 +16,7 @@
     "googleCloudSecretManagerConfigPoc": "Checks for npm package google-cloud-secret-manager-config-poc from GitHub Advisory GHSA-g6v5-9xpp-6hpx; all versions are treated as compromised.",
     "otterCookieNpm": "Checks for Panther April 2026 OtterCookie npm package names, Vercel-hosted C2 domains, and install-time behavior indicators.",
     "solanaFakeFix": "Checks for JFrog Solana FakeFix and CMS Windows loader npm/PyPI package names plus Solana wallet, Telegram, Deno, fake RPC, and Windows persistence indicators.",
+    "glassWasmOpenVsx": "Checks for Socket GlassWASM/Open VSX affected extension references, known VSIX/WASM filenames, published SHA-256 values, TinyGo/WebAssembly host fingerprints, Solana memo dead-drop markers, dodod.lat, and child-process download/execute loaders.",
     "heavensGateWow64": "Checks for weak-signal Heaven's Gate / WOW64 mode-switching evasion terms in local analysis notes or mounted-root metadata when those terms co-occur with shellcode, injection, EDR evasion, malware, or payload language plus stronger transition markers.",
     "paloAltoGlobalProtect0257": "Checks GlobalProtect/PAN-OS log metadata for Unit 42-reported CVE-2026-0257 source IPs, client host ID/MAC/device-name values, and PoC client configuration values in successful gateway-connected events.",
     "operationHighland": "Checks Sygnia Operation Highland / Velvet Ant indicators including published SHA-1 values, hidden credential-log paths, GS-Netcat/auditdb staging, Nginx/FastCGI bridge artifacts, C2/infrastructure strings, and process-masquerade markers."
@@ -42,6 +43,7 @@
     "https://supplychainattack.org/incident/malware-in-google-cloud-secret-manager-config-poc-1fs99l",
     "https://panther.com/blog/tracking-an-ottercookie-infostealer-campaign-across-npm",
     "https://research.jfrog.com/post/solana-fakefix/",
+    "https://socket.dev/blog/glasswasm-malware-open-vsx-extensions",
     "https://www.sygnia.co/blog/operation-highland-velvet-ant/",
     "https://www.sygnia.co/wp-content/uploads/2026/06/Appendix_Indicators-of-Compromise.pdf",
     "https://thehackernews.com/2026/06/china-linked-hackers-backdoored-linux.html",

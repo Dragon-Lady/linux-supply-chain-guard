@@ -36,6 +36,11 @@ Solana wallet/keypair paths, Telegram exfiltration, suspicious Solana RPC
 redirection, Deno remote-loader execution, Windows Registry Run-key persistence,
 mutex markers, and EXE-dropper filenames.
 
+The June 2026 Socket GlassWASM / Open VSX watch pack adds checks for trojanized
+Open VSX extension copies, suspicious WASM payload names, affected VSIX archive
+names and hashes, TinyGo/WebAssembly host fingerprints, Solana memo dead-drop
+markers, and Node child-process download/execute loaders.
+
 The SafeDep Astro config-as-code watch pack adds local checkout checks for
 suspicious `astro.config.*` loader behavior, blockchain/C2 relay markers,
 horizontally hidden executable-looking payload lines, and `.gitignore` entries
@@ -221,6 +226,16 @@ Exit codes:
   - Solana keypair/wallet path strings, Telegram API exfil paths, Deno
     `run -A`, fake RPC `104.239.66.223:8899`, and Windows Run-key/persistence
     markers
+- Socket GlassWASM / Open VSX indicators:
+  - affected Open VSX extension references `vscode/exargd/vsblack@0.0.1` and
+    `vscode/noellee-doc/flint-debug@0.1.1`
+  - affected VSIX filenames `exargd.vsblack-0.0.1.vsix` and
+    `noellee-doc.flint-debug-0.1.1.vsix`
+  - suspicious WASM payload filenames `snqpkebiwrxmoivl.wasm` and
+    `orybbbdsuqmaapel.wasm`
+  - reported SHA-256 values, `dodod.lat`, Solana memo dead-drop wallet and
+    program IDs, and loader code that combines WASM with `child_process`,
+    `curl | bash`, PowerShell `irm | iex`, or `windowsHide`
 - Astro config-as-code supply-chain indicators:
   - `astro.config.*` files that reconstruct `require` and combine loader,
     eval/function, global mutation, or blockchain/C2 relay markers
@@ -347,6 +362,8 @@ the known indicators it checks.
   https://cybersecuritynews.com/agentjacking-attack-hijacks-ai-coding-agent/
 - JFrog Solana FakeFix / CMS Windows loader report:
   https://research.jfrog.com/post/solana-fakefix/
+- Socket GlassWASM Open VSX extension report:
+  https://socket.dev/blog/glasswasm-malware-open-vsx-extensions
 - GitHub Advisory for `google-cloud-secret-manager-config-poc`:
   https://github.com/advisories/GHSA-g6v5-9xpp-6hpx
 - SupplyChainAttack incident for `ecto-flag-read`:
