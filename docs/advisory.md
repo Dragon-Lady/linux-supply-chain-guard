@@ -48,6 +48,14 @@ look for affected PyPI package versions, local runtime artifacts, suspicious
 Python package layouts, and GitHub/CI exfiltration markers. They do not execute
 Python, Bun, package managers, or cleanup actions.
 
+The June 2026 npm v12 readiness lane is included as pre-execution posture
+guidance. GitHub, The Hacker News, and JFrog reporting all point to the same
+shift: npm is moving high-risk install behavior from implicit trust to explicit
+approval. Findings in this lane should be handled by narrowing `allowScripts`,
+`allow-git`, and `allow-remote`, pinning reviewed versions, and re-reviewing on
+upgrade. This does not prove a host is compromised and does not eliminate
+runtime/import-time package risk.
+
 Huntress' Heaven's Gate overview is included as weak-signal Windows evasion
 context. The guard looks for analysis-note references to WOW64 mode-switching
 or Heaven's Gate terms only when they co-occur with shellcode, injection, EDR
@@ -61,6 +69,51 @@ reported client host ID/MAC/device-name values, and PoC client configuration
 values in GlobalProtect or PAN-OS log metadata. Successful gateway-connected
 events are prioritized because Unit 42 reported that only a small portion of
 probed devices established VPN sessions.
+
+Cyber Security News' Splunk Enterprise / `CVE-2026-20253` coverage is included
+as a local posture and log-triage lane. The guard looks for Splunk Enterprise
+10.x references, CISA KEV/BOD copied notes, PostgreSQL sidecar recovery
+endpoints, and file-write/RCE-chain triage terms such as `.pgpass`,
+`backupFile`, `pg_restore`, and `pg_dump`. Fixed-version information was not
+available from the reachable source during intake, so version findings are
+review prompts that should be checked against current Splunk vendor guidance.
+
+SecurityWeek's June 18, 2026 REDCap exposure report is included as healthcare
+web-application posture context. Censys reported about 8,500 internet-exposed
+REDCap instances globally, only 1.18% on `17.1.3` as of June 16, 2026, and GTIG
+reported UNC6508 targeting legacy REDCap servers for credential harvesting and
+custom backdoor deployment including InfiniteRed. This guard flags REDCap
+version references older than `17.1.3` as review prompts and flags copied
+UNC6508/InfiniteRed triage notes. Operators should inventory exposure, patch
+REDCap, avoid exposed legacy side-by-side versions, and keep REDCap databases
+behind a firewall per vendor guidance.
+
+The Hacker News' Operation Endgame / SocGholish report is tracked as WordPress
+and DNS hygiene context, not as an indicator rule. The reachable report says
+106 SocGholish-linked servers were disrupted and 14,971 infected WordPress sites
+were cleaned, but it does not publish stable IOCs suitable for local matching.
+Operators handling suspected SocGholish/FakeUpdates exposure should review
+WordPress core/plugin/theme integrity, unauthorized CMS users, credential
+rotation, webinject residue, and DNS/domain-shadowing changes.
+
+The FBI IC3 June 18, 2026 PSA on malicious traffic distribution systems is
+tracked in the same advisory lane. It describes compromised websites, poisoned
+ads, phishing, and fake promotions redirecting users through TDS chains to
+phishing pages, fake updates, malware, and financial scams. It recommends CMS
+patching, strong/unique credentials, 2FA, WAF/security plugins, official plugin
+and theme sources, and Windows endpoint monitoring for suspicious `wscript.exe`,
+`cscript.exe`, and PowerShell web requests for `.js`, `.ps1`, or `.svg`
+payloads. The PSA does not include stable IOCs, so no detector rule was added
+for this intake.
+
+Ars Technica's June 18, 2026 Microsoft Crypto Clipper report is included as a
+mounted-host and Windows artifact triage lane. Microsoft described a
+self-propagating USB worm that uses `.lnk` files, a portable Tor client,
+SOCKS5 on `localhost:9050`, clipboard monitoring for wallet addresses or seed
+phrases, screenshot capture, wallet-address replacement, Curl exfiltration, and
+remote code execution. The guard checks for copied host metadata and incident
+notes containing those terms; it does not inspect live clipboards, enumerate
+USB devices, or execute Windows artifacts.
 
 This project also keeps advisory-only notes for urgent Linux exposure risks
 that may affect build hosts, CI infrastructure, package mirrors, WSL developer
