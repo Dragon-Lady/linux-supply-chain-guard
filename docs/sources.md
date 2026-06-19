@@ -30,6 +30,8 @@
 - Cyber Security News Splunk Enterprise CVE-2026-20253 active exploitation: https://cybersecuritynews.com/splunk-enterprise-vulnerability-exploit/
 - Cyber Security News / watchTowr Splunk Enterprise sidecar chain summary: https://cybersecuritynews.com/splunk-enterprise-pre-auth-rce-chain-exposes/
 - SecurityWeek REDCap internet-exposure / UNC6508 report: https://www.securityweek.com/majority-of-internet-accessible-redcap-servers-outdated/
+- CISA Fortinet device hardening alert: https://www.cisa.gov/news-events/alerts/2026/06/18/cisa-urges-hardening-fortinet-devices-after-reports-credential-exposure
+- TechRadar summary of Fortinet/FortiGate credential exposure reporting: https://www.techradar.com/pro/security/fortinet-firewalls-hit-by-huge-password-stealing-attack-around-75-000-users-possibly-affected
 - The Hacker News Operation Endgame / SocGholish disruption report: https://thehackernews.com/2026/06/operation-endgame-disrupts-socgholish.html
 - FBI IC3 PSA on malicious traffic distribution systems: https://www.ic3.gov/PSA/2026/PSA260618
 - Ars Technica Microsoft Crypto Clipper USB worm report: https://arstechnica.com/security/2026/06/microsoft-spots-new-self-propagating-malware-for-stealing-cryptocurrency/

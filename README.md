@@ -254,6 +254,15 @@ Exit codes:
   - UNC6508 / InfiniteRed triage terms for clinical/medical research targets
   - reminders to inventory internet exposure, patch REDCap, avoid exposed
     legacy side-by-side versions, and keep the database behind a firewall
+- Fortinet / FortiGate credential-exposure posture indicators:
+  - local CISA or incident notes for the June 18, 2026 Fortinet device hardening
+    alert
+  - FortiGate/FortiOS/SSL VPN/FortiCloud SSO terms, `FortiBleed`, credential
+    dump/brute-force language, VPN authentication hashes, and firewall
+    configuration export terms
+  - reminders to inventory Fortinet edge devices, rotate Fortinet/VPN/LDAP/AD
+    credentials from a clean posture, enforce MFA, restrict management-plane
+    exposure, and review authentication/config-export logs
 - SocGholish / FakeUpdates WordPress triage context:
   - Operation Endgame disrupted 106 SocGholish-linked servers and reported
     cleanup of 14,971 infected WordPress sites
@@ -484,6 +493,10 @@ the known indicators it checks.
   https://cybersecuritynews.com/splunk-enterprise-pre-auth-rce-chain-exposes/
 - SecurityWeek REDCap internet-exposure / UNC6508 report:
   https://www.securityweek.com/majority-of-internet-accessible-redcap-servers-outdated/
+- CISA Fortinet device hardening alert:
+  https://www.cisa.gov/news-events/alerts/2026/06/18/cisa-urges-hardening-fortinet-devices-after-reports-credential-exposure
+- TechRadar summary of Fortinet/FortiGate credential exposure reporting:
+  https://www.techradar.com/pro/security/fortinet-firewalls-hit-by-huge-password-stealing-attack-around-75-000-users-possibly-affected
 - The Hacker News Operation Endgame / SocGholish disruption report:
   https://thehackernews.com/2026/06/operation-endgame-disrupts-socgholish.html
 - FBI IC3 PSA on malicious traffic distribution systems:
