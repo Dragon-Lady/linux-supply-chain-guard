@@ -607,6 +607,17 @@ const AGENTJACKING_MCP_TERMS = [
   "MCP",
   "Model Context Protocol",
 ];
+const AUTOJACK_AGENT_LOCALHOST_TERMS = [
+  "AutoJack",
+  "AutoGen Studio",
+  "autogenstudio",
+  "StdioServerParams",
+  "server_params",
+  "/api/mcp/ws",
+  "localhost:8081",
+  "127.0.0.1:8081",
+  "b047730",
+];
 
 const OPERATION_HIGHLAND_SHA1_HASHES = loadHashSet("operation-highland-sha1.json");
 const OPERATION_HIGHLAND_IOC_PATHS = [
@@ -845,6 +856,7 @@ function scanHost(options = {}) {
   checkLiteLlmGatewayExposure(findings, targetRoot, homePath);
   checkOpenClawAgentExposure(findings, targetRoot, homePath);
   checkAgentjackingSentryMcpExposure(findings, targetRoot, homePath);
+  checkAutoJackAgentLocalhostExposure(findings, targetRoot, homePath);
   checkNpmV12Readiness(findings, targetRoot, homePath);
   checkOperationHighlandAuthStack(findings, targetRoot, homePath);
   checkTransformersPayload(findings, targetRoot);
@@ -2273,6 +2285,48 @@ function checkAgentjackingSentryMcpExposure(findings, targetRoot, homePath) {
 
     if (/advisory-tracker\.com|X-Tenet-Security|ResponsibleDisclosure\s*\[SECURITY SCAN\]/i.test(text)) {
       addFinding(findings, "review", "agentjacking-tenet-validation-marker", "Tenet Agentjacking validation marker appears in scanned host metadata.", relative, "Correlate with Sentry events, agent command history, package-manager logs, and developer credential exposure.");
+    }
+  }
+}
+
+function checkAutoJackAgentLocalhostExposure(findings, targetRoot, homePath) {
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const roots = [
+    homeRelative,
+    "/opt",
+    "/srv",
+    "/var/www",
+    "/etc",
+    "/root",
+    "/tmp",
+    "/var/tmp",
+  ].filter(Boolean);
+  const files = [];
+  for (const root of roots) {
+    files.push(...findWatchFiles(mapLinuxPath(targetRoot, root), 25000 - files.length));
+    if (files.length >= 25000) break;
+  }
+
+  for (const filePath of files) {
+    const text = readText(filePath);
+    if (!text) continue;
+    const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+    const hasAutoGen = /autogenstudio|AutoGen Studio|autogen/i.test(text);
+    const hasLocalMcpControlPlane =
+      /\/api\/mcp\/ws|StdioServerParams|server_params|localhost:8081|127\.0\.0\.1:8081|Model Context Protocol/i.test(text);
+
+    for (const indicator of AUTOJACK_AGENT_LOCALHOST_TERMS) {
+      if (text.includes(indicator)) {
+        addFinding(findings, "review", "autojack-agent-localhost-indicator", "AutoJack / AutoGen local MCP control-plane indicator appears in scanned host metadata.", `${relative}: ${indicator}`, "Review whether any browsing or code-execution agent shares a host/profile with AutoGen Studio or other privileged localhost services. Localhost is not a trust boundary for agents that render untrusted content.");
+      }
+    }
+
+    if (hasAutoGen && hasLocalMcpControlPlane) {
+      addFinding(findings, "warning", "autojack-local-mcp-control-plane-review", "AutoGen/AutoGen Studio appears near localhost MCP WebSocket or command-parameter terms.", relative, "Isolate AutoGen Studio and browsing agents into separate users, containers, or VMs; require authentication on all local control-plane routes; allowlist MCP server executables; and avoid running prototypes in the daily-driver account.");
+    }
+
+    if (/autogenstudio[^\\n\\r]{0,120}0\.4\.3\.dev[12]|0\.4\.3\.dev[12][^\\n\\r]{0,120}autogenstudio/i.test(text)) {
+      addFinding(findings, "warning", "autojack-autogenstudio-prerelease-review", "autogenstudio pre-release version reported with the AutoJack MCP WebSocket issue appears in scanned files.", relative, "Do not run the pre-release build with untrusted browsing agents. Use GitHub main at or after commit b047730 for MCP support, or use a stable PyPI build without the MCP route.");
     }
   }
 }

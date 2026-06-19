@@ -230,6 +230,12 @@ Exit codes:
     diagnostics before inspecting source
   - Tenet validation markers such as `X-Tenet-Security` and
     `ResponsibleDisclosure [SECURITY SCAN]`
+- AutoJack / local agent-control-plane indicators:
+  - AutoGen Studio / `autogenstudio` references near local MCP WebSocket routes,
+    `StdioServerParams`, `server_params`, or localhost port `8081`
+  - reported `autogenstudio` pre-release builds `0.4.3.dev1` and `0.4.3.dev2`
+  - reminders that localhost is not a trust boundary when a browsing agent can
+    render untrusted web content on the same host
 - Roundcube `CVE-2025-49113` webmail exposure indicators:
   - installed Roundcube versions below `1.5.10` or `1.6.11`
   - local PoC/exploit-runner artifacts referencing `CVE-2025-49113`
@@ -461,6 +467,10 @@ the known indicators it checks.
   https://safedep.io/astro-config-blockchain-c2-supply-chain/
 - The Hacker News OpenClaw prompt-injection and agent-phishing report:
   https://thehackernews.com/2026/06/new-attacks-trick-openclaw-ai-agent.html
+- Microsoft Security AutoJack research:
+  https://www.microsoft.com/en-us/security/blog/2026/06/18/autojack-single-page-rce-host-running-ai-agent/
+- The Hacker News AutoJack / AutoGen Studio package analysis:
+  https://thehackernews.com/2026/06/autojack-attack-lets-one-web-page.html
 - GitHub npm v12 breaking changes notice:
   https://github.blog/changelog/2026-06-09-upcoming-breaking-changes-for-npm-v12/
 - The Hacker News npm v12 install-script default change summary:

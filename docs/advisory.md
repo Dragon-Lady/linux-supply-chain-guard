@@ -260,5 +260,18 @@ Hades / Miasma PyPI indicators include:
 - `IfYouYankThisTokenItWillNukeTheComputerOfTheOwnerFully`
 - `Run Copilot`, `format-results`, and `results/results-*.json`
 
+Microsoft's June 18, 2026 AutoJack research is included as an agent-localhost
+control-plane posture lane. AutoJack showed that a browsing agent rendering
+untrusted web content on the same host as AutoGen Studio could cross a localhost
+MCP WebSocket trust boundary and trigger host process execution when the local
+control plane lacked authentication and executable allowlisting. The Hacker News
+reported that `autogenstudio` pre-release builds `0.4.3.dev1` and `0.4.3.dev2`
+contained the vulnerable MCP WebSocket handler, while the stable PyPI build
+`0.4.2.2` did not include that route. This guard flags AutoGen Studio,
+`/api/mcp/ws`, `StdioServerParams`, `server_params`, localhost port `8081`, and
+the reported pre-release versions as review prompts. The broader lesson applies
+to other agent frameworks: localhost is not a trust boundary when agents can
+render untrusted pages and also reach privileged local services.
+
 This project intentionally avoids exploit reproduction steps, cleanup
 automation, and secret disclosure. It cannot prove a host is clean.
