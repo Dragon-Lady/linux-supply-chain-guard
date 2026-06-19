@@ -88,6 +88,17 @@ UNC6508/InfiniteRed triage notes. Operators should inventory exposure, patch
 REDCap, avoid exposed legacy side-by-side versions, and keep REDCap databases
 behind a firewall per vendor guidance.
 
+CISA's June 18, 2026 Fortinet alert is included as edge-device hardening
+context. The direct CISA page may be blocked by upstream access controls during
+intake, but the alert title and contemporaneous reporting describe exposed
+Fortinet/FortiGate firewall and VPN credentials, brute-force activity, VPN
+authentication hashes, and Fortinet guidance that routine credential refresh and
+MFA reduce risk. The guard flags local Fortinet/FortiGate/FortiOS/SSL VPN,
+FortiCloud SSO, credential-dump, brute-force, and firewall configuration-export
+triage notes so operators can inventory affected edge devices, rotate related
+Fortinet/VPN/LDAP/AD credentials from a clean posture, restrict management-plane
+exposure, enforce MFA, and review authentication/config-export logs.
+
 The Hacker News' Operation Endgame / SocGholish report is tracked as WordPress
 and DNS hygiene context, not as an indicator rule. The reachable report says
 106 SocGholish-linked servers were disrupted and 14,971 infected WordPress sites

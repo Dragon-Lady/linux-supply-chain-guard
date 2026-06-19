@@ -252,6 +252,12 @@ function run() {
     "// REDCap legacy instance targeted by UNC6508 for credential harvesting.",
     "// InfiniteRed backdoor triage note for clinical research server."
   ].join("\n"));
+  write(path.join(root, "var", "log", "fortigate", "credential-exposure-note.log"), [
+    "CISA urges hardening Fortinet devices after reports of credential exposure.",
+    "FortiBleed triage: Fortinet/FortiGate VPN credentials and firewall configuration data reported.",
+    "FortiGate SSL VPN brute forcing, VPN authentication hashes, credential attempts, and plaintext passwords.",
+    "Review FortiCloud SSO and admin-forticloud-sso-login posture."
+  ].join("\n"));
   write(path.join(root, "tmp", "gentlemen.bmp"), "placeholder");
   write(path.join(root, "opt", "gentlemen", "dControl.exe"), "placeholder");
   write(path.join(root, "opt", "gentlemen", "def1.bat"), [
@@ -440,6 +446,9 @@ function run() {
   assert(ids.has("redcap-outdated-version-review"));
   assert(ids.has("redcap-exposure-indicator"));
   assert(ids.has("redcap-unc6508-triage-note"));
+  assert(ids.has("fortinet-credential-exposure-indicator"));
+  assert(ids.has("fortinet-fortigate-credential-dump-triage"));
+  assert(ids.has("fortinet-forticloud-sso-review"));
   assert(ids.has("gentlemen-ransomware-note-wallpaper"));
   assert(ids.has("gentlemen-toolkit-file-name"));
   assert(ids.has("gentlemen-encryptor-runtime-marker"));

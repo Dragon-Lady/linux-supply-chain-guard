@@ -177,6 +177,27 @@ const REDCAP_TEXT_INDICATORS = [
   "redcap_version",
 ];
 
+const FORTINET_CREDENTIAL_EXPOSURE_TEXT_INDICATORS = [
+  "FortiBleed",
+  "Fortinet credential exposure",
+  "FortiGate credential exposure",
+  "Fortinet/FortiGate firewall URLs",
+  "Fortinet/FortiGate VPN credentials",
+  "FortiGate SSL VPN",
+  "Fortinet SSL VPN",
+  "FortiOS",
+  "FortiCloud SSO",
+  "FortiCloud login",
+  "admin-forticloud-sso-login",
+  "config system global",
+  "FortiGate configuration export",
+  "firewall configuration data",
+  "VPN authentication hashes",
+  "1.1 billion credential attempts",
+  "320,000 FortiGate",
+  "73,932",
+];
+
 const SOLANA_FAKEFIX_NPM_PACKAGES = [
   "@solana-labs/ancor",
   "@solana-labs/etherjs",
@@ -820,6 +841,7 @@ function scanHost(options = {}) {
   checkJoomlaJceCve202648907(findings, targetRoot, homePath);
   checkSplunkEnterpriseCve202620253(findings, targetRoot, homePath);
   checkRedcapExposure(findings, targetRoot, homePath);
+  checkFortinetCredentialExposure(findings, targetRoot, homePath);
   checkLiteLlmGatewayExposure(findings, targetRoot, homePath);
   checkOpenClawAgentExposure(findings, targetRoot, homePath);
   checkAgentjackingSentryMcpExposure(findings, targetRoot, homePath);
@@ -2060,6 +2082,50 @@ function checkRedcapExposure(findings, targetRoot, homePath) {
   }
 }
 
+function checkFortinetCredentialExposure(findings, targetRoot, homePath) {
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const roots = [
+    homeRelative,
+    "/etc",
+    "/var/log",
+    "/var/lib",
+    "/opt",
+    "/srv",
+    "/usr/local",
+    "/tmp",
+    "/var/tmp",
+  ].filter(Boolean);
+  const files = [];
+  for (const root of roots) {
+    files.push(...findWatchFiles(mapLinuxPath(targetRoot, root), 30000 - files.length));
+    if (files.length >= 30000) break;
+  }
+
+  for (const filePath of files) {
+    const text = readText(filePath);
+    if (!text) continue;
+    const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+    const loweredRelative = relative.toLowerCase();
+    const fortinetSignal = hasFortinetSignal(text, loweredRelative);
+
+    if (!fortinetSignal) continue;
+
+    for (const indicator of FORTINET_CREDENTIAL_EXPOSURE_TEXT_INDICATORS) {
+      if (text.includes(indicator)) {
+        addFinding(findings, "review", "fortinet-credential-exposure-indicator", "Fortinet/FortiGate credential-exposure or hardening indicator appears in scanned files.", `${relative}: ${indicator}`, "Inventory Fortinet edge devices, confirm firmware and management exposure, rotate Fortinet/VPN/LDAP/AD-linked credentials from a clean posture, enforce MFA, and review authentication/config-export logs.");
+      }
+    }
+
+    if (/FortiBleed|credential dump|plaintext passwords?|bruteforc(?:e|ing)|credential attempts|VPN authentication hashes|cracked.*Active Directory|configuration export|firewall configuration data/i.test(text)) {
+      addFinding(findings, "warning", "fortinet-fortigate-credential-dump-triage", "Fortinet/FortiGate credential dump or brute-force triage language appears in scanned files.", relative, "Treat exposed or reused Fortinet credentials as urgent edge-device posture. Check successful VPN/admin logins, unexpected admin accounts, config exports, LDAP/AD bindings, and downstream lateral movement before clearing.");
+    }
+
+    if (/admin-forticloud-sso-login|FortiCloud SSO|FortiCloud login/i.test(text)) {
+      addFinding(findings, "review", "fortinet-forticloud-sso-review", "FortiCloud SSO/login configuration or mitigation language appears in scanned files.", relative, "Verify current Fortinet vendor guidance for FortiCloud SSO, restrict management-plane access, and confirm whether SSO-related mitigations or updates apply to this deployment.");
+    }
+  }
+}
+
 function checkLiteLlmGatewayExposure(findings, targetRoot, homePath) {
   const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
   const roots = [
@@ -2662,6 +2728,10 @@ function normalizeDottedVersion(version) {
 function hasRedcapSignal(text, relativePath) {
   return relativePath.includes("redcap")
     || /REDCap|redcap_version|Project REDCap|redcap_v[0-9_]+|Clinical Data Interoperability Services/i.test(text);
+}
+
+function hasFortinetSignal(text, relativePath) {
+  return /fortinet|fortigate|fortios|forticloud|fortiproxy|fortiswitchmanager|ssl[-\s]?vpn/i.test(relativePath + "\n" + text);
 }
 
 function redcapVersionsInText(text, relativePath) {
