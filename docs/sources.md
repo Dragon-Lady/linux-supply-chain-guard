@@ -17,6 +17,7 @@
 - The Hacker News OpenClaw prompt-injection and agent-phishing report: https://thehackernews.com/2026/06/new-attacks-trick-openclaw-ai-agent.html
 - GitHub npm v12 breaking changes notice: https://github.blog/changelog/2026-06-09-upcoming-breaking-changes-for-npm-v12/
 - The Hacker News npm v12 install-script default change summary: https://thehackernews.com/2026/06/github-to-disable-npm-install-scripts.html
+- JFrog npm v12 explicit trust analysis: https://jfrog.com/blog/npm-v12-from-implicit-to-explicit-trust/
 - Oracle Security Alert Advisory for CVE-2026-35273: https://www.oracle.com/security-alerts/alert-cve-2026-35273.html
 - Google Cloud / Mandiant PeopleSoft ShinyHunters campaign analysis: https://cloud.google.com/blog/topics/threat-intelligence/shinyhunters-targets-education-sector-oracle-exploit
 - Cyber Security News PeopleSoft CVE-2026-35273 exploitation summary: https://cybersecuritynews.com/oracle-peoplesoft-0-day-rce-vulnerability/
@@ -26,6 +27,12 @@
 - Huntress Heaven's Gate defensive overview: https://www.huntress.com/cybersecurity-101/topic/what-is-heavens-gate
 - Unit 42 PAN-OS CVE-2026-0257 active exploitation brief: https://unit42.paloaltonetworks.com/active-exploitation-of-pan-os-cve-2026-0257/
 - The Hacker News PAN-OS GlobalProtect CVE-2026-0257 summary: https://thehackernews.com/2026/06/palo-alto-warns-of-active-exploitation.html
+- Cyber Security News Splunk Enterprise CVE-2026-20253 active exploitation: https://cybersecuritynews.com/splunk-enterprise-vulnerability-exploit/
+- Cyber Security News / watchTowr Splunk Enterprise sidecar chain summary: https://cybersecuritynews.com/splunk-enterprise-pre-auth-rce-chain-exposes/
+- SecurityWeek REDCap internet-exposure / UNC6508 report: https://www.securityweek.com/majority-of-internet-accessible-redcap-servers-outdated/
+- The Hacker News Operation Endgame / SocGholish disruption report: https://thehackernews.com/2026/06/operation-endgame-disrupts-socgholish.html
+- FBI IC3 PSA on malicious traffic distribution systems: https://www.ic3.gov/PSA/2026/PSA260618
+- Ars Technica Microsoft Crypto Clipper USB worm report: https://arstechnica.com/security/2026/06/microsoft-spots-new-self-propagating-malware-for-stealing-cryptocurrency/
 - The Hacker News, NGINX CVE-2026-42945 exploited in the wild: https://thehackernews.com/2026/05/nginx-cve-2026-42945-exploited-in-wild.html
 - The Register, NGINX Rift exploitation activity: https://www.theregister.com/security/2026/05/18/nginx-rift-attackers-waste-no-time-targeting-exposed-servers/
 - CSO Online, NGINX Rift disclosure and patches: https://www.csoonline.com/article/4171437/ai-agent-finds-18-year-old-remote-code-execution-flaw-in-nginx.html

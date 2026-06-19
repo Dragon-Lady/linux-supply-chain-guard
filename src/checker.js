@@ -20,7 +20,10 @@ const NPM_V12_PREPARE_MIN = "11.16.0";
 const ROUNDCUBE_15_FIXED = "1.5.10";
 const ROUNDCUBE_16_FIXED = "1.6.11";
 const ROUNDCUBE_VULNERABLE_MIN = "1.1.0";
+const JOOMLA_JCE_FIXED = "2.9.99.6";
 const ITSCAPE_UPSTREAM_FIXED_KERNEL = "6.15.0";
+const SPLUNK_20253_REVIEW_MIN = "10.0.0";
+const REDCAP_REVIEW_LATEST = "17.1.3";
 
 const KNOWN_DPRK_NPM_PACKAGES = [
   "terminal-logger-utils",
@@ -58,6 +61,120 @@ const OTTERCOOKIE_TEXT_INDICATORS = [
   "cloudflaresecurity[.]vercel[.]app", // push-guard: ignore
   "node test.js",
   "postinstall",
+];
+
+const EASY_DAY_JS_TEXT_INDICATORS = [
+  "easy-day-js",
+  "setup.cjs",
+  "node setup.cjs --no-warnings",
+  "node setup.cjs –no-warnings",
+  "NODE_TLS_REJECT_UNAUTHORIZED",
+  "23.254.164.92",
+  "23.254[.]164.92",
+  "23.254.164.92:8000",
+  "23.254[.]164.92:8000",
+  "23.254.164.123",
+  "23.254[.]164.123",
+  "23.254.164.123:443",
+  "23.254[.]164.123:443",
+  "https://23.254.164.92:8000/update/49890878",
+  "https://23.254.164[.]92:8000/update/49890878",
+  "https://23.254.164.123:443/49890878",
+  "https://23.254.164[.]123:443/49890878",
+  "hwsrv-1327786.hostwindsdns.com",
+  "hwsrv-1327786.hostwindsdns[.]com",
+  "hwsrv-1327785.hostwindsdns.com",
+  "hwsrv-1327785.hostwindsdns[.]com",
+  "/update/49890878",
+  "/49890878",
+  "protocal.cjs",
+  "NodePackages",
+  "NvmProtocal",
+  "com.nvm.protocal",
+  "nvmconf.service",
+  ".pkg_history",
+  ".pkg_logs",
+  "browser-hist-",
+  "reqmod",
+  "PrimaryUrl",
+  "SecondaryUrl",
+  "sub_net_resolve",
+  "sub_net_splithostport",
+  "b122a9873bedf145ae2a7fd024b5f309007dbb025149f4dc4ac3f7e4f32a36a4",
+  "221c45a790dec2a296af57969e1165a16f8f49733aeab64c0bbd768d9943badf",
+  "ehindero",
+  "sergey2016",
+];
+
+const PROCWIRE_TEXT_INDICATORS = [
+  "procwire",
+  "routecraft",
+  "endpointmap",
+  "bytecraft",
+  "staticlayer",
+  "node lib/setup.js",
+  "endpointmap/lib/registry",
+  "bytecraft.xor",
+  "files.catbox.moe/j4loim.chk",
+  "files[.]catbox[.]moe/j4loim[.]chk",
+  "Microsoft-Delivery-Optimization/10.0",
+  "Zone.Identifier",
+  "[ZoneTransfer]",
+  "ZoneId=0",
+  "msedge_update",
+  "chrome_installer",
+  "dotnet_host",
+  "onedrive_setup",
+  "teams_update",
+  "bitsadmin",
+  "curl.exe",
+  "--ssl-no-revoke",
+  "windowsHide: true",
+  "deltajohnsons.com",
+  "akuznetsov-oss",
+  "vpetrov-oss",
+];
+
+const SPLUNK_20253_TEXT_INDICATORS = [
+  "CVE-2026-20253",
+  "PostgreSQL Sidecar Service",
+  "PostgreSQL sidecar",
+  "/v1/postgres/recovery/backup",
+  "/v1/postgres/recovery/restore",
+  "pg_restore",
+  "pg_dump",
+  ".pgpass",
+  "backupFile",
+  "database parameter",
+  "CWE-306",
+  "BOD 26-04",
+];
+
+const CRYPTO_CLIPPER_TEXT_INDICATORS = [
+  "Crypto Clipper",
+  "CryptoBandits.A",
+  "Trojan:Win32/CryptoBandits.A",
+  "localhost:9050",
+  "SOCKS5 proxy",
+  "portable Tor client",
+  "clipboard inspection",
+  "clipboard contents",
+  "seed phrase",
+  "wallet addresses",
+  "crypto-address replacement",
+  "Possible data exfiltrations using Curl",
+  "Suspicious JavaScript processes",
+];
+
+const REDCAP_TEXT_INDICATORS = [
+  "REDCap",
+  "UNC6508",
+  "InfiniteRed",
+  "Clinical Data Interoperability Services",
+  "Project REDCap",
+  "redcap_v",
+  "redcap/index.php",
+  "redcap_version",
 ];
 
 const SOLANA_FAKEFIX_NPM_PACKAGES = [
@@ -130,6 +247,32 @@ const GLASSWASM_TEXT_INDICATORS = [
   "getTransaction",
   "MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr",
   "Memo1UhkJRfHyvLMcVucJwxXeuD728EqVDDwQDxFM",
+];
+
+const JETBRAINS_AI_KEY_PLUGIN_IDS = [
+  "org.sm.yms.toolkit",
+  "com.json.simple.kit",
+  "org.bug.find.tools",
+  "org.translate.ai.simple",
+  "com.yy.test.ai.simple",
+  "com.dev.ai.toolkit",
+  "com.json.view.simple",
+  "com.my.git.ai.kit",
+  "org.check.ai.ds",
+  "com.review.tool.code",
+  "org.code.assist.dev.tool",
+  "com.coder.ai.dpt",
+  "com.my.code.tools",
+  "ord.cp.code.ai.kit",
+  "com.dp.git.ai.tool",
+];
+
+const JETBRAINS_AI_KEY_ENDPOINT_INDICATORS = [
+  "39.107.60.51",
+  "39.107.60[.]51",
+  "39.107.60.51/api/software/key",
+  "39.107.60[.]51/api/software/key",
+  "/api/software/key",
 ];
 
 const GLASSWASM_KNOWN_FILE_NAMES = [
@@ -235,6 +378,29 @@ const ROUNDCUBE_CANDIDATE_FILE_NAMES = new Set([
   "package.xml",
   "CHANGELOG.md",
   "README.md",
+]);
+
+const JOOMLA_JCE_ROOT_HINTS = [
+  "joomla",
+  "administrator/components/com_jce",
+  "components/com_jce",
+  "plugins/editors/jce",
+  "media/com_jce",
+  "/jce/",
+];
+
+const JOOMLA_JCE_CANDIDATE_FILE_NAMES = new Set([
+  "jce.xml",
+  "manifest.xml",
+  "composer.json",
+  "configuration.php",
+  "README.md",
+  "CHANGELOG.md",
+  "error.php",
+  "access.log",
+  "access_log",
+  "error.log",
+  "error_log",
 ]);
 
 const DYNATRACE_TOKEN_PATTERN = /dt0[cs][0-9]{2}\.[A-Z0-9]{24}\.[A-Z0-9]{64,}/gi;
@@ -558,6 +724,7 @@ const WATCH_FILE_NAMES = new Set([
   ".pypirc",
   ".SRCINFO",
   "PKGBUILD",
+  "splunk.version",
   "README.md",
   "SECURITY.md",
   ".gitignore",
@@ -588,6 +755,7 @@ const WATCH_FILE_EXTENSIONS = new Set([
   ".lock",
   ".md",
   ".py",
+  ".php",
   ".pth",
   ".so",
   ".csv",
@@ -633,8 +801,11 @@ function scanHost(options = {}) {
   checkDprkNpmRat(findings, targetRoot, homePath);
   checkDprkSocketIoLoader(findings, targetRoot, homePath);
   checkOtterCookieNpm(findings, targetRoot, homePath);
+  checkEasyDayJsMastraNpm(findings, targetRoot, homePath);
+  checkProcwireRoutecraftNpm(findings, targetRoot, homePath);
   checkSolanaFakeFix(findings, targetRoot, homePath);
   checkGlassWasmOpenVsx(findings, targetRoot, homePath);
+  checkJetBrainsMarketplaceAiKeyStealers(findings, targetRoot, homePath);
   checkAstroConfigC2(findings, targetRoot, homePath);
   checkHadesPyPi(findings, targetRoot, homePath);
   checkDynatraceTeamPcpWatch(findings, targetRoot, homePath);
@@ -642,9 +813,13 @@ function scanHost(options = {}) {
   checkGentlemenRansomware(findings, targetRoot, homePath);
   checkHeavensGateEvasion(findings, targetRoot, homePath);
   checkArgamalGameRat(findings, targetRoot, homePath);
+  checkCryptoClipperUsbWorm(findings, targetRoot, homePath);
   checkPeopleSoftCve202635273(findings, targetRoot, homePath);
   checkPaloAltoGlobalProtect0257(findings, targetRoot, homePath);
   checkRoundcubeCve202549113(findings, targetRoot, homePath);
+  checkJoomlaJceCve202648907(findings, targetRoot, homePath);
+  checkSplunkEnterpriseCve202620253(findings, targetRoot, homePath);
+  checkRedcapExposure(findings, targetRoot, homePath);
   checkLiteLlmGatewayExposure(findings, targetRoot, homePath);
   checkOpenClawAgentExposure(findings, targetRoot, homePath);
   checkAgentjackingSentryMcpExposure(findings, targetRoot, homePath);
@@ -1004,6 +1179,62 @@ function checkOtterCookieNpm(findings, targetRoot, homePath) {
   }
 }
 
+function checkEasyDayJsMastraNpm(findings, targetRoot, homePath) {
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const roots = [
+    homeRelative,
+    "/opt",
+    "/srv",
+    "/var/www",
+    "/usr/local/lib/node_modules",
+  ].filter(Boolean);
+  const files = [];
+  for (const root of roots) {
+    files.push(...findDependencyFiles(mapLinuxPath(targetRoot, root), 25000 - files.length));
+    if (files.length >= 25000) break;
+  }
+
+  for (const filePath of files) {
+    const text = readText(filePath);
+    if (!text) continue;
+    const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+
+    for (const indicator of EASY_DAY_JS_TEXT_INDICATORS) {
+      if (text.includes(indicator)) {
+        addFinding(findings, "critical", "easy-day-js-mastra-indicator", "OX easy-day-js / Mastra npm supply-chain indicator appears in dependency metadata.", `${relative}: ${indicator}`, "Do not run npm install/build/test in this tree. If install may have occurred, review OX guidance and treat crypto-wallet activity as exposed until checked.");
+      }
+    }
+  }
+}
+
+function checkProcwireRoutecraftNpm(findings, targetRoot, homePath) {
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const roots = [
+    homeRelative,
+    "/opt",
+    "/srv",
+    "/var/www",
+    "/usr/local/lib/node_modules",
+  ].filter(Boolean);
+  const files = [];
+  for (const root of roots) {
+    files.push(...findDependencyFiles(mapLinuxPath(targetRoot, root), 25000 - files.length));
+    if (files.length >= 25000) break;
+  }
+
+  for (const filePath of files) {
+    const text = readText(filePath);
+    if (!text) continue;
+    const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+
+    for (const indicator of PROCWIRE_TEXT_INDICATORS) {
+      if (text.includes(indicator)) {
+        addFinding(findings, "critical", "procwire-routecraft-windows-dropper-indicator", "SafeDep procwire / routecraft Windows npm dropper indicator appears in dependency metadata.", `${relative}: ${indicator}`, "Do not run npm install/build/test in this tree. If this was installed on Windows, inspect temp updater-named executables, preserve evidence, and rotate credentials from a clean posture if execution may have occurred.");
+      }
+    }
+  }
+}
+
 function checkSolanaFakeFix(findings, targetRoot, homePath) {
   const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
   const roots = [
@@ -1098,6 +1329,43 @@ function checkGlassWasmOpenVsx(findings, targetRoot, homePath) {
       addFinding(findings, "critical", "glasswasm-openvsx-loader-shape", "Editor/package code combines WASM loading with GlassWASM-style C2 or child-process execution behavior.", relative, "Do not activate this extension/package. Inspect the WASM and JavaScript loader, then rotate developer credentials if activation occurred.");
     } else if (hasTinyGoWasmHostShape(text)) {
       addFinding(findings, "warning", "tinygo-wasm-js-host-review", "TinyGo/WebAssembly JavaScript host fingerprints appear in scanned code.", relative, "Review why this package or extension ships WASM and whether it can reach Node APIs or spawn child processes.");
+    }
+  }
+}
+
+function checkJetBrainsMarketplaceAiKeyStealers(findings, targetRoot, homePath) {
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const roots = [
+    homeRelative,
+    "/root",
+    "/tmp",
+    "/var/tmp",
+    "/opt",
+    "/usr/local/share",
+  ].filter(Boolean);
+  const files = [];
+  for (const root of roots) {
+    files.push(...findWatchFiles(mapLinuxPath(targetRoot, root), 30000 - files.length));
+    if (files.length >= 30000) break;
+  }
+
+  for (const filePath of files) {
+    const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+    const normalizedPath = relative.toLowerCase();
+    const text = readText(filePath);
+    const haystack = `${normalizedPath}\n${text || ""}`;
+
+    for (const pluginId of JETBRAINS_AI_KEY_PLUGIN_IDS) {
+      if (haystack.includes(pluginId)) {
+        addFinding(findings, "critical", "jetbrains-marketplace-ai-key-plugin-reference", "Aikido-reported malicious JetBrains Marketplace plugin ID appears in scanned host metadata.", `${relative}: ${pluginId}`, "Remove the plugin from JetBrains IDEs from a trusted posture, preserve plugin files for review, and rotate AI/provider/API keys if the plugin may have loaded.");
+      }
+    }
+
+    if (!text) continue;
+    for (const indicator of JETBRAINS_AI_KEY_ENDPOINT_INDICATORS) {
+      if (text.includes(indicator)) {
+        addFinding(findings, "critical", "jetbrains-marketplace-ai-key-exfil-indicator", "JetBrains Marketplace AI-key stealer exfiltration indicator appears in scanned text.", `${relative}: ${indicator}`, "Correlate with JetBrains plugin install history and outbound logs, then rotate exposed AI/provider/API keys from a clean posture if execution is suspected.");
+      }
     }
   }
 }
@@ -1499,6 +1767,47 @@ function checkPaloAltoGlobalProtect0257(findings, targetRoot, homePath) {
   }
 }
 
+function checkCryptoClipperUsbWorm(findings, targetRoot, homePath) {
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const roots = [
+    homeRelative,
+    "/Users",
+    "/mnt",
+    "/media",
+    "/Volumes",
+    "/opt",
+    "/srv",
+    "/var/log",
+    "/tmp",
+    "/var/tmp",
+  ].filter(Boolean);
+  const files = [];
+  for (const root of roots) {
+    files.push(...findWatchFiles(mapLinuxPath(targetRoot, root), 25000 - files.length));
+    if (files.length >= 25000) break;
+  }
+
+  for (const filePath of files) {
+    const text = readText(filePath);
+    if (!text) continue;
+    const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+
+    for (const indicator of CRYPTO_CLIPPER_TEXT_INDICATORS) {
+      if (text.includes(indicator)) {
+        addFinding(findings, "warning", "crypto-clipper-usb-worm-indicator", "Microsoft/Ars Crypto Clipper USB worm indicator appears in scanned host metadata.", `${relative}: ${indicator}`, "Review USB/removable-drive history, Windows shortcut execution, Tor/SOCKS5 activity on localhost:9050, clipboard/screenshot access, and crypto wallet exposure.");
+      }
+    }
+
+    if (/\.lnk\b/i.test(text) && /USB|removable|drive/i.test(text) && /Tor|SOCKS5|localhost:9050|clipboard|seed phrase|wallet/i.test(text)) {
+      addFinding(findings, "warning", "crypto-clipper-usb-lnk-spread-review", "USB .lnk propagation terms co-occur with Crypto Clipper behavior markers.", relative, "Preserve shortcut files and endpoint telemetry. Check for script interpreters spawning child processes, local Tor proxy use, screenshots, clipboard inspection, and wallet address replacement.");
+    }
+
+    if (/powershell/i.test(text) && /screenshot|screen.?capture/i.test(text) && /curl|Invoke-WebRequest|Invoke-RestMethod|Tor|SOCKS5|9050/i.test(text)) {
+      addFinding(findings, "warning", "crypto-clipper-screenshot-exfil-review", "PowerShell screen-capture and exfiltration terms match Crypto Clipper triage behavior.", relative, "Correlate with Defender alerts for suspicious JavaScript, Curl exfiltration, and Trojan:Win32/CryptoBandits.A.");
+    }
+  }
+}
+
 function checkPeopleSoftCve202635273(findings, targetRoot, homePath) {
   const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
   const roots = [
@@ -1607,6 +1916,146 @@ function checkRoundcubeCve202549113(findings, targetRoot, homePath) {
 
     if (/program\/actions\/settings\/upload\.php|_from\b|session_decode|rcube_session/i.test(text) && loweredRelative.includes("roundcube")) {
       addFinding(findings, "review", "roundcube-cve-2025-49113-code-path-review", "Roundcube upload/session code-path terms appear in scanned files.", relative, "Correlate with installed Roundcube version and vendor package state; the vulnerable range is before 1.5.10 and 1.6.x before 1.6.11.");
+    }
+  }
+}
+
+function checkJoomlaJceCve202648907(findings, targetRoot, homePath) {
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const roots = [
+    homeRelative,
+    "/usr/share",
+    "/usr/local",
+    "/var/www",
+    "/var/lib",
+    "/opt",
+    "/srv",
+    "/etc",
+    "/root",
+    "/tmp",
+    "/var/tmp",
+  ].filter(Boolean);
+  const files = [];
+  for (const root of roots) {
+    files.push(...findJoomlaJceFiles(mapLinuxPath(targetRoot, root), 30000 - files.length));
+    if (files.length >= 30000) break;
+  }
+
+  for (const filePath of files) {
+    const text = readText(filePath);
+    if (!text) continue;
+    const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+    const loweredRelative = relative.toLowerCase();
+    const haystack = `${loweredRelative}\n${text}`;
+
+    if (hasJoomlaJce48907PocOrKevShape(text, loweredRelative)) {
+      addFinding(findings, "warning", "joomla-jce-cve-2026-48907-poc-or-kev-reference", "Joomla JCE CVE-2026-48907 exploit/KEV reference appears in scanned files.", relative, "Keep exploit tooling and copied incident notes out of production web roots. Follow CISA KEV and JCE guidance for patching and compromise review.");
+    }
+
+    if (!hasJoomlaJceInstallSignal(text, loweredRelative)) continue;
+
+    for (const version of joomlaJceVersionsInText(text, loweredRelative)) {
+      if (compareDottedVersion(version, JOOMLA_JCE_FIXED) < 0) {
+        addFinding(findings, "critical", "joomla-jce-cve-2026-48907-vulnerable-version", "Joomla Content Editor version is affected by CVE-2026-48907.", `${relative}: JCE ${version}`, `Update JCE Pro/JCE to ${JOOMLA_JCE_FIXED} or later. If exploitation may have occurred, preserve rogue profile evidence, review uploaded PHP artifacts, rotate site/database/hosting credentials from a clean posture, and run server-side malware scanning.`);
+      }
+    }
+
+    if (/new editor profiles?|rogue profiles?|upload and execution of PHP code|profiles?[^.\n]{0,120}unauthenticated|com_jce[^.\n]{0,160}upload/i.test(haystack)) {
+      addFinding(findings, "warning", "joomla-jce-cve-2026-48907-profile-upload-review", "Joomla JCE profile/upload terms match CVE-2026-48907 triage language.", relative, "Review JCE editor profiles, Joomla administrator logs, uploaded PHP files, and web-server logs before clearing this host.");
+    }
+  }
+}
+
+function checkSplunkEnterpriseCve202620253(findings, targetRoot, homePath) {
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const roots = [
+    homeRelative,
+    "/opt/splunk",
+    "/opt",
+    "/etc",
+    "/var/log",
+    "/var/lib",
+    "/usr/local",
+    "/srv",
+    "/tmp",
+    "/var/tmp",
+  ].filter(Boolean);
+  const files = [];
+  for (const root of roots) {
+    files.push(...findWatchFiles(mapLinuxPath(targetRoot, root), 30000 - files.length));
+    if (files.length >= 30000) break;
+  }
+
+  for (const filePath of files) {
+    const text = readText(filePath);
+    if (!text) continue;
+    const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+    const splunkSignal = hasSplunkInstallSignal(text, relative.toLowerCase());
+
+    if (/CVE-2026-20253|BOD 26-04|Known Exploited Vulnerabilities|CISA KEV/i.test(text) && /Splunk|PostgreSQL sidecar|Sidecar Service/i.test(text)) {
+      addFinding(findings, "warning", "splunk-cve-2026-20253-kev-reference", "Splunk Enterprise CVE-2026-20253 CISA KEV reference appears in scanned files.", relative, "Prioritize exposure assessment and vendor mitigation. If Splunk Enterprise is reachable from untrusted networks, treat as urgent active-exploitation posture.");
+    }
+
+    if (/\/v1\/postgres\/recovery\/(?:backup|restore)\b|PostgreSQL Sidecar Service|PostgreSQL sidecar/i.test(text)) {
+      addFinding(findings, "critical", "splunk-cve-2026-20253-postgres-sidecar-endpoint", "Splunk PostgreSQL sidecar recovery endpoint or service reference appears in scanned files.", relative, "Review Splunk web exposure, access logs, and PostgreSQL sidecar access immediately. Apply Splunk mitigation or update guidance; if patching is not possible, remove exposure until secured.");
+    }
+
+    if (splunkSignal) {
+      for (const version of splunkEnterpriseVersionsInText(text)) {
+        if (compareDottedVersion(version, SPLUNK_20253_REVIEW_MIN) >= 0) {
+          addFinding(findings, "review", "splunk-cve-2026-20253-enterprise-10-review", "Splunk Enterprise 10.x or later reference appears in scanned files.", `${relative}: Splunk Enterprise ${version}`, "Verify whether this deployment includes the PostgreSQL sidecar service and whether Splunk/CISA mitigation for CVE-2026-20253 has been applied.");
+        }
+      }
+    }
+
+    if (splunkSignal && /pg_restore|pg_dump|\.pgpass|backupFile|large object export|arbitrary file (?:write|creation|truncation)|database parameter|restore feature/i.test(text)) {
+      addFinding(findings, "warning", "splunk-cve-2026-20253-file-write-chain-review", "Splunk PostgreSQL sidecar file-write/RCE-chain triage terms appear in scanned files.", relative, "Review file-integrity drift in Splunk-owned paths, unusual recovery endpoint access, PostgreSQL sidecar logs, and recent file creation/truncation events before clearing the host.");
+    }
+  }
+}
+
+function checkRedcapExposure(findings, targetRoot, homePath) {
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const roots = [
+    homeRelative,
+    "/var/www",
+    "/srv",
+    "/opt",
+    "/usr/local",
+    "/etc",
+    "/var/log",
+    "/tmp",
+    "/var/tmp",
+  ].filter(Boolean);
+  const files = [];
+  for (const root of roots) {
+    files.push(...findWatchFiles(mapLinuxPath(targetRoot, root), 30000 - files.length));
+    if (files.length >= 30000) break;
+  }
+
+  for (const filePath of files) {
+    const text = readText(filePath);
+    if (!text) continue;
+    const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+    const loweredRelative = relative.toLowerCase();
+    const redcapSignal = hasRedcapSignal(text, loweredRelative);
+
+    if (!redcapSignal) continue;
+
+    for (const version of redcapVersionsInText(text, loweredRelative)) {
+      if (compareDottedVersion(version, REDCAP_REVIEW_LATEST) < 0) {
+        addFinding(findings, "review", "redcap-outdated-version-review", "REDCap version appears older than the latest version cited by Censys/SecurityWeek on 2026-06-16.", `${relative}: REDCap ${version}`, `Inventory internet exposure, update toward ${REDCAP_REVIEW_LATEST} or current vendor release, and review whether legacy REDCap versions are running side-by-side.`);
+      }
+    }
+
+    for (const indicator of REDCAP_TEXT_INDICATORS) {
+      if (text.includes(indicator)) {
+        addFinding(findings, "review", "redcap-exposure-indicator", "REDCap deployment or campaign triage term appears in scanned files.", `${relative}: ${indicator}`, "Confirm REDCap internet exposure, patch level, legacy-version availability, authentication posture, and web/database separation.");
+      }
+    }
+
+    if (/UNC6508|InfiniteRed|credential harvesting|legacy REDCap|China-linked|cyberespionage/i.test(text)) {
+      addFinding(findings, "warning", "redcap-unc6508-triage-note", "REDCap UNC6508 / InfiniteRed triage language appears in scanned files.", relative, "Review REDCap access logs, administrator accounts, suspicious modules/files, credential harvesting evidence, and internal network access from the REDCap host.");
     }
   }
 }
@@ -2181,6 +2630,127 @@ function isRoundcube49113Vulnerable(version) {
 function hasRoundcube49113PocShape(text, relativePath) {
   return /cve-2025-49113/i.test(relativePath + "\n" + text)
     && /target_url|username\s+password\s+command|program\/actions\/settings\/upload\.php|_from|php\s+CVE-2025-49113\.php/i.test(text);
+}
+
+function hasSplunkInstallSignal(text, relativePath) {
+  return relativePath.includes("/splunk/")
+    || /Splunk Enterprise|splunkd|SPLUNK_HOME|\/opt\/splunk|etc\/splunk\.version|PostgreSQL Sidecar Service/i.test(text);
+}
+
+function splunkEnterpriseVersionsInText(text) {
+  const versions = new Set();
+  const patterns = [
+    /VERSION\s*=\s*([0-9]+\.[0-9]+(?:\.[0-9]+)?)/gi,
+    /Splunk Enterprise[^0-9]{0,80}([0-9]+\.[0-9]+(?:\.[0-9]+)?)/gi,
+    /splunk(?:d)?[^0-9]{0,80}([0-9]+\.[0-9]+(?:\.[0-9]+)?)/gi,
+    /"version"\s*:\s*"([0-9]+\.[0-9]+(?:\.[0-9]+)?)"/gi,
+  ];
+  for (const pattern of patterns) {
+    for (const match of text.matchAll(pattern)) {
+      versions.add(normalizeDottedVersion(match[1]));
+    }
+  }
+  return Array.from(versions);
+}
+
+function normalizeDottedVersion(version) {
+  const parts = version.split(".");
+  while (parts.length < 3) parts.push("0");
+  return parts.slice(0, 3).join(".");
+}
+
+function hasRedcapSignal(text, relativePath) {
+  return relativePath.includes("redcap")
+    || /REDCap|redcap_version|Project REDCap|redcap_v[0-9_]+|Clinical Data Interoperability Services/i.test(text);
+}
+
+function redcapVersionsInText(text, relativePath) {
+  const versions = new Set();
+  const patterns = [
+    /REDCap[^0-9]{0,80}([0-9]+\.[0-9]+(?:\.[0-9]+)?)/gi,
+    /redcap_version['"]?\s*[:=]\s*['"]([0-9]+\.[0-9]+(?:\.[0-9]+)?)['"]/gi,
+    /VERSION\s*=\s*['"]?([0-9]+\.[0-9]+(?:\.[0-9]+)?)/gi,
+    /redcap_v([0-9]+)_([0-9]+)_([0-9]+)/gi,
+  ];
+  for (const pattern of patterns) {
+    for (const match of text.matchAll(pattern)) {
+      if (match.length >= 4) {
+        versions.add(`${match[1]}.${match[2]}.${match[3]}`);
+      } else {
+        versions.add(normalizeDottedVersion(match[1]));
+      }
+    }
+  }
+  const pathMatch = relativePath.match(/redcap_v([0-9]+)_([0-9]+)_([0-9]+)/i);
+  if (pathMatch) versions.add(`${pathMatch[1]}.${pathMatch[2]}.${pathMatch[3]}`);
+  return Array.from(versions);
+}
+
+function findJoomlaJceFiles(dirPath, maxFiles) {
+  const files = [];
+  if (!dirPath || maxFiles <= 0) return files;
+  const skipDirs = new Set([".git", ".hg", ".svn", ".next", "dist", "build", "coverage", "node_modules", ".venv", "venv"]);
+  const stack = [dirPath];
+  const seenDirs = new Set();
+  while (stack.length > 0 && files.length < maxFiles) {
+    const current = stack.pop();
+    if (!current || seenDirs.has(current)) continue;
+    seenDirs.add(current);
+    let entries;
+    try {
+      entries = fs.readdirSync(current, { withFileTypes: true });
+    } catch {
+      continue;
+    }
+    for (const entry of entries) {
+      const fullPath = path.join(current, entry.name);
+      if (entry.isDirectory()) {
+        if (!skipDirs.has(entry.name)) stack.push(fullPath);
+      } else if (entry.isFile() && isJoomlaJceCandidateFile(entry.name, fullPath)) {
+        files.push(fullPath);
+        if (files.length >= maxFiles) break;
+      }
+    }
+  }
+  return files;
+}
+
+function isJoomlaJceCandidateFile(fileName, filePath) {
+  const normalized = filePath.replace(/\\/g, "/").toLowerCase();
+  if (JOOMLA_JCE_ROOT_HINTS.some((hint) => normalized.includes(hint))) {
+    if (JOOMLA_JCE_CANDIDATE_FILE_NAMES.has(fileName)) return true;
+    return /\.(php|xml|json|log|txt|md)$/i.test(fileName);
+  }
+  if (/cve-2026-48907|joomla.*jce|jce.*joomla|com_jce/i.test(normalized)) return true;
+  return false;
+}
+
+function hasJoomlaJceInstallSignal(text, relativePath) {
+  return JOOMLA_JCE_ROOT_HINTS.some((hint) => relativePath.includes(hint))
+    || /Joomla Content Editor|JCE Pro|Widget Factory|com_jce|plugins\/editors\/jce|administrator\/components\/com_jce/i.test(text);
+}
+
+function joomlaJceVersionsInText(text, relativePath) {
+  const versions = new Set();
+  const scopedText = `${relativePath}\n${text}`;
+  const patterns = [
+    /(?:JCE Pro|Joomla Content Editor|Widget Factory|com_jce)[^0-9]{0,120}([0-9]+\.[0-9]+\.[0-9]+(?:\.[0-9]+)?)/gi,
+    /<name>[^<]*(?:JCE|Joomla Content Editor)[^<]*<\/name>[\s\S]{0,600}?<version>([0-9]+\.[0-9]+\.[0-9]+(?:\.[0-9]+)?)<\/version>/gi,
+    /<version>([0-9]+\.[0-9]+\.[0-9]+(?:\.[0-9]+)?)<\/version>[\s\S]{0,600}?(?:JCE|Joomla Content Editor|com_jce)/gi,
+    /["'](?:name|element)["']\s*:\s*["'](?:JCE|com_jce|jce)["'][\s\S]{0,300}?["']version["']\s*:\s*["']([0-9]+\.[0-9]+\.[0-9]+(?:\.[0-9]+)?)["']/gi,
+  ];
+  for (const pattern of patterns) {
+    for (const match of scopedText.matchAll(pattern)) {
+      versions.add(match[1]);
+    }
+  }
+  return Array.from(versions);
+}
+
+function hasJoomlaJce48907PocOrKevShape(text, relativePath) {
+  const haystack = `${relativePath}\n${text}`;
+  return /cve-2026-48907/i.test(haystack)
+    && /Joomla|JCE|com_jce|profile|upload|PHP|Known Exploited Vulnerabilities|CISA|BOD 26-04/i.test(haystack);
 }
 
 function isHadesWatchFile(fileName, filePath) {
