@@ -160,6 +160,12 @@ system libssh2 package. The adjacent `CVE-2026-55199` ext-info DoS is included
 as copied-advisory context because downstream packagers are triaging both
 libssh2 fixes together.
 
+The public `bikini/exploitarium` `libssh2-cve-2026-55200-poc` tree is tracked
+only as a local PoC-artifact review signal. If those files appear on a
+developer workstation, build host, or runner, confirm provenance and keep them
+out of normal dependency, CI, and credential-bearing workflows unless they are
+explicitly authorized research material.
+
 Fragnesia is a Linux kernel local-root flaw affecting supported AlmaLinux
 releases through the `esp4`, `esp6`, and, on some AlmaLinux 9/10 systems,
 `rxrpc` modules. This tool does not test exploitability. It checks kernel

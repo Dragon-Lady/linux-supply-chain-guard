@@ -116,7 +116,9 @@ The June 2026 libssh2 client-exposure lane adds Debian-family package checks
 and copied-advisory/source-note checks for `CVE-2026-55200`, the
 `ssh2_transport_read()` packet-length out-of-bounds write fixed by upstream
 commit `7acf3df`. It also tracks adjacent `CVE-2026-55199` notes because both
-libssh2 fixes are being triaged together by downstream packagers.
+libssh2 fixes are being triaged together by downstream packagers. The lane also
+flags local copies or notes from the public `bikini/exploitarium`
+`libssh2-cve-2026-55200-poc` tree as PoC research artifacts.
 
 The June 2026 ShapedPlugin Pro WordPress supply-chain watch pack adds local
 WordPress tree checks for affected Pro plugin slugs and versions,
@@ -361,6 +363,9 @@ Exit codes:
     review
   - advisory/source terms including `ssh2_transport_read`, `packet_length`,
     `PR #2052`, fix commit `7acf3df`, and companion `CVE-2026-55199`
+  - public PoC/research markers including `libssh2-cve-2026-55200-poc`,
+    `cve_2026_55200_probe.c`, `libpwn_cve_2026_55200_server.py`,
+    `libpwn_local_rce_harness.c`, and `libpwn_local_rce_exploit.py`
   - local workflow notes where libssh2 appears near SSH/SCP/SFTP clients such
     as curl, git, backup, deploy, clone, mirror, or artifact-fetch tooling
 - ShapedPlugin Pro WordPress supply-chain indicators:
@@ -633,6 +638,8 @@ the known indicators it checks.
 - NixOS security tracker issue for libssh2 `CVE-2026-55199` and
   `CVE-2026-55200`:
   https://github.com/NixOS/nixpkgs/issues/532920
+- bikini/exploitarium libssh2 `CVE-2026-55200` public PoC tree:
+  https://github.com/bikini/exploitarium/tree/main/libssh2-cve-2026-55200-poc
 - Wordfence ShapedPlugin Pro supply-chain compromise PSA:
   https://www.wordfence.com/blog/2026/06/psa-supply-chain-compromise-targets-shapedplugin-backdoored-pro-plugins-distributed-via-official-channels/
 - The Hacker News ShapedPlugin Pro supply-chain compromise summary:
