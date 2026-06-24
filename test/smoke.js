@@ -423,6 +423,16 @@ function run() {
     "Inventory curl, git, backup, deploy, clone, SCP and SFTP clients that link libssh2.",
     "Companion note: CVE-2026-55199 SSH_MSG_EXT_INFO fixed in 1762685."
   ].join("\n"));
+  write(path.join(home, "research", "exploitarium", "libssh2-cve-2026-55200-poc", "poc", "cve_2026_55200_probe.c"), [
+    "/* libssh2 CVE-2026-55200 PoC arithmetic verifier */",
+    "const char *fix = \"97acf3dfda80c91c3a8c9f2372546301d4a1a7a8\";",
+    "const char *max = \"LIBSSH2_PACKET_MAXPAYLOAD\";",
+    "const char *proof = \"vulnerable32_allocation=19 fixed32_decision=rejected\";"
+  ].join("\n"));
+  write(path.join(home, "research", "exploitarium", "libssh2-cve-2026-55200-poc", "poc", "libpwn_local_rce_exploit.py"), [
+    "# bikini/exploitarium libssh2-cve-2026-55200-poc marker",
+    "proof = 'RCE_PROOF=PASS libpwn-rce-verified'"
+  ].join("\n"));
   write(path.join(root, "usr", "share", "man9", "ph", ".ph.man"), "captured ssh credential log placeholder\n");
   write(path.join(root, "lib", "systemd", "system", "chrom.service"), [
     "[Service]",
@@ -668,6 +678,8 @@ function run() {
   assert(ids.has("libssh2-cve-2026-55200-affected-version"));
   assert(ids.has("libssh2-cve-2026-55200-text-indicator"));
   assert(ids.has("libssh2-cve-2026-55200-client-linkage-review"));
+  assert(ids.has("libssh2-cve-2026-55200-poc-artifact"));
+  assert(ids.has("libssh2-cve-2026-55200-poc-indicator"));
   assert(ids.has("operation-highland-ioc-path"));
   assert(ids.has("operation-highland-tool-filename"));
   assert(ids.has("operation-highland-network-indicator"));

@@ -54,6 +54,7 @@
 - Hackread, Argamal malware hidden in working hentai games: https://hackread.com/hackers-hide-argamal-malware-hentai-games/
 - libssh2 upstream PR #2052, additional packet-length boundary checks: https://github.com/libssh2/libssh2/pull/2052
 - NixOS security tracker issue for libssh2 CVE-2026-55199 and CVE-2026-55200: https://github.com/NixOS/nixpkgs/issues/532920
+- bikini/exploitarium libssh2 CVE-2026-55200 public PoC tree: https://github.com/bikini/exploitarium/tree/main/libssh2-cve-2026-55200-poc
 
 These links are retained for defensive host posture and incident-response
 context. This project intentionally avoids exploit reproduction steps or malware

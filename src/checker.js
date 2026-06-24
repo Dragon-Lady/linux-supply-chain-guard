@@ -889,6 +889,12 @@ const WATCH_FILE_NAMES = new Set([
   "class-wc-subscription-trace-dispatch.php",
   "class-wc-subscription-diagnostics.php",
   "class-wc-subscription-scheduler.php",
+  "cve_2026_55200_probe.c",
+  "libpwn_cve_2026_55200_server.py",
+  "libpwn_local_rce_harness.c",
+  "libpwn_local_rce_exploit.py",
+  "libpwn_rce_proof.txt",
+  "2026-06-23-local-harness-output.txt",
   ...PEOPLESOFT_MESH_AGENT_FILES,
   "gentlemen.bmp",
   "README-GENTLEMEN.txt",
@@ -1007,7 +1013,33 @@ const LIBSSH2_CVE202655200_TEXT_INDICATORS = [
   "PR #2052",
   "pull/2052",
   "7acf3df",
+  "97acf3dfda80c91c3a8c9f2372546301d4a1a7a8",
   "1762685",
+];
+
+const LIBSSH2_CVE202655200_POC_FILES = new Set([
+  "cve_2026_55200_probe.c",
+  "libpwn_cve_2026_55200_server.py",
+  "libpwn_local_rce_harness.c",
+  "libpwn_local_rce_exploit.py",
+  "libpwn_rce_proof.txt",
+  "2026-06-23-local-harness-output.txt",
+]);
+
+const LIBSSH2_CVE202655200_POC_TEXT_INDICATORS = [
+  "bikini/exploitarium",
+  "libssh2-cve-2026-55200-poc",
+  "libssh2 CVE-2026-55200 PoC",
+  "local RCE scaffold",
+  "cve_2026_55200_probe.c",
+  "libpwn_cve_2026_55200_server.py",
+  "libpwn_local_rce_harness.c",
+  "libpwn_local_rce_exploit.py",
+  "LIBSSH2_PACKET_MAXPAYLOAD",
+  "vulnerable32_allocation=19",
+  "fixed32_decision=rejected",
+  "RCE_PROOF=PASS",
+  "libpwn-rce-verified",
 ];
 
 const SHAPEDPLUGIN_KNOWN_HASHES = new Map([
@@ -2762,11 +2794,17 @@ function checkLibssh2Cve202655200Exposure(findings, targetRoot, homePath) {
   }
 
   for (const filePath of files) {
+    const base = path.basename(filePath);
     const size = fileSizeBytes(filePath);
     if (size <= 0 || size > 1024 * 1024) continue;
     const text = readText(filePath);
     if (!text) continue;
     const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+
+    if (LIBSSH2_CVE202655200_POC_FILES.has(base)
+      || relative.includes("/libssh2-cve-2026-55200-poc/")) {
+      addFinding(findings, "review", "libssh2-cve-2026-55200-poc-artifact", "libssh2 CVE-2026-55200 PoC artifact appears in scanned host metadata.", relative, "Treat as research code until provenance and authorization are verified. Do not execute PoC scaffolds on workstations or shared runners during routine triage.");
+    }
 
     const versions = packageVersionsInText(text, "libssh2");
     for (const version of versions) {
@@ -2778,6 +2816,12 @@ function checkLibssh2Cve202655200Exposure(findings, targetRoot, homePath) {
     for (const indicator of LIBSSH2_CVE202655200_TEXT_INDICATORS) {
       if (text.includes(indicator)) {
         addFinding(findings, "review", "libssh2-cve-2026-55200-text-indicator", "libssh2 CVE-2026-55200 / CVE-2026-55199 advisory term appears in scanned host metadata.", `${relative}: ${indicator}`, "Correlate with package state, bundled libraries, static builds, and clients that connect to SSH, SCP, or SFTP servers.");
+      }
+    }
+
+    for (const indicator of LIBSSH2_CVE202655200_POC_TEXT_INDICATORS) {
+      if (text.includes(indicator)) {
+        addFinding(findings, "review", "libssh2-cve-2026-55200-poc-indicator", "libssh2 CVE-2026-55200 PoC/exploitarium marker appears in scanned host metadata.", `${relative}: ${indicator}`, "Review whether this is authorized research material. Keep PoC files out of ordinary build, CI, and developer credential contexts.");
       }
     }
 
