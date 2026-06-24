@@ -372,8 +372,14 @@ function run() {
   ].join("\n"));
   write(path.join(root, "opt", "GentlemenCollection", "GentleKiller", "Kasp1.exe"), "placeholder");
   write(path.join(root, "opt", "GentlemenCollection", "GentleKiller", "eb.sys"), "placeholder");
+  write(path.join(root, "opt", "GentlemenCollection", "HexKiller", "Avast.exe"), "placeholder");
+  write(path.join(root, "opt", "GentlemenCollection", "ThrottleBlood", "Sent.exe"), "placeholder");
+  write(path.join(root, "opt", "GentlemenCollection", "HavocKiller", "Sophos.exe"), "placeholder");
+  write(path.join(root, "opt", "GentlemenCollection", "HavocKiller", "havoc.sys"), "placeholder");
+  write(path.join(root, "opt", "GentlemenCollection", "OxideHarvest", "buildx641.exe"), "placeholder");
   write(path.join(root, "opt", "GentlemenCollection", "notes.txt"), [
-    "GentleKiller HexKiller ThrottleBlood HavocKiller OxideHarvest",
+    "GentleKiller HexKiller ThrottleBlood HavocKiller OxideHarvest UnknownKiller PoisonKiller",
+    "BdApi TechPowerUp LLC Huawei Audio havoc.sys buildx641.exe hastalamuerte quant",
     "Gentlemen EDR killer uses BYOVD bring your own vulnerable driver behavior",
     "fake version details invalid digital signatures copied legitimate certificates Enigma Themida",
     "kernel-level security processes terminated before encryption"

@@ -27,6 +27,7 @@
 - The Hacker News Gentlemen ransomware victim-claim summary: https://thehackernews.com/2026/06/the-gentlemen-ransomware-claims-478.html
 - Microsoft Threat Intelligence Gentlemen ransomware analysis: https://www.microsoft.com/en-us/security/blog/2026/05/28/the-gentlemen-ransomware-dissecting-a-self-propagating-go-encryptor/
 - Hunt.io Gentlemen ransomware exposed toolkit analysis: https://hunt.io/blog/ransomware-exposed-gentlemen-ransomware-toolkit-leaks-publicly
+- GBHackers Gentlemen RaaS evasion suite summary: https://gbhackers.com/gentlemen-raas-unifies-evasion-suite/
 - Huntress Heaven's Gate defensive overview: https://www.huntress.com/cybersecurity-101/topic/what-is-heavens-gate
 - Unit 42 PAN-OS CVE-2026-0257 active exploitation brief: https://unit42.paloaltonetworks.com/active-exploitation-of-pan-os-cve-2026-0257/
 - The Hacker News PAN-OS GlobalProtect CVE-2026-0257 summary: https://thehackernews.com/2026/06/palo-alto-warns-of-active-exploitation.html

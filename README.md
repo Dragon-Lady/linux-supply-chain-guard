@@ -451,6 +451,8 @@ Exit codes:
     `Microsoft Windows 10 Pro 64-bit` and empty `source_user_info.domain`
 - Gentlemen ransomware indicators:
   - known SHA-256 values for reported encryptor, PsExec, and wallpaper artifacts
+  - GBHackers-reported SHA-1 values for GentleKiller, HexKiller,
+    ThrottleBlood, HavocKiller, and OxideHarvest artifacts
   - `README-GENTLEMEN.txt`, `gentlemen.bmp`, and `gentlemen_system` markers
   - service/task strings including `UpdateSystem`, `UpdateUser`, `GupdateS`,
     and `GupdateU`
@@ -463,8 +465,11 @@ Exit codes:
   - reported network/session indicators including `176.120.22.127`
   - ESET-reported EDR-killer suite markers including `GentleKiller`,
     `GentlemenCollection`, `HexKiller`, `ThrottleBlood`, `HavocKiller`,
-    `OxideHarvest`, BYOVD behavior, fake version/signature metadata, and named
-    abused-driver or impersonation filenames
+    `OxideHarvest`, `UnknownKiller`, `PoisonKiller`, BYOVD behavior, fake
+    version/signature metadata, abused driver markers such as `BdApi` and
+    `havoc.sys`, and named abused-driver or impersonation filenames including
+    `Kasps.exe`, `G11.sys`, `Avast.exe`, `Sent.exe`, `Sophos.exe`, and
+    `buildx641.exe`
 - Heaven's Gate / WOW64 evasion review indicators:
   - analysis-note terms such as `Wow64Transition`, `HeavensGate`, or
     `Heaven's Gate`
@@ -596,6 +601,8 @@ the known indicators it checks.
   https://www.welivesecurity.com/en/eset-research/killing-me-gently-inside-gentlemens-edr-killer-framework/
 - Infosecurity Magazine GentleKiller summary:
   https://www.infosecurity-magazine.com/news/gentlekiller-gentlemen-ransomware/
+- GBHackers Gentlemen RaaS evasion suite summary:
+  https://gbhackers.com/gentlemen-raas-unifies-evasion-suite/
 - Huntress Heaven's Gate defensive overview:
   https://www.huntress.com/cybersecurity-101/topic/what-is-heavens-gate
 - Unit 42 PAN-OS CVE-2026-0257 active exploitation brief:
