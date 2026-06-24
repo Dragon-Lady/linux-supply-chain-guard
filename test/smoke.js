@@ -422,6 +422,27 @@ function run() {
     "fake version details invalid digital signatures copied legitimate certificates Enigma Themida",
     "kernel-level security processes terminated before encryption"
   ].join("\n"));
+  write(path.join(root, "Users", "alice", "AppData", "Local", "Microsoft", "Edge", "User Data", "test1", "native", "native_host.bat"), "python.exe -u backdoor.py\n");
+  write(path.join(root, "Users", "alice", "AppData", "Local", "Microsoft", "Edge", "User Data", "test1", "extension", "background.js"), [
+    "chrome.runtime.sendNativeMessage('com.abcd123.api', { command: 106 });",
+    "chrome.storage.local.serverUrl = 'wss://d3nh8sl98s2554.cloudfront.net/ws';",
+    "Edgecution Edge Monitoring Agent"
+  ].join("\n"));
+  write(path.join(root, "Users", "alice", "AppData", "Local", "Microsoft", "Edge", "User Data", "test1", "native", "manifest.json"), JSON.stringify({
+    name: "com.abcd123.api",
+    description: "Edge Monitoring Agent Native Host",
+    path: "%APPDATA%\\Microsoft\\Edge\\User Data\\test1\\native\\native_host.bat",
+    type: "stdio",
+    allowed_origins: ["chrome-extension://abcdefghijklmnop/"]
+  }, null, 2));
+  write(path.join(root, "Users", "alice", "AppData", "Local", "Microsoft", "Edge", "User Data", "Recovery", "scheduled-task.txt"), [
+    "schtasks /create /tn EdgeUpdate /tr \"msedge --user-data-dir=%LOCALAPPDATA%\\Microsoft\\Edge\\User Data\\Recovery --load-extension=%LOCALAPPDATA%\\Microsoft\\Edge\\User Data\\test1\\extension --no-first-run --disable-sync --headless=new\"",
+    "HKCU\\SOFTWARE\\Microsoft\\Edge AppKey decrypts the Python backdoor strings",
+    "Outlook Updates Management Console Updates Pack 5029 Updates Pack 5029-2 Updates Pack 5028f Outlook Version Verification OS Version Verification Updates Registration spam filter update",
+    "Payouts King Win64.Ransom.PayoutsKing W64/Payoutsking-ZRaa!Eldorado",
+    "a08d8e63b0cd3638fb40b8e6da546e26da69439597565827f9cec87915f78568 3d1158884fb339b3328bd330fcc27598e1f1c94bcac39e75d1a272afa4deee1a",
+    "Python backdoor can Collect and send system information, Run Python code, Retrieve a list of running processes, execute PowerShell commands, and write extension.log with request_id"
+  ].join("\n"));
   write(path.join(root, "opt", "triage", "wow64-evasion-note.txt"), [
     "Heaven's Gate / Wow64Transition suspected.",
     "32-bit process launches 64-bit shellcode for EDR evasion after injection.",
@@ -766,6 +787,17 @@ function run() {
   assert(ids.has("gentlemen-edr-killer-file-name"));
   assert(ids.has("gentlemen-edr-killer-suite-marker"));
   assert(ids.has("gentlemen-edr-killer-byovd-marker"));
+  assert(ids.has("edgecution-native-host-bat-path"));
+  assert(ids.has("edgecution-test1-staging-path"));
+  assert(ids.has("edgecution-recovery-profile-path"));
+  assert(ids.has("edgecution-known-sha256-reference"));
+  assert(ids.has("edgecution-cloudfront-c2-indicator"));
+  assert(ids.has("edgecution-native-messaging-bridge"));
+  assert(ids.has("edgecution-headless-edge-launch"));
+  assert(ids.has("edgecution-outlook-update-lure"));
+  assert(ids.has("edgecution-edge-appkey-registry"));
+  assert(ids.has("edgecution-python-backdoor-behavior"));
+  assert(ids.has("edgecution-text-indicator"));
   assert(ids.has("heavens-gate-wow64-evasion-marker"));
   assert(ids.has("argamal-game-rat-file-name"));
   assert(ids.has("argamal-game-rat-network-indicator"));

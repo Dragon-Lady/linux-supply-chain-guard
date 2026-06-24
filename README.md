@@ -79,6 +79,14 @@ markers, defense-evasion toolkit filenames, exposed operator toolkit scripts,
 reported network/session indicators, and ESET-reported GentleKiller/BYOVD
 EDR-killer suite markers. These are local operator notifications only.
 
+The June 2026 Edgecution / Payouts King watch pack adds local host and
+mounted-root checks for Zscaler-reported malicious Microsoft Edge extension
+artifacts, Chrome native messaging host manifests, `native_host.bat`, Edge
+`test1` and `Recovery` profile paths, headless `--load-extension` launch
+commands, Outlook update lure terms, CloudFront websocket C2s, `AppKey`
+registry setup strings, and published SHA-256 indicators. These are local
+operator notifications only.
+
 The June 2026 Operation Highland / Velvet Ant watch pack adds Sygnia-reported
 Linux authentication-stack compromise checks for replaced PAM/OpenSSH
 components, hidden credential-log paths, GS-Netcat staging, Nginx/FastCGI bridge
@@ -709,6 +717,8 @@ the known indicators it checks.
   https://www.infosecurity-magazine.com/news/gentlekiller-gentlemen-ransomware/
 - GBHackers Gentlemen RaaS evasion suite summary:
   https://gbhackers.com/gentlemen-raas-unifies-evasion-suite/
+- Zscaler ThreatLabz Edgecution / Payouts King analysis:
+  https://www.zscaler.com/blogs/security-research/payouts-king-ransomware-initial-access-broker-deploys-new-edgecution
 - Huntress Heaven's Gate defensive overview:
   https://www.huntress.com/cybersecurity-101/topic/what-is-heavens-gate
 - Unit 42 PAN-OS CVE-2026-0257 active exploitation brief:

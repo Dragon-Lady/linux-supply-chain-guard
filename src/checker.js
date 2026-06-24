@@ -852,6 +852,56 @@ const GENTLEMEN_NETWORK_INDICATORS = [
   "2ozoAve91tpILCwKCbRDNz7us8e_2qLk1aLKZoV4Y6TfrcfjK",
 ];
 
+const EDGECUTION_KNOWN_HASHES = new Map([
+  ["a08d8e63b0cd3638fb40b8e6da546e26da69439597565827f9cec87915f78568", "Edgecution browser extension background.js"],
+  ["3d1158884fb339b3328bd330fcc27598e1f1c94bcac39e75d1a272afa4deee1a", "Edgecution Python backdoor"],
+]);
+
+const EDGECUTION_C2_INDICATORS = [
+  "wss://d3nh8sl98s2554.cloudfront.net/ws",
+  "wss://d3nh8sl98s2554.cloudfront[.]net/ws",
+  "d3nh8sl98s2554.cloudfront.net",
+  "d3nh8sl98s2554.cloudfront[.]net",
+  "wss://d2g6dl71gua1qa.cloudfront.net/ws",
+  "wss://d2g6dl71gua1qa.cloudfront[.]net/ws",
+  "d2g6dl71gua1qa.cloudfront.net",
+  "d2g6dl71gua1qa.cloudfront[.]net",
+  "wss://d1jp293q9tvi92.cloudfront.net/ws",
+  "wss://d1jp293q9tvi92.cloudfront[.]net/ws",
+  "d1jp293q9tvi92.cloudfront.net",
+  "d1jp293q9tvi92.cloudfront[.]net",
+  "wss://d23l50n6ubud7p.cloudfront.net/ws",
+  "wss://d23l50n6ubud7p.cloudfront[.]net/ws",
+  "d23l50n6ubud7p.cloudfront.net",
+  "d23l50n6ubud7p.cloudfront[.]net",
+];
+
+const EDGECUTION_TEXT_INDICATORS = [
+  "Edgecution",
+  "Payouts King",
+  "Win64.Ransom.PayoutsKing",
+  "W64/Payoutsking-ZRaa!Eldorado",
+  "Edge Monitoring Agent Native Host",
+  "Edge Monitoring Agent",
+  "native_host.bat",
+  "chrome.runtime.sendNativeMessage",
+  "chrome.storage.local.serverUrl",
+  "Chrome native messaging",
+  "native messaging",
+  "HKCU\\SOFTWARE\\Microsoft\\Edge",
+  "AppKey",
+  "--headless=new",
+  "--load-extension",
+  "--user-data-dir",
+  "Outlook Updates Management Console",
+  "Updates Pack 5029",
+  "Updates Pack 5029-2",
+  "Updates Pack 5028f",
+  "Outlook Version Verification",
+  "OS Version Verification",
+  "Updates Registration",
+];
+
 const GLOBALPROTECT_0257_IPS = [
   "23.128.228.6",
   "23.128.228[.]6",
@@ -1581,6 +1631,7 @@ function scanHost(options = {}) {
   checkDynatraceTeamPcpWatch(findings, targetRoot, homePath);
   checkPcpJackRelayArtifacts(findings, targetRoot, homePath);
   checkGentlemenRansomware(findings, targetRoot, homePath);
+  checkEdgecutionPayoutsKing(findings, targetRoot, homePath);
   checkHeavensGateEvasion(findings, targetRoot, homePath);
   checkArgamalGameRat(findings, targetRoot, homePath);
   checkCryptoClipperUsbWorm(findings, targetRoot, homePath);
@@ -2611,6 +2662,101 @@ function checkGentlemenRansomware(findings, targetRoot, homePath) {
     for (const indicator of GENTLEMEN_NETWORK_INDICATORS) {
       if (text.includes(indicator)) {
         addFinding(findings, "critical", "gentlemen-network-indicator", "Gentlemen ransomware campaign network or session indicator appears in scanned host metadata.", `${relative}: ${indicator}`, "Correlate with firewall, proxy, EDR, and remote-access logs. Preserve evidence and rotate credentials from a clean posture if compromise is confirmed.");
+      }
+    }
+  }
+}
+
+function checkEdgecutionPayoutsKing(findings, targetRoot, homePath) {
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const roots = [
+    homeRelative,
+    "/home",
+    "/root",
+    "/tmp",
+    "/var/tmp",
+    "/opt",
+    "/srv",
+    "/var/www",
+    "/etc",
+    "/mnt",
+    "/media",
+    "/ProgramData",
+    "/Users",
+  ].filter(Boolean);
+  const files = [];
+  for (const root of roots) {
+    files.push(...findWatchFiles(mapLinuxPath(targetRoot, root), 30000 - files.length));
+    if (files.length >= 30000) break;
+  }
+
+  for (const filePath of files) {
+    const base = path.basename(filePath);
+    const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+    const normalizedRelative = relative.toLowerCase();
+    const size = fileSizeBytes(filePath);
+
+    if (base === "native_host.bat" && /\/microsoft\/edge\/user data\/test1\/native\//i.test(normalizedRelative)) {
+      addFinding(findings, "critical", "edgecution-native-host-bat-path", "Edgecution-style Microsoft Edge native host batch path exists.", relative, "Preserve the Edge profile, native messaging manifest, scheduled task, registry export, and Python backdoor before cleanup.");
+    }
+
+    if (/\/microsoft\/edge\/user data\/test1\/(?:extension|native)\//i.test(normalizedRelative)) {
+      addFinding(findings, "warning", "edgecution-test1-staging-path", "Edgecution-style Microsoft Edge test1 extension/native staging path appears in scanned host tree.", relative, "Review for a hidden Edge profile, native host bridge, embedded Python runtime, and CloudFront websocket C2.");
+    }
+
+    if (/\/microsoft\/edge\/user data\/recovery\//i.test(normalizedRelative)) {
+      addFinding(findings, "review", "edgecution-recovery-profile-path", "Microsoft Edge Recovery profile path appears in scanned host tree.", relative, "Correlate with scheduled tasks or commands that launch Edge headless with --load-extension.");
+    }
+
+    if ((base === "background.js" || base.endsWith(".py")) && size > 0 && size <= 25 * 1024 * 1024) {
+      const digest = sha256File(filePath);
+      const label = EDGECUTION_KNOWN_HASHES.get(digest);
+      if (label) {
+        addFinding(findings, "critical", "edgecution-known-sha256", "Known Edgecution SHA-256 observed.", `${relative}: ${label}; sha256=${digest}`, "Contain the host and preserve the browser extension/native host artifacts. Do not execute the file.");
+      }
+    }
+
+    const text = size <= 1024 * 1024 ? readText(filePath) : "";
+    if (!text) continue;
+
+    for (const [digest, label] of EDGECUTION_KNOWN_HASHES.entries()) {
+      if (text.includes(digest)) {
+        addFinding(findings, "critical", "edgecution-known-sha256-reference", "Known Edgecution SHA-256 appears in scanned metadata.", `${relative}: ${label}; sha256=${digest}`, "Use this as a high-confidence lead for Edgecution/Payouts King triage.");
+      }
+    }
+
+    for (const indicator of EDGECUTION_C2_INDICATORS) {
+      if (text.includes(indicator)) {
+        addFinding(findings, "critical", "edgecution-cloudfront-c2-indicator", "Edgecution CloudFront websocket C2 indicator appears in scanned metadata.", `${relative}: ${indicator}`, "Correlate with proxy, DNS, browser, and EDR telemetry for Edge headless launches and native messaging activity.");
+      }
+    }
+
+    if (/chrome\.runtime\.sendNativeMessage|allowed_origins|native_host\.bat|Edge Monitoring Agent Native Host|com\.[a-z0-9]{3,}\.api/i.test(text)
+      && /Microsoft\\Edge|Microsoft\/Edge|chrome-extension:\/\/|native messaging|stdio/i.test(text)) {
+      addFinding(findings, "critical", "edgecution-native-messaging-bridge", "Edgecution-style Edge native messaging bridge terms appear in scanned metadata.", relative, "Inspect Chrome/Edge native messaging host manifests, extension directories, and launched native applications for unauthorized host access.");
+    }
+
+    if (/--user-data-dir(?:=|\s)|--load-extension(?:=|\s)|--headless=new|--disable-sync|--no-first-run/i.test(text)
+      && /Microsoft\\Edge|Microsoft\/Edge|msedge|Edge\\User Data|Edge\/User Data|test1|Recovery/i.test(text)) {
+      addFinding(findings, "warning", "edgecution-headless-edge-launch", "Headless Microsoft Edge extension launch terms match Edgecution deployment behavior.", relative, "Review scheduled tasks, Run keys, shell history, and EDR process trees for hidden Edge profile launches.");
+    }
+
+    if (/Outlook Updates Management Console|Updates Pack 5029|Updates Pack 5029-2|Updates Pack 5028f|Outlook Version Verification|OS Version Verification|Updates Registration|spam filter update/i.test(text)) {
+      addFinding(findings, "warning", "edgecution-outlook-update-lure", "Edgecution Outlook update social-engineering lure terms appear in scanned metadata.", relative, "Correlate with Teams messages, clipboard execution, AutoHotKey downloads, PowerShell, batch scripts, and credential prompts.");
+    }
+
+    if (/HKCU\\SOFTWARE\\Microsoft\\Edge|AppKey/i.test(text) && /native_host\.bat|Edgecution|Edge Monitoring Agent|Python|backdoor|User Data\\test1/i.test(text)) {
+      addFinding(findings, "warning", "edgecution-edge-appkey-registry", "Edgecution AppKey registry or setup-script terms appear in scanned metadata.", relative, "Export and preserve the HKCU Microsoft Edge key and associated setup scripts before remediation.");
+    }
+
+    if (/chrome\.storage\.local\.serverUrl|extension\.log|request_id|standard input|Python backdoor|PowerShell commands|Collect and send system information|Run Python code|Retrieve a list of running processes/i.test(text)
+      && /Edgecution|native_host\.bat|sendNativeMessage|cloudfront|serverUrl/i.test(text)) {
+      addFinding(findings, "warning", "edgecution-python-backdoor-behavior", "Edgecution Python backdoor command/telemetry terms appear in scanned metadata.", relative, "Review native host logs, Python process creation, filesystem writes, shell execution, PowerShell execution, and process-list collection.");
+    }
+
+    for (const indicator of EDGECUTION_TEXT_INDICATORS) {
+      if (text.includes(indicator) && /Edgecution|Payouts King|Microsoft\\Edge|Microsoft\/Edge|native_host|sendNativeMessage|cloudfront|Outlook Updates/i.test(text)) {
+        addFinding(findings, "review", "edgecution-text-indicator", "Edgecution/Payouts King advisory term appears in scanned metadata.", `${relative}: ${indicator}`, "Use this as an inventory and triage lead for malicious Edge extension/native-host activity.");
       }
     }
   }
