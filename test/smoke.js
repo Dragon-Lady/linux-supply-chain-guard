@@ -298,6 +298,14 @@ function run() {
     "Status: install ok installed",
     "Version: 1.31.1-1",
     "",
+    "Package: ffmpeg",
+    "Status: install ok installed",
+    "Version: 8.1.1-1",
+    "",
+    "Package: libavcodec61",
+    "Status: install ok installed",
+    "Version: 8.1.1-1",
+    "",
   ].join("\n"));
   write(path.join(root, "etc", "squid", "squid.conf"), [
     "acl Safe_ports port 80",
@@ -372,6 +380,12 @@ function run() {
     "7b7981c99d59595fe15377df84695bb72ce0b85560a3935f930657b2d162e5ef",
     "adcd15f3d6b87f84d106ea426fa824fd20c9d64f6d199ce92580884290785f30",
     "d7d2f0ee187549f3f4a114d716be12521fbf62d6d26e2ac23d2a32d521d08fd8"
+  ].join("\n"));
+  write(path.join(root, "var", "log", "pixelsmash-triage.log"), [
+    "PixelSmash CVE-2026-8461 FFmpeg MagicYUV magicyuv VFS..D magicyuv",
+    "Jellyfin ffprobe scans AVI MKV MOV media libraries with libavcodec",
+    "Nextcloud Movie preview and PhotoPrism thumbnailing use ffmpegthumbnailer",
+    "Mitigation note: rebuild with --disable-decoder=magicyuv and confirm with ffmpeg -decoders"
   ].join("\n"));
   write(path.join(root, "usr", "share", "man9", "ph", ".ph.man"), "captured ssh credential log placeholder\n");
   write(path.join(root, "lib", "systemd", "system", "chrom.service"), [
@@ -602,6 +616,11 @@ function run() {
   assert(ids.has("clickfix-kb4-network-indicator"));
   assert(ids.has("clickfix-kb4-text-indicator"));
   assert(ids.has("clickfix-kb4-lnk-clipboard-stager"));
+  assert(ids.has("ffmpeg-pixelsmash-package-review"));
+  assert(ids.has("ffmpeg-pixelsmash-upstream-version-review"));
+  assert(ids.has("ffmpeg-pixelsmash-text-indicator"));
+  assert(ids.has("ffmpeg-pixelsmash-media-ingestion-review"));
+  assert(ids.has("ffmpeg-pixelsmash-magicyuv-disabled-note"));
   assert(ids.has("operation-highland-ioc-path"));
   assert(ids.has("operation-highland-tool-filename"));
   assert(ids.has("operation-highland-network-indicator"));

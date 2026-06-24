@@ -107,6 +107,11 @@ clipboard-injected PowerShell, DNS TXT staging, `document-auth[.]icu`,
 `italy-news[.]info`, `lootrioya[.]info`, and the reported ZIP/MSI/password
 stealer SHA-256 values.
 
+The June 2026 PixelSmash watch pack adds FFmpeg/libavcodec posture checks for
+`CVE-2026-8461`, MagicYUV decoder exposure terms, older upstream-looking
+FFmpeg versions before `8.1.2`, and high-risk media ingestion surfaces such as
+Jellyfin, Nextcloud movie previews, PhotoPrism, Immich, OBS, and thumbnailers.
+
 This project also tracks urgent Linux advisories as operator guidance when they
 intersect supply-chain response hosts. NGINX Rift / `CVE-2026-42945` and Sudo
 `CVE-2026-35535` are currently documented as advisory-only context; this guard
@@ -328,6 +333,15 @@ Exit codes:
   - infrastructure domains `document-auth[.]icu`, `italy-news[.]info`, and
     `lootrioya[.]info`
   - reported ZIP, MSI/RMM, and password-stealer SHA-256 values
+- FFmpeg PixelSmash indicators:
+  - installed `ffmpeg` / `libavcodec*` Debian-family packages
+  - upstream-looking versions before FFmpeg `8.1.2` flagged for vendor-backport
+    review
+  - `PixelSmash`, `CVE-2026-8461`, `MagicYUV`, `magicyuv`, `ffprobe`, and
+    `VFS..D magicyuv` triage terms
+  - media-ingestion surfaces including Jellyfin, Emby, Nextcloud, Immich,
+    PhotoPrism, OBS, and Linux thumbnailers
+  - mitigation notes such as `--disable-decoder=magicyuv`
 - Solana FakeFix / CMS Windows loader indicators:
   - Solana-themed npm names such as `@solana-labs/web3.js`,
     `solana-web3-stable`, `solana-rpc-client`, and `solana-mev-bot`
@@ -579,3 +593,7 @@ the known indicators it checks.
   https://blog.xlab.qianxin.com/arystinger-botnet-hijacks-legacy-routers-for-global-attacks-en/
 - The Hacker News Squidbleed `CVE-2026-47729` summary:
   https://thehackernews.com/2026/06/29-year-old-squid-proxy-bug-squidbleed.html
+- BleepingComputer PixelSmash / FFmpeg `CVE-2026-8461` summary:
+  https://www.bleepingcomputer.com/news/security/ffmpeg-fixes-pixelsmash-flaw-in-widely-used-video-decoder/
+- JFrog PixelSmash technical analysis:
+  https://jfrog.com/blog/pixelsmash-critical-ffmpeg-vulnerability-turns-media-files-into-weapons/
