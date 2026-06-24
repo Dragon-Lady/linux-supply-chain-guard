@@ -360,6 +360,53 @@ const FORTINET_CREDENTIAL_EXPOSURE_TEXT_INDICATORS = [
   "73,932",
 ];
 
+const FORTIBLEED_KNOWN_HASHES = new Map([
+  ["4d0b62d3162d4be391e3ba1e191dad28e5e5d5b161cfdef60eeb4361a92d8413", "FortigateSniffer Linux amd64"],
+  ["80d83eb01f28c87a61b51f1f83805e63a791905f019bd3b87f10a10f66efab1e", "FortigateSniffer Windows amd64"],
+  ["2c98c86e6bd6f46cbd6c89d855541b9da91515b1bb986641a77e31c5c6aa2abb", "FortiBleed mpbrute2 SSH brute-force tool"],
+  ["a8b09fd4f7ff2f298b45ca602992f44b3c2ac3746bcdb182c59ab2a20c690954", "FortiBleed forticheck SSLVPN credential checker"],
+]);
+
+const FORTIBLEED_NETWORK_INDICATORS = [
+  "85.11.187.8",
+  "85.11.187[.]8",
+  "193.8.187.2",
+  "193.8.187[.]2",
+  "193.8.187.42",
+  "193.8.187[.]42",
+  "193.8.187.26",
+  "193.8.187[.]26",
+  "194.113.39.71",
+  "194.113.39[.]71",
+  "77.91.122.13",
+  "77.91.122[.]13",
+];
+
+const FORTIBLEED_TOOL_INDICATORS = [
+  "FortigateSniffer",
+  "fg_sniffer",
+  "fg_sniffer_linux_amd64",
+  "fg_sniffer_windows_amd64.exe",
+  "mpbrute2.bin",
+  "forticheck",
+  "SNIFTRAN",
+  "PCAP Deep Analysis Toolkit",
+  "diagnose sniffer packet",
+  "ipgeo.csv",
+  "harvestresults",
+  "Shodan_Recon",
+  "FortiProbe-fast",
+  "gen_rotator",
+  "match_corps.py",
+  "merge_revenue.py",
+  "build_report.py",
+  "spray_da.py",
+  "smb_test.py",
+  "spider.py",
+  "ad_full_audit.py",
+  "backup_dfs.py",
+];
+
 const SOLANA_FAKEFIX_NPM_PACKAGES = [
   "@solana-labs/ancor",
   "@solana-labs/etherjs",
@@ -2744,6 +2791,24 @@ function checkFortinetCredentialExposure(findings, targetRoot, homePath) {
 
     if (/admin-forticloud-sso-login|FortiCloud SSO|FortiCloud login/i.test(text)) {
       addFinding(findings, "review", "fortinet-forticloud-sso-review", "FortiCloud SSO/login configuration or mitigation language appears in scanned files.", relative, "Verify current Fortinet vendor guidance for FortiCloud SSO, restrict management-plane access, and confirm whether SSO-related mitigations or updates apply to this deployment.");
+    }
+
+    const digest = sha256File(filePath);
+    if (digest && FORTIBLEED_KNOWN_HASHES.has(digest)) {
+      const label = FORTIBLEED_KNOWN_HASHES.get(digest);
+      addFinding(findings, "critical", "fortibleed-known-tool-sha256", "Known FortiBleed/FortigateSniffer tool SHA-256 observed.", `${relative}: ${label}; sha256=${digest}`, "Preserve the artifact and treat the Fortinet edge-device environment as compromised until SSH/admin/VPN logs, credential dumps, and downstream access are reviewed.");
+    }
+
+    for (const indicator of FORTIBLEED_NETWORK_INDICATORS) {
+      if (text.includes(indicator)) {
+        addFinding(findings, "critical", "fortibleed-network-indicator", "FortiBleed/FortigateSniffer infrastructure indicator appears in scanned host metadata.", `${relative}: ${indicator}`, "Correlate with firewall, VPN, SSH, proxy, DNS, and NetFlow telemetry. Rotate Fortinet, VPN, LDAP, RADIUS, NTLM, Kerberos, and AD-linked credentials from a clean posture if exposure is confirmed.");
+      }
+    }
+
+    for (const indicator of FORTIBLEED_TOOL_INDICATORS) {
+      if (text.includes(indicator)) {
+        addFinding(findings, "warning", "fortibleed-tool-indicator", "FortiBleed/FortigateSniffer tooling or workflow marker appears in scanned files.", `${relative}: ${indicator}`, "Review for FortiGate SSH access, diagnostic sniffer abuse, PCAP/harvest directories, cracked hashes, session-cookie replay, DFS exfiltration, and lateral movement from firewall-captured credentials.");
+      }
     }
   }
 }

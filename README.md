@@ -325,6 +325,9 @@ Exit codes:
   - FortiGate/FortiOS/SSL VPN/FortiCloud SSO terms, `FortiBleed`, credential
     dump/brute-force language, VPN authentication hashes, and firewall
     configuration export terms
+  - FortigateSniffer/FortiBleed tooling markers including `fg_sniffer`,
+    `mpbrute2.bin`, `forticheck`, `SNIFTRAN`, `PCAP Deep Analysis Toolkit`,
+    `diagnose sniffer packet`, `harvestresults`, and reported campaign IPs
   - reminders to inventory Fortinet edge devices, rotate Fortinet/VPN/LDAP/AD
     credentials from a clean posture, enforce MFA, restrict management-plane
     exposure, and review authentication/config-export logs
@@ -630,6 +633,10 @@ the known indicators it checks.
   https://www.cisa.gov/news-events/alerts/2026/06/18/cisa-urges-hardening-fortinet-devices-after-reports-credential-exposure
 - TechRadar summary of Fortinet/FortiGate credential exposure reporting:
   https://www.techradar.com/pro/security/fortinet-firewalls-hit-by-huge-password-stealing-attack-around-75-000-users-possibly-affected
+- SOCRadar FortiBleed / FortigateSniffer whitepaper landing page:
+  https://socradar.io/resources/whitepapers/dismantling-fortibleed-inside-a-russian-fortinet-compromise-operation/
+- Cyber Security News FortigateSniffer / FortiBleed tooling summary:
+  https://cybersecuritynews.com/fortigatesniffer-tool-fortibleed/
 - The Hacker News Operation Endgame / SocGholish disruption report:
   https://thehackernews.com/2026/06/operation-endgame-disrupts-socgholish.html
 - FBI IC3 PSA on malicious traffic distribution systems:
