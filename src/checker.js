@@ -2446,7 +2446,7 @@ function checkSquidbleedFtpProxyExposure(findings, targetRoot, homePath) {
   const packageStatus = readText(mapLinuxPath(targetRoot, "/var/lib/dpkg/status"));
   const squidDpkg = squidPackagesFromDpkgStatus(packageStatus);
   for (const pkg of squidDpkg) {
-    addFinding(findings, "review", "squidbleed-squid-package-review", "Squid package appears installed on a host affected by the Squidbleed FTP-parser review lane.", `${pkg.name} ${pkg.version}`, "Until a distro-fixed package is confirmed, disable FTP proxying if not required, restrict outbound TCP/21 from the proxy, and avoid forwarding cleartext HTTP credentials through shared Squid instances.");
+    addFinding(findings, "review", "squidbleed-squid-package-review", "Squid package appears installed on a host affected by the Squidbleed CVE-2026-47729 FTP-parser review lane.", `${pkg.name} ${pkg.version}`, "Confirm the FtpGateway.cc fix or distro backport. Disable FTP proxying if not required, restrict outbound TCP/21 from the proxy, and avoid forwarding cleartext HTTP credentials through shared Squid instances.");
   }
 
   const configPaths = new Set(SQUIDBLEED_CONFIG_PATHS);
@@ -2473,10 +2473,10 @@ function checkSquidbleedFtpProxyExposure(findings, targetRoot, homePath) {
     const text = readText(resolved);
     if (!text) continue;
     const activeText = stripHashComments(text);
-    addFinding(findings, "review", "squidbleed-squid-config-present", "Squid proxy configuration is present; review FTP proxy exposure for Squidbleed.", configPath, "If FTP proxying is not explicitly required, remove TCP/21 from Safe_ports and block proxy egress to attacker-controlled FTP servers.");
+    addFinding(findings, "review", "squidbleed-squid-config-present", "Squid proxy configuration is present; review FTP proxy exposure for Squidbleed CVE-2026-47729.", configPath, "If FTP proxying is not explicitly required, remove TCP/21 from Safe_ports and block proxy egress to attacker-controlled FTP servers.");
 
     if (squidConfigAllowsFtpSafePort(activeText)) {
-      addFinding(findings, "warning", "squidbleed-ftp-safe-port-exposure", "Squid configuration allows FTP port 21 through Safe_ports, matching a Squidbleed exposure precondition.", configPath, "Remove or comment the Safe_ports port 21 rule unless FTP proxying is required, reload Squid, and confirm vendor patch/backport status.");
+      addFinding(findings, "warning", "squidbleed-ftp-safe-port-exposure", "Squid configuration allows FTP port 21 through Safe_ports, matching a Squidbleed CVE-2026-47729 exposure precondition.", configPath, "Remove or comment the Safe_ports port 21 rule unless FTP proxying is required, reload Squid, and confirm the FtpGateway.cc fix or vendor backport status.");
     }
 
     if (/ftp:\/\/|ftp_port|ftp_passive|ftp_epsv|ftp_user/i.test(activeText)) {
