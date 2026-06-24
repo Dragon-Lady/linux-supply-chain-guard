@@ -22,6 +22,7 @@
     "cisaKevEdgeDeviceLatest": "Checks local and mounted-root metadata for CISA KEV catalog version 2026.06.23 edge-device additions covering Lantronix EDS5000 CVE-2025-67038 and Ubiquiti UniFi OS CVE-2026-34908, CVE-2026-34909, and CVE-2026-34910.",
     "ciscoCucmWebDialer20230": "Checks local and mounted-root metadata for Cisco Unified Communications Manager / Unified CM SME CVE-2026-20230 WebDialer SSRF, file-write/root-escalation language, and OSINT-reported full-chain webshell/Tor exploitation terms.",
     "exchangeJune2026": "Checks local and mounted-root metadata for Microsoft Exchange CVE-2026-45502 EWS InstallApp/ManifestUrl SSRF, CVE-2026-45504 SSRF/file-read privilege-escalation language, June 2026 KB/build markers, and public PoC artifact markers.",
+    "dcatAuthGoogle2fa": "Checks local and mounted-root metadata for Nextron-reported malicious Packagist dcat-auth-google-2fa@1.0.2.0, r.keepex.xyz credential exfiltration, hardcoded 2FA bypass marker 979890, and obfuscated PHP co-occurrence.",
     "operationHighland": "Checks Sygnia Operation Highland / Velvet Ant indicators including published SHA-1 values, hidden credential-log paths, GS-Netcat/auditdb staging, Nginx/FastCGI bridge artifacts, C2/infrastructure strings, and process-masquerade markers.",
     "autoJackAgentLocalhost": "Checks Microsoft AutoJack / AutoGen Studio local MCP control-plane posture terms including AutoGen Studio, StdioServerParams, server_params, /api/mcp/ws, localhost:8081, b047730, and reported autogenstudio pre-release versions. These are review prompts for agent-localhost trust-boundary risk."
   },
@@ -65,6 +66,7 @@
     "https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-45502",
     "https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-45504",
     "https://github.com/hawktrace/CVE-2026-45504",
+    "https://x.com/nextronresearch",
     "https://www.microsoft.com/en-us/security/blog/2026/06/18/autojack-single-page-rce-host-running-ai-agent/",
     "https://thehackernews.com/2026/06/autojack-attack-lets-one-web-page.html"
   ]

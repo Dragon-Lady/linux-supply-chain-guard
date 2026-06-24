@@ -143,6 +143,11 @@ clipboard-injected PowerShell, DNS TXT staging, `document-auth[.]icu`,
 `italy-news[.]info`, `lootrioya[.]info`, and the reported ZIP/MSI/password
 stealer SHA-256 values.
 
+The June 2026 Nextron Research Packagist watch pack adds local/mounted-root
+checks for malicious `dcat-auth-google-2fa@1.0.2.0`, `r[.]keepex[.]xyz`
+credential exfiltration, the reported `979890` hardcoded 2FA bypass code, and
+obfuscated PHP markers co-occurring with the package indicators.
+
 The June 2026 macOS ClickFix watch pack adds local host and mounted-root checks
 for fake-CAPTCHA Terminal paste commands that use `curl -fsSL`, `/tmp` DMG
 downloads, `hdiutil attach -nobrowse`, automatic `.app`/`.pkg` launch,

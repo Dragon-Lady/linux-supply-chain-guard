@@ -1380,6 +1380,17 @@ const SHAPEDPLUGIN_FAKE_PLUGIN_PATHS = [
   "/wp-content/plugins/woocommerce-notification",
 ];
 
+const NEXTRON_DCAT_AUTH_GOOGLE_2FA_INDICATORS = [
+  "dcat-auth-google-2fa",
+  "1.0.2.0",
+  "r.keepex.xyz",
+  "r[.]keepex[.]xyz",
+  "https://r.keepex.xyz/api/report/admin",
+  "hxxps://r[.]keepex[.]xyz/api/report/admin",
+  "979890",
+  "EXT_WEBSHELL_PHP_OBFUSC_Encoded_Mixed_Dec_And_Hex",
+];
+
 const ARYSTINGER_IOC_PATHS = [
   "/tmp/bin/syswapd0",
   "/tmp/bin/syswapd0h",
@@ -1674,6 +1685,7 @@ function scanHost(options = {}) {
   checkFfmpegPixelSmashExposure(findings, targetRoot, homePath);
   checkLibssh2Cve202655200Exposure(findings, targetRoot, homePath);
   checkShapedPluginSupplyChainCompromise(findings, targetRoot, homePath);
+  checkDcatAuthGoogle2faPackagistCompromise(findings, targetRoot, homePath);
   checkSquidbleedFtpProxyExposure(findings, targetRoot, homePath);
   checkHaproxyCve202655203Exposure(findings, targetRoot, homePath);
   checkNginxCritical2026Exposure(findings, targetRoot, homePath);
@@ -3638,6 +3650,61 @@ function checkShapedPluginSupplyChainCompromise(findings, targetRoot, homePath) 
     if (/\/wp-json\/wc\/v3\/settings\/apply|arbitrary file writes?|base64-encoded payload|Tiny File Manager|Adminer 5\.2\.1|shell_exec|passthru|eval/i.test(text)
       && (/install-persistent\.php|woocommerce-subscription|woocommerce-notification|ShapedPlugin/i.test(text) || base === "install-persistent.php" || SHAPEDPLUGIN_FAKE_PLUGIN_PATHS.some((fakePath) => relative.includes(`${fakePath}/`)))) {
       addFinding(findings, "critical", "shapedplugin-rest-webshell-backdoor", "ShapedPlugin-style REST/webshell persistence markers co-occur.", relative, "Preserve the WordPress tree and logs, remove persistence only after evidence capture, and rebuild/restore from a trusted baseline where practical.");
+    }
+  }
+}
+
+function checkDcatAuthGoogle2faPackagistCompromise(findings, targetRoot, homePath) {
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const roots = [
+    homeRelative,
+    "/var/www",
+    "/srv",
+    "/opt",
+    "/home",
+    "/mnt",
+    "/media",
+  ].filter(Boolean);
+  const files = [];
+  for (const root of roots) {
+    files.push(...findWatchFiles(mapLinuxPath(targetRoot, root), 30000 - files.length));
+    if (files.length >= 30000) break;
+  }
+
+  for (const filePath of files) {
+    const base = path.basename(filePath);
+    const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+    const size = fileSizeBytes(filePath);
+    if (size <= 0 || size > 2 * 1024 * 1024) continue;
+    const text = readText(filePath);
+    if (!text) continue;
+
+    if (/dcat-auth-google-2fa[\s\S]{0,220}(?:1\.0\.2\.0|v1\.0\.2\.0)|(?:1\.0\.2\.0|v1\.0\.2\.0)[\s\S]{0,220}dcat-auth-google-2fa/i.test(text)
+      || /dcat-auth-google-2fa/i.test(relative)) {
+      addFinding(findings, "critical", "dcat-auth-google-2fa-compromised-version", "Nextron-reported malicious Packagist package reference appears in scanned metadata.", relative, "Remove dcat-auth-google-2fa v1.0.2.0 from Composer manifests/lockfiles, rebuild from a clean lockfile, and treat any host where it executed as potentially credential-exposed.");
+    }
+
+    if (/r(?:\.|\[\.\])keepex(?:\.|\[\.\])xyz\/api\/report\/admin/i.test(text)) {
+      addFinding(findings, "critical", "dcat-auth-google-2fa-credential-exfil-url", "Nextron-reported dcat-auth-google-2fa credential exfiltration URL appears in scanned PHP or Composer metadata.", `${relative}: r[.]keepex[.]xyz/api/report/admin`, "Correlate web, DNS, proxy, and PHP logs for outbound exfiltration attempts. Rotate credentials from a clean host if execution is possible.");
+    }
+
+    if (/979890/.test(text) && /dcat-auth-google-2fa|google[-_ ]?2fa|two[-_ ]?factor|2FA|totp|auth/i.test(text)) {
+      addFinding(findings, "critical", "dcat-auth-google-2fa-hardcoded-bypass", "Nextron-reported hardcoded 2FA bypass code appears with 2FA/package context.", `${relative}: 979890`, "Assume two-factor enforcement may have been bypassed where this code executed. Review admin logins, rotate credentials, and re-enroll TOTP/2FA secrets from a clean machine.");
+    }
+
+    for (const indicator of NEXTRON_DCAT_AUTH_GOOGLE_2FA_INDICATORS) {
+      if (text.includes(indicator) && /dcat-auth-google-2fa|keepex|979890|EXT_WEBSHELL_PHP_OBFUSC/i.test(text)) {
+        addFinding(findings, "warning", "dcat-auth-google-2fa-text-indicator", "Nextron dcat-auth-google-2fa Packagist compromise indicator appears in scanned metadata.", `${relative}: ${indicator}`, "Use this as a Composer/PHP supply-chain triage lead. Preserve package files and logs before cleanup.");
+      }
+    }
+
+    if (/base64_decode|gzinflate|str_rot13|chr\s*\(|hex2bin|eval\s*\(|assert\s*\(|preg_replace\s*\(.{0,120}\/e/i.test(text)
+      && /dcat-auth-google-2fa|r(?:\.|\[\.\])keepex(?:\.|\[\.\])xyz|979890/i.test(text)) {
+      addFinding(findings, "critical", "dcat-auth-google-2fa-obfuscated-php", "Obfuscated PHP markers co-occur with Nextron dcat-auth-google-2fa compromise indicators.", relative, "Treat the PHP package tree as malicious. Preserve the artifact for analysis and rebuild dependencies from trusted sources.");
+    }
+
+    if (base === "composer.lock" && /dcat-auth-google-2fa/i.test(text) && /1\.0\.2\.0/.test(text)) {
+      addFinding(findings, "critical", "dcat-auth-google-2fa-composer-lock", "Composer lockfile references Nextron-reported malicious dcat-auth-google-2fa@1.0.2.0.", relative, "Stop Composer installs in this tree, remove the compromised package/version, regenerate lockfiles from a clean environment, and review whether vendor files were executed.");
     }
   }
 }
