@@ -620,6 +620,27 @@ const GENTLEMEN_TOOLKIT_FILES = new Set([
   "rustdesk.exe",
 ]);
 
+const GENTLEMEN_EDR_KILLER_FILES = new Set([
+  "eb.sys",
+  "nseckrnl.sys",
+  "GameDriverX64.sys",
+  "stpm_old.sys",
+  "stpm_new.sys",
+  "dmx.sys",
+  "360netmon_wfp.sys",
+  "IMFForceDelete",
+  "PoisonX",
+]);
+
+const GENTLEMEN_EDR_KILLER_NAMES = [
+  "GentleKiller",
+  "GentlemenCollection",
+  "HexKiller",
+  "ThrottleBlood",
+  "HavocKiller",
+  "OxideHarvest",
+];
+
 const GENTLEMEN_NETWORK_INDICATORS = [
   "176.120.22.127",
   "176.120.22[.]127",
@@ -867,6 +888,7 @@ const WATCH_FILE_NAMES = new Set([
   "README-GENTLEMEN.txt",
   "psexec.exe",
   ...GENTLEMEN_TOOLKIT_FILES,
+  ...GENTLEMEN_EDR_KILLER_FILES,
   ...ARGAMAL_FILE_NAMES,
   ...OPERATION_HIGHLAND_FILE_NAMES,
   ...GLASSWASM_KNOWN_FILE_NAMES,
@@ -1927,6 +1949,14 @@ function checkGentlemenRansomware(findings, targetRoot, homePath) {
       addFinding(findings, "warning", "gentlemen-toolkit-file-name", "Gentlemen exposed operator-toolkit filename exists.", relative, "Review for staged defense-evasion, remote-access, network-scan, or credential-dump tooling. Preserve evidence before deleting files.");
     }
 
+    if (relative.includes("/GentlemenCollection/")) {
+      addFinding(findings, "warning", "gentlemen-edr-killer-staging-directory", "Gentlemen EDR-killer staging directory appears in scanned host tree.", relative, "Review for GentleKiller, HexKiller, ThrottleBlood, HavocKiller, BYOVD driver drops, and sudden shutdown of protected security processes.");
+    }
+
+    if (isGentlemenEdrKillerFileName(base)) {
+      addFinding(findings, "warning", "gentlemen-edr-killer-file-name", "ESET-reported Gentlemen EDR-killer variant or abused driver filename exists.", relative, "Correlate with Gentlemen ransomware activity, vulnerable-driver block events, service-control logs, and EDR process termination telemetry.");
+    }
+
     if (baseLower === "psexec.exe") {
       addFinding(findings, "review", "gentlemen-psexec-dropper-name", "PsExec filename appears in a scanned host or mounted-root tree.", relative, "PsExec can be legitimate. Correlate with Gentlemen spread flags, remote execution logs, and surrounding toolkit files before treating it as malicious.");
     }
@@ -1952,6 +1982,17 @@ function checkGentlemenRansomware(findings, targetRoot, homePath) {
 
     if (/(?:vssadmin\s+delete\s+shadows|wbadmin\s+delete|bcdedit\s+\/set|wevtutil\s+cl|cipher\s+\/w|taskkill\b|sc\s+stop\b|net\s+stop\b|dControl\.exe|ConfigureDefender\.exe|PCHunter64_new\.exe|PowerTool64_new\.exe|WinDefGpo_Reg\.ps1|enable_dump_pass\.reg)/i.test(text)) {
       addFinding(findings, "warning", "gentlemen-defense-evasion-command-marker", "Gentlemen toolkit or ransomware defense-evasion command marker appears in scanned text.", relative, "Review whether this is approved administration, attacker staging, or ransomware pre-encryption activity.");
+    }
+
+    for (const indicator of GENTLEMEN_EDR_KILLER_NAMES) {
+      if (text.includes(indicator)) {
+        addFinding(findings, "warning", "gentlemen-edr-killer-suite-marker", "Gentlemen EDR-killer suite marker appears in scanned host metadata.", `${relative}: ${indicator}`, "Review for operator-provided GentleKiller tooling, BYOVD driver abuse, fake version/signature metadata, packers, and kernel-level security process termination.");
+      }
+    }
+
+    if (/\bGentle(?:men|Killer)\b[\s\S]{0,360}\b(?:BYOVD|bring your own vulnerable driver|vulnerable driver|kernel(?:-level)?|invalid digital signatures?|copied legitimate certificates?|fake version|Enigma|Themida|security processes?)\b/i.test(text)
+      || /\b(?:BYOVD|bring your own vulnerable driver|vulnerable driver|kernel(?:-level)?|invalid digital signatures?|copied legitimate certificates?|fake version|Enigma|Themida|security processes?)\b[\s\S]{0,360}\bGentle(?:men|Killer)\b/i.test(text)) {
+      addFinding(findings, "warning", "gentlemen-edr-killer-byovd-marker", "Gentlemen/GentleKiller BYOVD or binary-impersonation behavior appears in scanned host metadata.", relative, "Block known-vulnerable drivers, alert on protected security process termination, and preserve suspected EDR-killer binaries for analysis.");
     }
 
     for (const indicator of GENTLEMEN_NETWORK_INDICATORS) {
@@ -3513,6 +3554,12 @@ function isOpenClawConfigFileName(fileName) {
 function shouldHashGentlemenArtifact(fileName) {
   const lower = fileName.toLowerCase();
   return GENTLEMEN_TOOLKIT_FILES.has(fileName) || lower === "psexec.exe" || lower === "gentlemen.bmp" || lower.endsWith(".exe") || lower.endsWith(".bmp");
+}
+
+function isGentlemenEdrKillerFileName(fileName) {
+  if (GENTLEMEN_EDR_KILLER_FILES.has(fileName)) return true;
+  return /^(?:Kasp|FaceIT|Valorant|EAAntiCheat|EASolo|BitD|MB|G11|Symantec)(?:1|2|Light|Clear)\.exe$/i.test(fileName)
+    || /^Deletor\.exe$/i.test(fileName);
 }
 
 function astroConfigLineHasLoaderSignal(line) {

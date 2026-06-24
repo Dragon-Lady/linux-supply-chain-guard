@@ -332,6 +332,14 @@ function run() {
     "176.120.22.127",
     "2gkRUQNkJyaGkvuDziSq1RGIrwl_4bGyJtv6ez2Hk8Hrd5zvq"
   ].join("\n"));
+  write(path.join(root, "opt", "GentlemenCollection", "GentleKiller", "Kasp1.exe"), "placeholder");
+  write(path.join(root, "opt", "GentlemenCollection", "GentleKiller", "eb.sys"), "placeholder");
+  write(path.join(root, "opt", "GentlemenCollection", "notes.txt"), [
+    "GentleKiller HexKiller ThrottleBlood HavocKiller OxideHarvest",
+    "Gentlemen EDR killer uses BYOVD bring your own vulnerable driver behavior",
+    "fake version details invalid digital signatures copied legitimate certificates Enigma Themida",
+    "kernel-level security processes terminated before encryption"
+  ].join("\n"));
   write(path.join(root, "opt", "triage", "wow64-evasion-note.txt"), [
     "Heaven's Gate / Wow64Transition suspected.",
     "32-bit process launches 64-bit shellcode for EDR evasion after injection.",
@@ -565,6 +573,10 @@ function run() {
   assert(ids.has("gentlemen-self-propagation-marker"));
   assert(ids.has("gentlemen-defense-evasion-command-marker"));
   assert(ids.has("gentlemen-network-indicator"));
+  assert(ids.has("gentlemen-edr-killer-staging-directory"));
+  assert(ids.has("gentlemen-edr-killer-file-name"));
+  assert(ids.has("gentlemen-edr-killer-suite-marker"));
+  assert(ids.has("gentlemen-edr-killer-byovd-marker"));
   assert(ids.has("heavens-gate-wow64-evasion-marker"));
   assert(ids.has("argamal-game-rat-file-name"));
   assert(ids.has("argamal-game-rat-network-indicator"));

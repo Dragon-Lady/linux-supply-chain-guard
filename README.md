@@ -70,8 +70,8 @@ The June 2026 Gentlemen ransomware watch pack adds local host and mounted-root
 checks for Microsoft and Hunt.io reported artifacts: known hashes, ransom-note
 and wallpaper filenames, mutex/service/task markers, PsExec self-propagation
 markers, defense-evasion toolkit filenames, exposed operator toolkit scripts,
-and reported network/session indicators. These are local operator notifications
-only.
+reported network/session indicators, and ESET-reported GentleKiller/BYOVD
+EDR-killer suite markers. These are local operator notifications only.
 
 The June 2026 Operation Highland / Velvet Ant watch pack adds Sygnia-reported
 Linux authentication-stack compromise checks for replaced PAM/OpenSSH
@@ -386,6 +386,10 @@ Exit codes:
     `WinDefGpo_Reg.ps1`, `def1.bat`, `clearlog.bat`, `ngrok.exe`, and
     `rustdesk.exe`
   - reported network/session indicators including `176.120.22.127`
+  - ESET-reported EDR-killer suite markers including `GentleKiller`,
+    `GentlemenCollection`, `HexKiller`, `ThrottleBlood`, `HavocKiller`,
+    `OxideHarvest`, BYOVD behavior, fake version/signature metadata, and named
+    abused-driver or impersonation filenames
 - Heaven's Gate / WOW64 evasion review indicators:
   - analysis-note terms such as `Wow64Transition`, `HeavensGate`, or
     `Heaven's Gate`
@@ -511,6 +515,10 @@ the known indicators it checks.
   https://www.microsoft.com/en-us/security/blog/2026/05/28/the-gentlemen-ransomware-dissecting-a-self-propagating-go-encryptor/
 - Hunt.io Gentlemen ransomware exposed toolkit analysis:
   https://hunt.io/blog/ransomware-exposed-gentlemen-ransomware-toolkit-leaks-publicly
+- ESET GentleKiller EDR-killer framework analysis:
+  https://www.welivesecurity.com/en/eset-research/killing-me-gently-inside-gentlemens-edr-killer-framework/
+- Infosecurity Magazine GentleKiller summary:
+  https://www.infosecurity-magazine.com/news/gentlekiller-gentlemen-ransomware/
 - Huntress Heaven's Gate defensive overview:
   https://www.huntress.com/cybersecurity-101/topic/what-is-heavens-gate
 - Unit 42 PAN-OS CVE-2026-0257 active exploitation brief:
