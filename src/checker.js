@@ -1427,6 +1427,39 @@ const CISCO_CUCM_WEB_DIALER_TEXT_INDICATORS = [
   "Tor",
 ];
 
+const EXCHANGE_CVE202645504_TEXT_INDICATORS = [
+  "CVE-2026-45504",
+  "PT-2026-47976",
+  "Microsoft Exchange Server",
+  "Exchange Server 2016 Cumulative Update 23",
+  "Exchange Server 2016 CU23",
+  "Exchange Server 2019 CU14",
+  "Exchange Server 2019 CU15",
+  "Exchange Server Subscription Edition",
+  "KB5094139",
+  "KB5094140",
+  "KB5094142",
+  "KB5094144",
+  "15.01.2507.069",
+  "15.02.1544.041",
+  "15.02.1748.046",
+  "15.02.2562.043",
+  "hawktrace/CVE-2026-45504",
+  "CVE-2026-45504.py",
+  "Exchange File Read",
+  "--target-file",
+  "server-side request forgery",
+  "SSRF",
+  "elevate privileges over a network",
+];
+
+const EXCHANGE_CVE202645504_FIXED_BUILDS = new Map([
+  ["15.01.2507", "15.01.2507.069"],
+  ["15.02.1544", "15.02.1544.041"],
+  ["15.02.1748", "15.02.1748.046"],
+  ["15.02.2562", "15.02.2562.043"],
+]);
+
 const CLICKFIX_KB4_KNOWN_HASHES = new Map([
   ["7b7981c99d59595fe15377df84695bb72ce0b85560a3935f930657b2d162e5ef", "KnowBe4 ClickFix Review Past Due Doc ZIP"],
   ["adcd15f3d6b87f84d106ea426fa824fd20c9d64f6d199ce92580884290785f30", "KnowBe4 ClickFix RMM/MSI installer"],
@@ -1578,6 +1611,7 @@ function scanHost(options = {}) {
   checkAryStingerEdgeProxy(findings, targetRoot, homePath);
   checkCisaKevEdgeDeviceLatest(findings, targetRoot, homePath);
   checkCiscoCucmWebDialer20230(findings, targetRoot, homePath);
+  checkExchangeCve202645504(findings, targetRoot, homePath);
   checkTransformersPayload(findings, targetRoot);
   checkSecretSurfaces(findings, targetRoot, homePath);
 
@@ -4150,6 +4184,54 @@ function checkCiscoCucmWebDialer20230(findings, targetRoot, homePath) {
   }
 }
 
+function checkExchangeCve202645504(findings, targetRoot, homePath) {
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const roots = [
+    homeRelative,
+    "/etc",
+    "/opt",
+    "/srv",
+    "/var/log",
+    "/var/www",
+    "/root",
+    "/mnt",
+    "/media",
+  ].filter(Boolean);
+  const files = [];
+  for (const root of roots) {
+    files.push(...findWatchFiles(mapLinuxPath(targetRoot, root), 25000 - files.length));
+    if (files.length >= 25000) break;
+  }
+
+  for (const filePath of files) {
+    const text = readText(filePath);
+    if (!text) continue;
+    const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+
+    if (text.includes("CVE-2026-45504")) {
+      addFinding(findings, "warning", "exchange-cve-2026-45504-reference", "Microsoft Exchange CVE-2026-45504 reference appears in scanned metadata.", `${relative}: CVE-2026-45504`, "Inventory on-prem or hybrid Exchange servers, confirm June 2026 security update/build level, and prioritize externally reachable OWA/ECP/EWS/ActiveSync paths.");
+    }
+
+    if (/(?:Microsoft Exchange|Exchange Server|OWA|ECP|EWS|ActiveSync)[\s\S]{0,320}(?:CVE-2026-45504|PT-2026-47976|SSRF|server-side request forgery|file read|Exchange File Read|elevate privileges)|(?:CVE-2026-45504|PT-2026-47976|SSRF|server-side request forgery|file read|Exchange File Read|elevate privileges)[\s\S]{0,320}(?:Microsoft Exchange|Exchange Server|OWA|ECP|EWS|ActiveSync)/i.test(text)) {
+      addFinding(findings, "warning", "exchange-cve-2026-45504-ssrf-file-read-review", "Exchange CVE-2026-45504 SSRF/file-read or privilege-escalation terms appear in scanned metadata.", relative, "Treat this as an Exchange inventory and log-review lead. Review authenticated mailbox activity, cross-mailbox access, IIS logs, and Exchange service logs from a clean administrative host.");
+    }
+
+    if (/hawktrace\/CVE-2026-45504|CVE-2026-45504\.py|--target-file|Exchange File Read|PT-2026-47976/i.test(text) || relative.includes("/CVE-2026-45504/") || path.basename(filePath) === "CVE-2026-45504.py") {
+      addFinding(findings, "review", "exchange-cve-2026-45504-poc-artifact", "Exchange CVE-2026-45504 public PoC or exploit-runner marker appears in scanned metadata.", relative, "Verify this is authorized research material. Keep PoC code out of production, shared runners, and credential-bearing admin workstations.");
+    }
+
+    for (const build of exchangeBuildsBelowCve202645504Fixed(text)) {
+      addFinding(findings, "critical", "exchange-cve-2026-45504-possibly-unpatched-build", "Exchange build text appears below the CVE-2026-45504 fixed build for a June 2026 update train.", `${relative}: ${build}`, "Confirm directly on the Exchange server with supported Microsoft inventory commands and apply the matching June 2026 security update if this export is current.");
+    }
+
+    for (const indicator of EXCHANGE_CVE202645504_TEXT_INDICATORS) {
+      if (text.includes(indicator) && /CVE-2026-45504|Exchange|KB50941(?:39|40|42|44)|hawktrace|PT-2026-47976/i.test(text)) {
+        addFinding(findings, "review", "exchange-cve-2026-45504-text-indicator", "Exchange CVE-2026-45504 advisory or PoC term appears in scanned metadata.", `${relative}: ${indicator}`, "Use this as an inventory, patch-verification, and authorized-PoC-provenance lead for on-prem or hybrid Exchange.");
+      }
+    }
+  }
+}
+
 function checkTransformersPayload(findings, targetRoot) {
   const payloadPath = mapLinuxPath(targetRoot, "/tmp/transformers.pyz");
   if (!exists(payloadPath) || !isFile(payloadPath)) {
@@ -4929,6 +5011,20 @@ function langflowVersionsInText(text) {
     }
   }
   return Array.from(versions);
+}
+
+function exchangeBuildsBelowCve202645504Fixed(text) {
+  if (!/Exchange|CVE-2026-45504|KB50941(?:39|40|42|44)/i.test(text)) return [];
+  const builds = new Set();
+  for (const match of text.matchAll(/\b15\.(?:01|02)\.\d{4}\.\d{3}\b/g)) {
+    const build = match[0];
+    const train = build.split(".").slice(0, 3).join(".");
+    const fixed = EXCHANGE_CVE202645504_FIXED_BUILDS.get(train);
+    if (fixed && compareDottedVersion(build, fixed) < 0) {
+      builds.add(build);
+    }
+  }
+  return Array.from(builds);
 }
 
 function npmVersionsInText(text) {
