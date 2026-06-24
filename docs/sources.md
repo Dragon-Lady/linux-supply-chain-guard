@@ -11,6 +11,8 @@
 - supplychainattack.org incident catalog, csc154-internall-depend npm malware: https://supplychainattack.org/incident/malware-in-csc154-internall-depend-dytyon
 - GitHub Advisory Database, GHSA-vqg9-785x-8j39 / @validate-sdk/v2 npm malware: https://github.com/advisories/GHSA-vqg9-785x-8j39
 - supplychainattack.org incident catalog, @validate-sdk/v2 npm malware: https://supplychainattack.org/incident/malware-in-validate-sdk-v2-12i0so
+- Supply Chain Attack incident catalog, latest npm malware batch: https://supplychainattack.org/
+- Supply Chain Attack incident catalog, free-claude npm malware: https://supplychainattack.org/incident/malware-in-free-claude-7fjbqi
 - Socket Hades PyPI wave analysis: https://socket.dev/blog/shai-hulud-descends-to-hades-miasma-pypi-wave
 - Socket newer Miasma/Hades PyPI wave analysis: https://socket.dev/blog/mini-shai-hulud-miasma-and-hades-worms-target-bioinformatics-and-mcp-developers-via-malicious
 - SecurityWeek Shai-Hulud Miasma/Hades summary: https://www.securityweek.com/over-100-npm-pypi-packages-hit-in-new-shai-hulud-supply-chain-attacks/
