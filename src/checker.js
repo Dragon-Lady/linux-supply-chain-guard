@@ -884,6 +884,11 @@ const WATCH_FILE_NAMES = new Set([
   "psappsrv.cfg",
   "config.xml",
   "Review Past Due Doc.zip",
+  "LicenseLoader.php",
+  "install-persistent.php",
+  "class-wc-subscription-trace-dispatch.php",
+  "class-wc-subscription-diagnostics.php",
+  "class-wc-subscription-scheduler.php",
   ...PEOPLESOFT_MESH_AGENT_FILES,
   "gentlemen.bmp",
   "README-GENTLEMEN.txt",
@@ -986,6 +991,53 @@ const FFMPEG_PIXELSMASH_TEXT_INDICATORS = [
   "PhotoPrism",
   "Immich",
   "ffmpegthumbnailer",
+];
+
+const SHAPEDPLUGIN_KNOWN_HASHES = new Map([
+  ["0e17c869d3e4586d4c160041042bd15123c2a37117a98a995fae885f0f4417fc", "ShapedPlugin LicenseLoader.php loader"],
+]);
+
+const SHAPEDPLUGIN_NETWORK_INDICATORS = [
+  "account.shapedplugin.com",
+  "account.shapedplugin[.]com",
+  "194.76.217.28:2871",
+  "194.76.217[.]28:2871",
+  "generate.2faplugin.org",
+  "generate[.]2faplugin[.]org",
+];
+
+const SHAPEDPLUGIN_TEXT_INDICATORS = [
+  "ShapedPlugin",
+  "Product Slider Pro for WooCommerce",
+  "woo-product-slider-pro",
+  "Real Testimonials Pro",
+  "testimonial-pro",
+  "Smart Post Show Pro",
+  "smart-show-post-pro",
+  "CVE-2026-10735",
+  "CVE-2026-49777",
+  "LicenseLoader.php",
+  "TestimonialPRO.php",
+  "install-persistent.php",
+  "class-wc-subscription-trace-dispatch.php",
+  "class-wc-subscription-diagnostics.php",
+  "class-wc-subscription-scheduler.php",
+  "woocommerce-subscription",
+  "woocommerce-notification",
+  "/wp-json/wc/v3/settings/apply",
+  "theme_options_scripts",
+  "wc_nf_install_done",
+  "wp_2fa_totp_key",
+  "wfls_2fa_secrets",
+  "rsssl_totp_secret",
+  "_two_factor_totp_key",
+  "e268c35a06d85f672e70c9beecb4e5d1",
+  "0e17c869d3e4586d4c160041042bd15123c2a37117a98a995fae885f0f4417fc",
+];
+
+const SHAPEDPLUGIN_FAKE_PLUGIN_PATHS = [
+  "/wp-content/plugins/woocommerce-subscription",
+  "/wp-content/plugins/woocommerce-notification",
 ];
 
 const ARYSTINGER_IOC_PATHS = [
@@ -1117,6 +1169,7 @@ function scanHost(options = {}) {
   checkFortinetCredentialExposure(findings, targetRoot, homePath);
   checkClickFixKb4Phishing(findings, targetRoot, homePath);
   checkFfmpegPixelSmashExposure(findings, targetRoot, homePath);
+  checkShapedPluginSupplyChainCompromise(findings, targetRoot, homePath);
   checkSquidbleedFtpProxyExposure(findings, targetRoot, homePath);
   checkNginxCritical2026Exposure(findings, targetRoot, homePath);
   checkLiteLlmGatewayExposure(findings, targetRoot, homePath);
@@ -2661,6 +2714,86 @@ function checkFfmpegPixelSmashExposure(findings, targetRoot, homePath) {
   }
 }
 
+function checkShapedPluginSupplyChainCompromise(findings, targetRoot, homePath) {
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const roots = [
+    "/var/www",
+    "/srv",
+    "/opt",
+    "/mnt",
+    "/media",
+    homeRelative,
+  ].filter(Boolean);
+
+  for (const fakePath of SHAPEDPLUGIN_FAKE_PLUGIN_PATHS) {
+    if (exists(mapLinuxPath(targetRoot, fakePath))) {
+      addFinding(findings, "critical", "shapedplugin-fake-plugin-path", "Wordfence-reported ShapedPlugin fake WooCommerce plugin path exists.", fakePath, "Treat the WordPress site as compromised. Preserve files, rotate WordPress/database/mail/API credentials, revoke 2FA seeds, and review administrator accounts.");
+    }
+  }
+
+  const files = [];
+  for (const root of roots) {
+    files.push(...findWatchFiles(mapLinuxPath(targetRoot, root), 30000 - files.length));
+    if (files.length >= 30000) break;
+  }
+
+  for (const filePath of files) {
+    const base = path.basename(filePath);
+    const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+    const size = fileSizeBytes(filePath);
+
+    for (const fakePath of SHAPEDPLUGIN_FAKE_PLUGIN_PATHS) {
+      if (relative.includes(`${fakePath}/`) || relative.endsWith(fakePath)) {
+        addFinding(findings, "critical", "shapedplugin-fake-plugin-path", "Wordfence-reported ShapedPlugin fake WooCommerce plugin path exists.", relative, "Treat the WordPress site as compromised. Preserve files, rotate WordPress/database/mail/API credentials, revoke 2FA seeds, and review administrator accounts.");
+      }
+    }
+
+    if (base === "LicenseLoader.php" || base === "install-persistent.php") {
+      addFinding(findings, "critical", "shapedplugin-loader-or-persistence-file", "ShapedPlugin supply-chain loader or persistence filename exists in scanned WordPress tree.", relative, "Preserve the file, compare against known ShapedPlugin Pro packages, and treat credentials and 2FA seeds as exposed if execution occurred.");
+    }
+
+    if (size > 0 && size <= 10 * 1024 * 1024 && ["LicenseLoader.php", "install-persistent.php", "class-wc-subscription-trace-dispatch.php", "class-wc-subscription-diagnostics.php", "class-wc-subscription-scheduler.php"].includes(base)) {
+      const digest = sha256File(filePath);
+      const label = SHAPEDPLUGIN_KNOWN_HASHES.get(digest);
+      if (label) {
+        addFinding(findings, "critical", "shapedplugin-known-sha256", "Known ShapedPlugin supply-chain malware SHA-256 observed.", `${relative}: ${label}; sha256=${digest}`, "Preserve the artifact and immediately begin WordPress incident response, including credential and 2FA-secret rotation from a clean machine.");
+      }
+    }
+
+    const text = size <= 1024 * 1024 ? readText(filePath) : "";
+    if (!text) continue;
+
+    const versions = shapedPluginVersionsInText(text);
+    for (const item of versions) {
+      if (isShapedPluginAffectedVersion(item.slug, item.version)) {
+        addFinding(findings, "critical", "shapedplugin-affected-pro-version", "ShapedPlugin Pro plugin version matches the reported supply-chain compromise range.", `${relative}: ${item.slug} ${item.version}`, "Treat the site as potentially compromised if this Pro build was installed through the licensed ShapedPlugin update channel. Scan with Wordfence/CLI and rotate WordPress, database, mail, and 2FA secrets.");
+      }
+    }
+
+    for (const indicator of SHAPEDPLUGIN_NETWORK_INDICATORS) {
+      if (text.includes(indicator)) {
+        addFinding(findings, "critical", "shapedplugin-network-indicator", "ShapedPlugin supply-chain C2 or exfiltration indicator appears in scanned WordPress metadata.", `${relative}: ${indicator}`, "Correlate web logs, DNS/proxy telemetry, WordPress admin activity, and mail plugin credentials before cleanup.");
+      }
+    }
+
+    for (const indicator of SHAPEDPLUGIN_TEXT_INDICATORS) {
+      if (text.includes(indicator)) {
+        addFinding(findings, "warning", "shapedplugin-text-indicator", "ShapedPlugin supply-chain compromise indicator appears in scanned WordPress metadata.", `${relative}: ${indicator}`, "Review for fake WooCommerce plugin directories, REST backdoor endpoint, credential/2FA theft hooks, and unauthorized admin accounts.");
+      }
+    }
+
+    if (/wp_authenticate|wp_login|session cookies?|TOTP|2FA|two[- ]factor|wp_2fa_totp_key|wfls_2fa_secrets|rsssl_totp_secret|_two_factor_totp_key/i.test(text)
+      && /generate\.2faplugin\.org|class-wc-subscription-trace-dispatch|woocommerce-subscription|woocommerce-notification/i.test(text)) {
+      addFinding(findings, "critical", "shapedplugin-credential-2fa-stealer", "ShapedPlugin-style WordPress credential and 2FA secret theft markers co-occur.", relative, "Assume WordPress admin passwords, sessions, TOTP seeds, database credentials, mail plugin credentials, and WooCommerce data may be exposed.");
+    }
+
+    if (/\/wp-json\/wc\/v3\/settings\/apply|arbitrary file writes?|base64-encoded payload|Tiny File Manager|Adminer 5\.2\.1|shell_exec|passthru|eval/i.test(text)
+      && (/install-persistent\.php|woocommerce-subscription|woocommerce-notification|ShapedPlugin/i.test(text) || base === "install-persistent.php" || SHAPEDPLUGIN_FAKE_PLUGIN_PATHS.some((fakePath) => relative.includes(`${fakePath}/`)))) {
+      addFinding(findings, "critical", "shapedplugin-rest-webshell-backdoor", "ShapedPlugin-style REST/webshell persistence markers co-occur.", relative, "Preserve the WordPress tree and logs, remove persistence only after evidence capture, and rebuild/restore from a trusted baseline where practical.");
+    }
+  }
+}
+
 function checkSquidbleedFtpProxyExposure(findings, targetRoot, homePath) {
   const packageStatus = readText(mapLinuxPath(targetRoot, "/var/lib/dpkg/status"));
   const squidDpkg = squidPackagesFromDpkgStatus(packageStatus);
@@ -3544,6 +3677,31 @@ function ffmpegPackagesFromDpkgStatus(text) {
     packages.push({ name, version });
   }
   return packages;
+}
+
+function shapedPluginVersionsInText(text) {
+  const candidates = [
+    ["woo-product-slider-pro", /(?:Product Slider Pro for WooCommerce|woo-product-slider-pro)[\s\S]{0,500}?(?:Version|Stable tag|version)\s*[:=]?\s*['"]?([0-9]+\.[0-9]+(?:\.[0-9]+)?)/gi],
+    ["testimonial-pro", /(?:Real Testimonials Pro|testimonial-pro)[\s\S]{0,500}?(?:Version|Stable tag|version)\s*[:=]?\s*['"]?([0-9]+\.[0-9]+(?:\.[0-9]+)?)/gi],
+    ["smart-show-post-pro", /(?:Smart Post Show Pro|Smart Post Pro|smart-show-post-pro)[\s\S]{0,500}?(?:Version|Stable tag|version)\s*[:=]?\s*['"]?([0-9]+\.[0-9]+(?:\.[0-9]+)?)/gi],
+    ["woo-product-slider-pro", /(?:Version|Stable tag|version)\s*[:=]?\s*['"]?([0-9]+\.[0-9]+(?:\.[0-9]+)?)[\s\S]{0,500}?(?:Product Slider Pro for WooCommerce|woo-product-slider-pro)/gi],
+    ["testimonial-pro", /(?:Version|Stable tag|version)\s*[:=]?\s*['"]?([0-9]+\.[0-9]+(?:\.[0-9]+)?)[\s\S]{0,500}?(?:Real Testimonials Pro|testimonial-pro)/gi],
+    ["smart-show-post-pro", /(?:Version|Stable tag|version)\s*[:=]?\s*['"]?([0-9]+\.[0-9]+(?:\.[0-9]+)?)[\s\S]{0,500}?(?:Smart Post Show Pro|Smart Post Pro|smart-show-post-pro)/gi],
+  ];
+  const versions = [];
+  for (const [slug, pattern] of candidates) {
+    for (const match of text.matchAll(pattern)) {
+      versions.push({ slug, version: normalizeDottedVersion(match[1]) });
+    }
+  }
+  return versions;
+}
+
+function isShapedPluginAffectedVersion(slug, version) {
+  if (slug === "woo-product-slider-pro") return compareDottedVersion(version, "3.5.4") < 0;
+  if (slug === "testimonial-pro") return compareDottedVersion(version, "3.2.5") === 0;
+  if (slug === "smart-show-post-pro") return compareDottedVersion(version, "4.0.2") < 0;
+  return false;
 }
 
 function squidPackagesFromDpkgStatus(text) {
