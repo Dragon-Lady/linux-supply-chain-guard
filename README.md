@@ -79,11 +79,31 @@ components, hidden credential-log paths, GS-Netcat staging, Nginx/FastCGI bridge
 artifacts, process-masquerade strings, and the published SHA-1 IOC set. These
 are local operator notifications only.
 
+The June 2026 Squidbleed review lane adds Squid proxy posture checks for
+installed Squid packages, Squid configuration files, and FTP proxy exposure via
+`Safe_ports` port 21. It is advisory/configuration guidance until final CVE and
+distro fixed-version data are available.
+
+The June 2026 NGINX critical exposure lane adds local checks for F5-reported
+NGINX Open Source affected ranges for `CVE-2026-42530` and `CVE-2026-42055`,
+HTTP/3/QUIC configuration, and the HTTP/2 proxy/gRPC configuration chain with
+`ignore_invalid_headers off` and oversized `large_client_header_buffers`.
+
+The June 2026 DifyTap watch pack adds local deployment checks for Dify versions
+before `1.14.2`, Plugin Daemon/internal API exposure terms, file-preview and
+chat-message file UUID routes, trace-provider exfiltration risk, and PDFium
+document-parser review markers.
+
+The June 2026 AryStinger watch pack adds router/NAS edge-device malware checks
+for `/tmp/bin` `syswapd0`/Dropbear artifacts, port `2332` Dropbear persistence,
+`ajb8`/`auq8`/`dataexplore`/`opi7` infrastructure, and legacy
+D-Link/Linksys/QNAP CVE markers.
+
 This project also tracks urgent Linux advisories as operator guidance when they
 intersect supply-chain response hosts. NGINX Rift / `CVE-2026-42945` and Sudo
 `CVE-2026-35535` are currently documented as advisory-only context; this guard
-does not yet perform NGINX version, rewrite-module configuration, or distro sudo
-package detection.
+does not yet perform NGINX rewrite-module configuration or distro sudo package
+detection for those separate advisories.
 
 ## Safety stance
 
@@ -531,3 +551,7 @@ the known indicators it checks.
   https://www.sygnia.co/wp-content/uploads/2026/06/Appendix_Indicators-of-Compromise.pdf
 - The Hacker News Operation Highland / Velvet Ant summary:
   https://thehackernews.com/2026/06/china-linked-hackers-backdoored-linux.html
+- The Hacker News AryStinger router/NAS proxy network summary:
+  https://thehackernews.com/2026/06/arystinger-malware-infects-4300-legacy.html
+- QiAnXin XLab AryStinger technical analysis and IOC list:
+  https://blog.xlab.qianxin.com/arystinger-botnet-hijacks-legacy-routers-for-global-attacks-en/
