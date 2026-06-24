@@ -15,6 +15,7 @@
 - Supply Chain Attack incident catalog, free-claude npm malware: https://supplychainattack.org/incident/malware-in-free-claude-7fjbqi
 - GitHub Advisory Database, GHSA-fgqv-2jmm-2p39 / search-from-search npm malware: https://github.com/advisories/GHSA-fgqv-2jmm-2p39
 - Supply Chain Attack incident catalog, search-from-search npm malware: https://supplychainattack.org/incident/malware-in-search-from-search-1jc4kr
+- Supply Chain Attack incident catalog, node-fetch-utils npm malware: https://supplychainattack.org/incident/malware-in-node-fetch-utils-wwuwix
 - Checkmarx ChainVeil / SuccessKey npm supply-chain report: https://checkmarx.com/zero-post/chainveil-a-malicious-npm-supply-chain-attack-by-successkey/
 - Socket Hades PyPI wave analysis: https://socket.dev/blog/shai-hulud-descends-to-hades-miasma-pypi-wave
 - Socket newer Miasma/Hades PyPI wave analysis: https://socket.dev/blog/mini-shai-hulud-miasma-and-hades-worms-target-bioinformatics-and-mcp-developers-via-malicious
