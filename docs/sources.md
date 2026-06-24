@@ -47,6 +47,7 @@
 - FBI IC3 PSA on malicious traffic distribution systems: https://www.ic3.gov/PSA/2026/PSA260618
 - Ars Technica Microsoft Crypto Clipper USB worm report: https://arstechnica.com/security/2026/06/microsoft-spots-new-self-propagating-malware-for-stealing-cryptocurrency/
 - ANY.RUN EvilTokens Microsoft OAuth device-code phishing analysis: https://any.run/cybersecurity-blog/eviltokens-ghost-code-analysis/
+- BleepingComputer macOS ClickFix / AMOS DMG campaign summary: https://www.bleepingcomputer.com/news/security/new-macos-clickfix-attack-silently-mounts-dmgs-to-push-infostealer/
 - The Hacker News, NGINX CVE-2026-42945 exploited in the wild: https://thehackernews.com/2026/05/nginx-cve-2026-42945-exploited-in-wild.html
 - The Register, NGINX Rift exploitation activity: https://www.theregister.com/security/2026/05/18/nginx-rift-attackers-waste-no-time-targeting-exposed-servers/
 - CSO Online, NGINX Rift disclosure and patches: https://www.csoonline.com/article/4171437/ai-agent-finds-18-year-old-remote-code-execution-flaw-in-nginx.html

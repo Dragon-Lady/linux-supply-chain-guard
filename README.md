@@ -113,6 +113,12 @@ clipboard-injected PowerShell, DNS TXT staging, `document-auth[.]icu`,
 `italy-news[.]info`, `lootrioya[.]info`, and the reported ZIP/MSI/password
 stealer SHA-256 values.
 
+The June 2026 macOS ClickFix watch pack adds local host and mounted-root checks
+for fake-CAPTCHA Terminal paste commands that use `curl -fsSL`, `/tmp` DMG
+downloads, `hdiutil attach -nobrowse`, automatic `.app`/`.pkg` launch,
+Atomic macOS Stealer/AMOS terms, `s.01M0td.dmg`, `NNApp.app`,
+`svs-verificationdate[.]beer`, and `196.251.107[.]171`.
+
 The June 2026 EvilTokens watch pack adds Microsoft OAuth device-code phishing
 triage checks for browser-data/SOC exports, including AES-GCM browser-side
 decryption notes, `/api/device/start`, `/api/device/gate/`,
@@ -378,6 +384,12 @@ Exit codes:
   - infrastructure domains `document-auth[.]icu`, `italy-news[.]info`, and
     `lootrioya[.]info`
   - reported ZIP, MSI/RMM, and password-stealer SHA-256 values
+- macOS ClickFix AMOS DMG indicators:
+  - `curl -fsSL` into `/tmp`, `hdiutil attach -nobrowse`, and automatic
+    `.app`/`.pkg` launch command-chain language
+  - `s.01M0td.dmg`, `NNApp.app`, Atomic macOS Stealer/AMOS, Keychain prompt,
+    Ledger Live, and Trezor Suite replacement terms
+  - infrastructure `svs-verificationdate[.]beer` and `196.251.107[.]171`
 - EvilTokens Microsoft OAuth device-code phishing indicators:
   - `EvilTokens`, `oauth-ms-phish`, and `Microsoft OAuth device-code phishing`
     triage terms
@@ -684,6 +696,8 @@ the known indicators it checks.
   https://arstechnica.com/security/2026/06/microsoft-spots-new-self-propagating-malware-for-stealing-cryptocurrency/
 - ANY.RUN EvilTokens Microsoft OAuth device-code phishing analysis:
   https://any.run/cybersecurity-blog/eviltokens-ghost-code-analysis/
+- BleepingComputer macOS ClickFix / AMOS DMG campaign summary:
+  https://www.bleepingcomputer.com/news/security/new-macos-clickfix-attack-silently-mounts-dmgs-to-push-infostealer/
 - The Hacker News on NGINX CVE-2026-42945 active exploitation:
   https://thehackernews.com/2026/05/nginx-cve-2026-42945-exploited-in-wild.html
 - The Register on NGINX Rift exploitation:

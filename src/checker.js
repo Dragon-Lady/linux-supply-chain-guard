@@ -1149,6 +1149,7 @@ const WATCH_FILE_EXTENSIONS = new Set([
   ".zip",
   ".msi",
   ".iso",
+  ".dmg",
 ]);
 
 const ASTRO_GITIGNORE_HIDE_FILES = [
@@ -1400,6 +1401,34 @@ const CLICKFIX_KB4_TEXT_INDICATORS = [
   "d7d2f0ee187549f3f4a114d716be12521fbf62d6d26e2ac23d2a32d521d08fd8",
 ];
 
+const CLICKFIX_MACOS_NETWORK_INDICATORS = [
+  "svs-verificationdate.beer",
+  "svs-verificationdate[.]beer",
+  "196.251.107.171",
+  "196.251.107[.]171",
+];
+
+const CLICKFIX_MACOS_TEXT_INDICATORS = [
+  "Atomic macOS Stealer",
+  "Atomic Stealer",
+  "AMOS",
+  "hdiutil attach -nobrowse",
+  "hdiutil attach",
+  "s.01M0td.dmg",
+  "NNApp.app",
+  "fake CAPTCHA",
+  "open Terminal",
+  "paste a malicious command",
+  "curl -fsSL",
+  "/tmp folder under a random filename",
+  "silently mounts",
+  "DMG",
+  "self-signed application bundle",
+  "fake System Preferences authentication prompt",
+  "Ledger Live",
+  "Trezor Suite",
+];
+
 const EVILTOKENS_DEVICE_CODE_NETWORK_INDICATORS = [
   "emp01825.workers.dev",
   "emp01825[.]workers[.]dev",
@@ -1470,6 +1499,7 @@ function scanHost(options = {}) {
   checkRedcapExposure(findings, targetRoot, homePath);
   checkFortinetCredentialExposure(findings, targetRoot, homePath);
   checkClickFixKb4Phishing(findings, targetRoot, homePath);
+  checkClickFixMacosDmgStealer(findings, targetRoot, homePath);
   checkEvilTokensDeviceCodePhishing(findings, targetRoot, homePath);
   checkFfmpegPixelSmashExposure(findings, targetRoot, homePath);
   checkLibssh2Cve202655200Exposure(findings, targetRoot, homePath);
@@ -3044,6 +3074,58 @@ function checkClickFixKb4Phishing(findings, targetRoot, homePath) {
 
     if (/\.lnk[\s\S]{0,240}(?:Win\s*\+\s*R|clipboard|PowerShell|DNS TXT|OneDrive)|(?:Win\s*\+\s*R|clipboard|PowerShell|DNS TXT|OneDrive)[\s\S]{0,240}\.lnk/i.test(text)) {
       addFinding(findings, "warning", "clickfix-kb4-lnk-clipboard-stager", "KnowBe4 ClickFix .lnk plus clipboard/PowerShell/DNS-TXT staging behavior appears in scanned metadata.", relative, "Preserve the shortcut and command history. Check clipboard access, PowerShell execution policy bypasses, DNS TXT responses, and spawned MSI/RMM or spyware payloads.");
+    }
+  }
+}
+
+function checkClickFixMacosDmgStealer(findings, targetRoot, homePath) {
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const roots = [
+    homeRelative,
+    "/home",
+    "/root",
+    "/tmp",
+    "/var/tmp",
+    "/opt",
+    "/srv",
+    "/var/log",
+    "/mnt",
+    "/media",
+    "/Users",
+    "/Volumes",
+  ].filter(Boolean);
+  const files = [];
+  for (const root of roots) {
+    files.push(...findWatchFiles(mapLinuxPath(targetRoot, root), 25000 - files.length));
+    if (files.length >= 25000) break;
+  }
+
+  for (const filePath of files) {
+    const base = path.basename(filePath);
+    const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+    const size = fileSizeBytes(filePath);
+
+    if (/^s\.01M0td\.dmg$/i.test(base)) {
+      addFinding(findings, "critical", "clickfix-macos-amos-dmg-name", "Known macOS ClickFix AMOS DMG filename appears in scanned host tree.", relative, "Do not mount or open the disk image. Preserve the artifact and review Terminal history, hdiutil mounts, launched .app/.pkg bundles, Keychain prompts, browser credential exposure, and crypto wallet exposure.");
+    }
+
+    const text = size <= 1024 * 1024 ? readText(filePath) : "";
+    if (!text) continue;
+
+    for (const indicator of CLICKFIX_MACOS_NETWORK_INDICATORS) {
+      if (text.includes(indicator)) {
+        addFinding(findings, "critical", "clickfix-macos-network-indicator", "macOS ClickFix AMOS campaign infrastructure indicator appears in scanned host metadata.", `${relative}: ${indicator}`, "Correlate DNS, proxy, Terminal shell history, curl downloads, hdiutil attach events, mounted DMGs, launched bundles, and exfiltration to attacker-controlled infrastructure.");
+      }
+    }
+
+    for (const indicator of CLICKFIX_MACOS_TEXT_INDICATORS) {
+      if (text.includes(indicator)) {
+        addFinding(findings, "warning", "clickfix-macos-text-indicator", "macOS ClickFix DMG/AMOS behavior marker appears in scanned host metadata.", `${relative}: ${indicator}`, "Review fake CAPTCHA/Terminal paste activity, quiet curl downloads into /tmp, hidden hdiutil mounts, automatic .app/.pkg launch, Keychain prompts, browser data theft, and crypto wallet replacement attempts.");
+      }
+    }
+
+    if (/curl\s+-fsSL[\s\S]{0,220}\/tmp[\s\S]{0,220}hdiutil\s+attach\s+-nobrowse[\s\S]{0,220}(?:open\s+|\.app|\.pkg)|hdiutil\s+attach\s+-nobrowse[\s\S]{0,220}(?:\.app|\.pkg|open\s+)[\s\S]{0,220}(?:AMOS|Atomic macOS Stealer|Atomic Stealer|ClickFix)/i.test(text)) {
+      addFinding(findings, "critical", "clickfix-macos-hidden-dmg-execution", "macOS ClickFix command chain for quiet DMG download, hidden mount, and app/pkg launch appears in scanned metadata.", relative, "Preserve command history and endpoint telemetry. Check /tmp random DMGs, hdiutil mount records, launched self-signed bundles, browser and Keychain access, Telegram/Discord data theft, and Ledger Live/Trezor Suite replacement.");
     }
   }
 }
