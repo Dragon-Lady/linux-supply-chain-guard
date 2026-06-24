@@ -42,6 +42,7 @@ function run() {
       "@validate-sdk/v2": "^1.0.0",
       "google-cloud-secret-manager-config-poc": "^1.0.0",
       "free-claude": "^1.0.0",
+      "search-from-search": "^1.0.0",
       "node-fetch-utils": "^1.0.0",
       "rate-limit-flexible": "^1.0.2",
       "tailwindcss-merge": "1.0.4"
@@ -630,6 +631,7 @@ function run() {
   assert(ids.has("developer-secret-surfaces-present"));
   assert(ids.has("compromised-npm-package-reference"));
   assert(report.findings.some((finding) => finding.id === "compromised-npm-package-reference" && finding.evidence.includes("free-claude")));
+  assert(report.findings.some((finding) => finding.id === "compromised-npm-package-reference" && finding.evidence.includes("search-from-search")));
   assert(report.findings.some((finding) => finding.id === "compromised-npm-package-reference" && finding.evidence.includes("node-fetch-utils")));
   assert(ids.has("chainveil-npm-package-reference"));
   assert(ids.has("chainveil-network-indicator"));
