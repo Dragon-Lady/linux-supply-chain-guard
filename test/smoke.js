@@ -671,6 +671,13 @@ function run() {
     "Exchange File Read public PoC: hawktrace/CVE-2026-45504 CVE-2026-45504.py --target-file C:/Windows/System32/drivers/etc/hosts",
     "Inventory export: Exchange Server 2016 CU23 build 15.01.2507.060, fixed by KB5094144 build 15.01.2507.069.",
   ].join("\n"));
+  write(path.join(root, "var", "log", "exchange-cve-2026-45502.txt"), [
+    "Microsoft Exchange Server EWS InstallApp CVE-2026-45502 server-side request forgery.",
+    "InstallApp SOAP request with ManifestUrl triggers SynchronousDownloadData.DownloadDataFromUri in Microsoft.Exchange.Data.ApplicationLogic.dll.",
+    "poc_CVE-2026-45502.py observes /ssrf-test?marker=CVE-2026-45502-SSRF-CONFIRMED&corr=guid.",
+    "Inventory export: Exchange Server SE RTM build 15.02.2562.040, fixed by KB5094139 build 15.02.2562.043.",
+    "Patched systems enable ManifestUrlValidation and ManifestUrlCheck for officeclient.microsoft.com allowlisting.",
+  ].join("\n"));
 
   const report = scanHost({ targetRoot: root, homePath: home, architecture: "aarch64" });
   const ids = new Set(report.findings.map((finding) => finding.id));
@@ -896,6 +903,11 @@ function run() {
   assert(ids.has("exchange-cve-2026-45504-poc-artifact"));
   assert(ids.has("exchange-cve-2026-45504-possibly-unpatched-build"));
   assert(ids.has("exchange-cve-2026-45504-text-indicator"));
+  assert(ids.has("exchange-cve-2026-45502-reference"));
+  assert(ids.has("exchange-cve-2026-45502-ews-installapp-ssrf-review"));
+  assert(ids.has("exchange-cve-2026-45502-poc-artifact"));
+  assert(ids.has("exchange-cve-2026-45502-possibly-unpatched-build"));
+  assert(ids.has("exchange-cve-2026-45502-text-indicator"));
   const tokenFinding = report.findings.find((finding) => finding.id === "dynatrace-token-exposure");
   assert(tokenFinding.evidence.includes("dt0c01.ABCDEFGHIJKLMNOPQRSTUVWX.<redacted>"));
   assert(!tokenFinding.evidence.includes("ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ"));

@@ -132,9 +132,10 @@ SME, WebDialer SSRF, file-write-to-root escalation terms, Cisco advisory
 exploitation language.
 
 The June 2026 Microsoft Exchange watch pack adds local/mounted-root triage
-checks for `CVE-2026-45504`, Microsoft Exchange Server build/update exports,
-June 2026 KB/build markers, SSRF/file-read privilege-escalation language,
-`PT-2026-47976`, and public hawktrace PoC artifact markers.
+checks for `CVE-2026-45502` EWS `InstallApp` / `ManifestUrl` SSRF,
+`CVE-2026-45504` SSRF/file-read privilege-escalation language, Microsoft
+Exchange Server build/update exports, June 2026 KB/build markers,
+`PT-2026-47976`, and public PoC artifact markers.
 
 The June 2026 KnowBe4 Threat Labs ClickFix watch pack adds local host and
 mounted-root checks for the `Review Past Due Doc.zip` / `.lnk` OneDrive lure,
@@ -755,6 +756,10 @@ the known indicators it checks.
   https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-45504
 - hawktrace public PoC repository for `CVE-2026-45504`:
   https://github.com/hawktrace/CVE-2026-45504
+- Aretiq AI analysis for `CVE-2026-45502` Exchange EWS InstallApp SSRF:
+  https://aretiq.ai/research/vul260622-cve-2026-45502-microsoft-exchange-server-ews-installapp-server-side-request-forgery/
+- Microsoft MSRC Update Guide for `CVE-2026-45502`:
+  https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-45502
 - The Hacker News Operation Endgame / SocGholish disruption report:
   https://thehackernews.com/2026/06/operation-endgame-disrupts-socgholish.html
 - FBI IC3 PSA on malicious traffic distribution systems:
