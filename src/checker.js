@@ -993,6 +993,23 @@ const FFMPEG_PIXELSMASH_TEXT_INDICATORS = [
   "ffmpegthumbnailer",
 ];
 
+const LIBSSH2_CVE202655200_FIXED_COMMIT = "7acf3df";
+const LIBSSH2_CVE202655200_AFFECTED_MAX = "1.11.1";
+const LIBSSH2_CVE202655200_TEXT_INDICATORS = [
+  "CVE-2026-55200",
+  "CVE-2026-55199",
+  "libssh2",
+  "ssh2_transport_read",
+  "packet_length",
+  "out-of-bounds write",
+  "OOB write",
+  "SSH_MSG_EXT_INFO",
+  "PR #2052",
+  "pull/2052",
+  "7acf3df",
+  "1762685",
+];
+
 const SHAPEDPLUGIN_KNOWN_HASHES = new Map([
   ["0e17c869d3e4586d4c160041042bd15123c2a37117a98a995fae885f0f4417fc", "ShapedPlugin LicenseLoader.php loader"],
 ]);
@@ -1169,6 +1186,7 @@ function scanHost(options = {}) {
   checkFortinetCredentialExposure(findings, targetRoot, homePath);
   checkClickFixKb4Phishing(findings, targetRoot, homePath);
   checkFfmpegPixelSmashExposure(findings, targetRoot, homePath);
+  checkLibssh2Cve202655200Exposure(findings, targetRoot, homePath);
   checkShapedPluginSupplyChainCompromise(findings, targetRoot, homePath);
   checkSquidbleedFtpProxyExposure(findings, targetRoot, homePath);
   checkNginxCritical2026Exposure(findings, targetRoot, homePath);
@@ -2714,6 +2732,61 @@ function checkFfmpegPixelSmashExposure(findings, targetRoot, homePath) {
   }
 }
 
+function checkLibssh2Cve202655200Exposure(findings, targetRoot, homePath) {
+  const packageStatus = readText(mapLinuxPath(targetRoot, "/var/lib/dpkg/status"));
+  const libssh2Packages = libssh2PackagesFromDpkgStatus(packageStatus);
+  for (const pkg of libssh2Packages) {
+    addFinding(findings, "review", "libssh2-cve-2026-55200-package-review", "libssh2 package appears installed on a host relevant to CVE-2026-55200 client-side SSH/SCP/SFTP exposure.", `${pkg.name} ${pkg.version}`, `Confirm a vendor-fixed build that includes libssh2 commit ${LIBSSH2_CVE202655200_FIXED_COMMIT} or later.`);
+
+    const upstreamVersion = normalizePackageVersion(pkg.version);
+    if (upstreamVersion && compareDottedVersion(normalizeDottedVersion(upstreamVersion), LIBSSH2_CVE202655200_AFFECTED_MAX) <= 0) {
+      addFinding(findings, "warning", "libssh2-cve-2026-55200-affected-version", "Installed libssh2 package version is in the reported affected range through 1.11.1.", `${pkg.name} ${pkg.version}`, "Patch through the distribution or rebuild with the upstream packet_length boundary checks. Prioritize clients that connect to untrusted SSH/SCP/SFTP servers or cross hostile networks.");
+    }
+  }
+
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const roots = [
+    "/etc",
+    "/opt",
+    "/srv",
+    "/usr/local",
+    "/var/log",
+    "/mnt",
+    "/media",
+    homeRelative,
+  ].filter(Boolean);
+  const files = [];
+  for (const root of roots) {
+    files.push(...findWatchFiles(mapLinuxPath(targetRoot, root), 25000 - files.length));
+    if (files.length >= 25000) break;
+  }
+
+  for (const filePath of files) {
+    const size = fileSizeBytes(filePath);
+    if (size <= 0 || size > 1024 * 1024) continue;
+    const text = readText(filePath);
+    if (!text) continue;
+    const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+
+    const versions = packageVersionsInText(text, "libssh2");
+    for (const version of versions) {
+      if (compareDottedVersion(normalizeDottedVersion(version), LIBSSH2_CVE202655200_AFFECTED_MAX) <= 0) {
+        addFinding(findings, "warning", "libssh2-cve-2026-55200-affected-version", "Scanned metadata references libssh2 in the CVE-2026-55200 affected range through 1.11.1.", `${relative}: libssh2 ${version}`, "Inventory statically linked clients and bundled builds, not only system packages. Verify whether the packet_length boundary-check commit is present.");
+      }
+    }
+
+    for (const indicator of LIBSSH2_CVE202655200_TEXT_INDICATORS) {
+      if (text.includes(indicator)) {
+        addFinding(findings, "review", "libssh2-cve-2026-55200-text-indicator", "libssh2 CVE-2026-55200 / CVE-2026-55199 advisory term appears in scanned host metadata.", `${relative}: ${indicator}`, "Correlate with package state, bundled libraries, static builds, and clients that connect to SSH, SCP, or SFTP servers.");
+      }
+    }
+
+    if (/libssh2/i.test(text) && /curl|git|rsync|backup|artifact|mirror|fetch/i.test(text)) {
+      addFinding(findings, "review", "libssh2-cve-2026-55200-client-linkage-review", "libssh2 appears near client workflow terms.", relative, "Inventory linked binaries and bundled libraries used by outbound transfer tooling. A malicious or MITM-positioned server can target vulnerable clients.");
+    }
+  }
+}
+
 function checkShapedPluginSupplyChainCompromise(findings, targetRoot, homePath) {
   const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
   const roots = [
@@ -3673,6 +3746,19 @@ function ffmpegPackagesFromDpkgStatus(text) {
     if (!/^Status:\s+install\s+ok\s+installed\s*$/im.test(block)) continue;
     const name = block.match(/^Package:\s*(\S+)/im)?.[1] || "";
     if (!FFMPEG_PIXELSMASH_PACKAGES.some((prefix) => name === prefix || name.startsWith(`${prefix}`))) continue;
+    const version = block.match(/^Version:\s*(\S+)/im)?.[1] || "unknown-version";
+    packages.push({ name, version });
+  }
+  return packages;
+}
+
+function libssh2PackagesFromDpkgStatus(text) {
+  const packages = [];
+  if (!text) return packages;
+  for (const block of text.split(/\n\n+/)) {
+    if (!/^Status:\s+install\s+ok\s+installed\s*$/im.test(block)) continue;
+    const name = block.match(/^Package:\s*(\S+)/im)?.[1] || "";
+    if (!/^libssh2(?:-\d+|-dev|$)/i.test(name)) continue;
     const version = block.match(/^Version:\s*(\S+)/im)?.[1] || "unknown-version";
     packages.push({ name, version });
   }

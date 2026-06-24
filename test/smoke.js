@@ -332,6 +332,10 @@ function run() {
     "Status: install ok installed",
     "Version: 8.1.1-1",
     "",
+    "Package: libssh2-1",
+    "Status: install ok installed",
+    "Version: 1.11.1-1",
+    "",
   ].join("\n"));
   write(path.join(root, "etc", "squid", "squid.conf"), [
     "acl Safe_ports port 80",
@@ -412,6 +416,12 @@ function run() {
     "Jellyfin ffprobe scans AVI MKV MOV media libraries with libavcodec",
     "Nextcloud Movie preview and PhotoPrism thumbnailing use ffmpegthumbnailer",
     "Mitigation note: rebuild with --disable-decoder=magicyuv and confirm with ffmpeg -decoders"
+  ].join("\n"));
+  write(path.join(root, "var", "log", "libssh2-triage.log"), [
+    "CVE-2026-55200 libssh2 through 1.11.1 ssh2_transport_read packet_length out-of-bounds write",
+    "Fix includes PR #2052 and commit 7acf3df.",
+    "Inventory curl, git, backup, deploy, clone, SCP and SFTP clients that link libssh2.",
+    "Companion note: CVE-2026-55199 SSH_MSG_EXT_INFO fixed in 1762685."
   ].join("\n"));
   write(path.join(root, "usr", "share", "man9", "ph", ".ph.man"), "captured ssh credential log placeholder\n");
   write(path.join(root, "lib", "systemd", "system", "chrom.service"), [
@@ -654,6 +664,10 @@ function run() {
   assert(ids.has("ffmpeg-pixelsmash-text-indicator"));
   assert(ids.has("ffmpeg-pixelsmash-media-ingestion-review"));
   assert(ids.has("ffmpeg-pixelsmash-magicyuv-disabled-note"));
+  assert(ids.has("libssh2-cve-2026-55200-package-review"));
+  assert(ids.has("libssh2-cve-2026-55200-affected-version"));
+  assert(ids.has("libssh2-cve-2026-55200-text-indicator"));
+  assert(ids.has("libssh2-cve-2026-55200-client-linkage-review"));
   assert(ids.has("operation-highland-ioc-path"));
   assert(ids.has("operation-highland-tool-filename"));
   assert(ids.has("operation-highland-network-indicator"));

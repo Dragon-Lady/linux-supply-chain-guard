@@ -112,6 +112,12 @@ The June 2026 PixelSmash watch pack adds FFmpeg/libavcodec posture checks for
 FFmpeg versions before `8.1.2`, and high-risk media ingestion surfaces such as
 Jellyfin, Nextcloud movie previews, PhotoPrism, Immich, OBS, and thumbnailers.
 
+The June 2026 libssh2 client-exposure lane adds Debian-family package checks
+and copied-advisory/source-note checks for `CVE-2026-55200`, the
+`ssh2_transport_read()` packet-length out-of-bounds write fixed by upstream
+commit `7acf3df`. It also tracks adjacent `CVE-2026-55199` notes because both
+libssh2 fixes are being triaged together by downstream packagers.
+
 The June 2026 ShapedPlugin Pro WordPress supply-chain watch pack adds local
 WordPress tree checks for affected Pro plugin slugs and versions,
 `LicenseLoader.php`, fake `woocommerce-subscription` /
@@ -349,6 +355,14 @@ Exit codes:
   - media-ingestion surfaces including Jellyfin, Emby, Nextcloud, Immich,
     PhotoPrism, OBS, and Linux thumbnailers
   - mitigation notes such as `--disable-decoder=magicyuv`
+- libssh2 `CVE-2026-55200` client-exposure indicators:
+  - installed `libssh2*` Debian-family packages
+  - upstream-looking versions through `1.11.1` flagged for vendor-backport
+    review
+  - advisory/source terms including `ssh2_transport_read`, `packet_length`,
+    `PR #2052`, fix commit `7acf3df`, and companion `CVE-2026-55199`
+  - local workflow notes where libssh2 appears near SSH/SCP/SFTP clients such
+    as curl, git, backup, deploy, clone, mirror, or artifact-fetch tooling
 - ShapedPlugin Pro WordPress supply-chain indicators:
   - affected Pro plugin slugs `woo-product-slider-pro`, `testimonial-pro`, and
     `smart-show-post-pro`
@@ -614,6 +628,11 @@ the known indicators it checks.
   https://www.bleepingcomputer.com/news/security/ffmpeg-fixes-pixelsmash-flaw-in-widely-used-video-decoder/
 - JFrog PixelSmash technical analysis:
   https://jfrog.com/blog/pixelsmash-critical-ffmpeg-vulnerability-turns-media-files-into-weapons/
+- libssh2 upstream PR #2052, additional packet-length boundary checks:
+  https://github.com/libssh2/libssh2/pull/2052
+- NixOS security tracker issue for libssh2 `CVE-2026-55199` and
+  `CVE-2026-55200`:
+  https://github.com/NixOS/nixpkgs/issues/532920
 - Wordfence ShapedPlugin Pro supply-chain compromise PSA:
   https://www.wordfence.com/blog/2026/06/psa-supply-chain-compromise-targets-shapedplugin-backdoored-pro-plugins-distributed-via-official-channels/
 - The Hacker News ShapedPlugin Pro supply-chain compromise summary:

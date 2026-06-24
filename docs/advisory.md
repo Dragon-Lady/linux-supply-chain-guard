@@ -149,6 +149,17 @@ turn local code execution into full host control. This guard does not yet
 inspect installed sudo package versions, so operators should patch sudo through
 distro packages and verify WSL/Linux hosts separately.
 
+libssh2 `CVE-2026-55200` is tracked as a client-side SSH/SCP/SFTP exposure.
+Public downstream tracker data describes an out-of-bounds write in
+`ssh2_transport_read()` when the SSH `packet_length` field is not bounded, with
+libssh2 through `1.11.1` affected and upstream commit `7acf3df` carrying the
+packet-length boundary checks. Operators should patch distro packages, then
+inventory statically linked or bundled clients such as curl, git, backup,
+deployment, artifact fetch, mirror, SCP, and SFTP tooling that may not use the
+system libssh2 package. The adjacent `CVE-2026-55199` ext-info DoS is included
+as copied-advisory context because downstream packagers are triaging both
+libssh2 fixes together.
+
 Fragnesia is a Linux kernel local-root flaw affecting supported AlmaLinux
 releases through the `esp4`, `esp6`, and, on some AlmaLinux 9/10 systems,
 `rxrpc` modules. This tool does not test exploitability. It checks kernel
