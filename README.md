@@ -242,6 +242,11 @@ Exit codes:
   - `ecto-flag-read`
   - `@validate-sdk/v2`
   - `google-cloud-secret-manager-config-poc`
+- Supply Chain Attack catalog npm malware indicators:
+  - `free-claude`
+  - `free-anthropic-claude`
+  - June 23 package-cluster names such as `node-fetch-utils`,
+    `calculate-helper`, `cursorai-agent`, and `vitest-cli`
 - AtomicArch / IronWorm AUR indicators:
   - AUR `PKGBUILD`, `.SRCINFO`, and `.install` metadata that references
     `atomic-lockfile`
@@ -569,6 +574,10 @@ the known indicators it checks.
   https://github.com/advisories/GHSA-g6v5-9xpp-6hpx
 - SupplyChainAttack incident for `ecto-flag-read`:
   https://supplychainattack.org/incident/malware-in-ecto-flag-read-m7p2-zqvzsn
+- Supply Chain Attack incident catalog, latest npm malware batch:
+  https://supplychainattack.org/
+- Supply Chain Attack incident catalog, free-claude npm malware:
+  https://supplychainattack.org/incident/malware-in-free-claude-7fjbqi
 - Panther OtterCookie npm campaign:
   https://panther.com/blog/tracking-an-ottercookie-infostealer-campaign-across-npm
 - SafeDep Astro config blockchain C2 supply-chain report:
