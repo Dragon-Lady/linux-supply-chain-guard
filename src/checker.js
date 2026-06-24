@@ -962,6 +962,32 @@ const DIFY_DEPLOYMENT_TERMS = [
   "dify-plugin-daemon",
 ];
 
+const FFMPEG_PIXELSMASH_FIXED = "8.1.2";
+const FFMPEG_PIXELSMASH_PACKAGES = [
+  "ffmpeg",
+  "libavcodec",
+  "libavcodec-extra",
+  "libavcodec-dev",
+];
+
+const FFMPEG_PIXELSMASH_TEXT_INDICATORS = [
+  "PixelSmash",
+  "CVE-2026-8461",
+  "MagicYUV",
+  "magicyuv",
+  "VFS..D magicyuv",
+  "ffmpeg -decoders",
+  "ffprobe",
+  "AVBuffer.free",
+  "crafted MagicYUV AVI",
+  "Jellyfin",
+  "Nextcloud",
+  "Movie preview",
+  "PhotoPrism",
+  "Immich",
+  "ffmpegthumbnailer",
+];
+
 const ARYSTINGER_IOC_PATHS = [
   "/tmp/bin/syswapd0",
   "/tmp/bin/syswapd0h",
@@ -1090,6 +1116,7 @@ function scanHost(options = {}) {
   checkRedcapExposure(findings, targetRoot, homePath);
   checkFortinetCredentialExposure(findings, targetRoot, homePath);
   checkClickFixKb4Phishing(findings, targetRoot, homePath);
+  checkFfmpegPixelSmashExposure(findings, targetRoot, homePath);
   checkSquidbleedFtpProxyExposure(findings, targetRoot, homePath);
   checkNginxCritical2026Exposure(findings, targetRoot, homePath);
   checkLiteLlmGatewayExposure(findings, targetRoot, homePath);
@@ -2584,6 +2611,56 @@ function checkClickFixKb4Phishing(findings, targetRoot, homePath) {
   }
 }
 
+function checkFfmpegPixelSmashExposure(findings, targetRoot, homePath) {
+  const packageStatus = readText(mapLinuxPath(targetRoot, "/var/lib/dpkg/status"));
+  const ffmpegPackages = ffmpegPackagesFromDpkgStatus(packageStatus);
+  for (const pkg of ffmpegPackages) {
+    addFinding(findings, "review", "ffmpeg-pixelsmash-package-review", "FFmpeg/libavcodec package appears installed on a host relevant to PixelSmash CVE-2026-8461.", `${pkg.name} ${pkg.version}`, "Confirm FFmpeg 8.1.2 or a vendor-fixed backport. If MagicYUV is not needed, consider disabling the decoder and restrict automated processing of untrusted AVI/MKV/MOV media.");
+
+    const upstreamVersion = normalizePackageVersion(pkg.version);
+    if (upstreamVersion && compareDottedVersion(normalizeDottedVersion(upstreamVersion), FFMPEG_PIXELSMASH_FIXED) < 0) {
+      addFinding(findings, "warning", "ffmpeg-pixelsmash-upstream-version-review", "FFmpeg/libavcodec package version appears older than the upstream PixelSmash fixed release.", `${pkg.name} ${pkg.version}`, "Do not rely on upstream-looking versions alone for distro packages. Verify CVE-2026-8461 backport status, MagicYUV decoder exposure, and media-ingestion workflows.");
+    }
+  }
+
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const roots = [
+    "/etc",
+    "/opt",
+    "/srv",
+    "/var/www",
+    "/var/log",
+    "/mnt",
+    "/media",
+    homeRelative,
+  ].filter(Boolean);
+  const files = [];
+  for (const root of roots) {
+    files.push(...findWatchFiles(mapLinuxPath(targetRoot, root), 25000 - files.length));
+    if (files.length >= 25000) break;
+  }
+
+  for (const filePath of files) {
+    const text = readText(filePath);
+    if (!text) continue;
+    const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+
+    for (const indicator of FFMPEG_PIXELSMASH_TEXT_INDICATORS) {
+      if (text.includes(indicator)) {
+        addFinding(findings, "review", "ffmpeg-pixelsmash-text-indicator", "PixelSmash / FFmpeg MagicYUV exposure term appears in scanned host metadata.", `${relative}: ${indicator}`, "Review FFmpeg/libavcodec versions, whether the MagicYUV decoder is enabled, and whether untrusted AVI/MKV/MOV files are processed automatically.");
+      }
+    }
+
+    if (/(?:jellyfin|emby|nextcloud|immich|photoprism|obs|ffmpegthumbnailer|thumbnailer)[\s\S]{0,300}(?:ffmpeg|ffprobe|libavcodec|magicyuv|MagicYUV|AVI|MKV|MOV)|(?:ffmpeg|ffprobe|libavcodec|magicyuv|MagicYUV|AVI|MKV|MOV)[\s\S]{0,300}(?:jellyfin|emby|nextcloud|immich|photoprism|obs|ffmpegthumbnailer|thumbnailer)/i.test(text)) {
+      addFinding(findings, "warning", "ffmpeg-pixelsmash-media-ingestion-review", "Media ingestion or thumbnailing terms co-occur with FFmpeg/MagicYUV PixelSmash exposure terms.", relative, "Patch FFmpeg or bundled media-app FFmpeg builds, disable MagicYUV if unnecessary, and avoid auto-scanning untrusted media libraries until fixed.");
+    }
+
+    if (/--disable-decoder=magicyuv|disable(?:d)?\s+MagicYUV|MagicYUV\s+decoder\s+disabled/i.test(text)) {
+      addFinding(findings, "info", "ffmpeg-pixelsmash-magicyuv-disabled-note", "Scanned metadata references disabling the MagicYUV decoder as PixelSmash mitigation.", relative, "Confirm the active FFmpeg build really excludes the magicyuv decoder with `ffmpeg -decoders`, then continue tracking vendor packages.");
+    }
+  }
+}
+
 function checkSquidbleedFtpProxyExposure(findings, targetRoot, homePath) {
   const packageStatus = readText(mapLinuxPath(targetRoot, "/var/lib/dpkg/status"));
   const squidDpkg = squidPackagesFromDpkgStatus(packageStatus);
@@ -3454,6 +3531,19 @@ function hasRedcapSignal(text, relativePath) {
 
 function hasFortinetSignal(text, relativePath) {
   return /fortinet|fortigate|fortios|forticloud|fortiproxy|fortiswitchmanager|ssl[-\s]?vpn/i.test(relativePath + "\n" + text);
+}
+
+function ffmpegPackagesFromDpkgStatus(text) {
+  const packages = [];
+  if (!text) return packages;
+  for (const block of text.split(/\n\n+/)) {
+    if (!/^Status:\s+install\s+ok\s+installed\s*$/im.test(block)) continue;
+    const name = block.match(/^Package:\s*(\S+)/im)?.[1] || "";
+    if (!FFMPEG_PIXELSMASH_PACKAGES.some((prefix) => name === prefix || name.startsWith(`${prefix}`))) continue;
+    const version = block.match(/^Version:\s*(\S+)/im)?.[1] || "unknown-version";
+    packages.push({ name, version });
+  }
+  return packages;
 }
 
 function squidPackagesFromDpkgStatus(text) {
