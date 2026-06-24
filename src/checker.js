@@ -1477,6 +1477,32 @@ const CISCO_CUCM_WEB_DIALER_TEXT_INDICATORS = [
   "Tor",
 ];
 
+const EXCHANGE_CVE202645502_TEXT_INDICATORS = [
+  "CVE-2026-45502",
+  "Microsoft Exchange Server EWS InstallApp",
+  "InstallApp",
+  "ManifestUrl",
+  "SynchronousDownloadData.DownloadDataFromUri",
+  "Microsoft.Exchange.Data.ApplicationLogic.dll",
+  "ManifestUrlValidation",
+  "ManifestUrlCheck",
+  "officeclient.microsoft.com",
+  "poc_CVE-2026-45502.py",
+  "ssrf-test",
+  "corr=",
+  "KB5094139",
+  "KB5094140",
+  "KB5094142",
+  "KB5094144",
+  "15.01.2507.069",
+  "15.02.1544.041",
+  "15.02.1748.046",
+  "15.02.2562.043",
+  "server-side request forgery",
+  "SSRF",
+  "CWE-918",
+];
+
 const EXCHANGE_CVE202645504_TEXT_INDICATORS = [
   "CVE-2026-45504",
   "PT-2026-47976",
@@ -4358,6 +4384,18 @@ function checkExchangeCve202645504(findings, targetRoot, homePath) {
       addFinding(findings, "warning", "exchange-cve-2026-45504-reference", "Microsoft Exchange CVE-2026-45504 reference appears in scanned metadata.", `${relative}: CVE-2026-45504`, "Inventory on-prem or hybrid Exchange servers, confirm June 2026 security update/build level, and prioritize externally reachable OWA/ECP/EWS/ActiveSync paths.");
     }
 
+    if (text.includes("CVE-2026-45502")) {
+      addFinding(findings, "warning", "exchange-cve-2026-45502-reference", "Microsoft Exchange CVE-2026-45502 reference appears in scanned metadata.", `${relative}: CVE-2026-45502`, "Inventory on-prem or hybrid Exchange servers, confirm June 2026 security update/build level, and review authenticated EWS InstallApp activity.");
+    }
+
+    if (/(?:Microsoft Exchange|Exchange Server|EWS|Exchange Web Services|InstallApp)[\s\S]{0,360}(?:CVE-2026-45502|ManifestUrl|SSRF|server-side request forgery|SynchronousDownloadData|ManifestUrlValidation|ManifestUrlCheck)|(?:CVE-2026-45502|ManifestUrl|SSRF|server-side request forgery|SynchronousDownloadData|ManifestUrlValidation|ManifestUrlCheck)[\s\S]{0,360}(?:Microsoft Exchange|Exchange Server|EWS|Exchange Web Services|InstallApp)/i.test(text)) {
+      addFinding(findings, "warning", "exchange-cve-2026-45502-ews-installapp-ssrf-review", "Exchange CVE-2026-45502 EWS InstallApp/ManifestUrl SSRF terms appear in scanned metadata.", relative, "Treat this as an Exchange EWS SSRF triage lead. Confirm the June 2026 security update, review authenticated InstallApp activity, and monitor unexpected outbound HTTP from Exchange servers.");
+    }
+
+    if (/poc_CVE-2026-45502\.py|InstallApp[\s\S]{0,140}ManifestUrl|ManifestUrl[\s\S]{0,140}ssrf-test|CVE-2026-45502-SSRF-CONFIRMED|(?:InstallApp|ManifestUrl|CVE-2026-45502)[\s\S]{0,220}corr=/i.test(text) || relative.includes("/CVE-2026-45502/") || path.basename(filePath) === "poc_CVE-2026-45502.py") {
+      addFinding(findings, "review", "exchange-cve-2026-45502-poc-artifact", "Exchange CVE-2026-45502 PoC or SSRF callback marker appears in scanned metadata.", relative, "Verify this is authorized research material. Keep PoC code and mailbox credentials out of production, shared runners, and admin workstations.");
+    }
+
     if (/(?:Microsoft Exchange|Exchange Server|OWA|ECP|EWS|ActiveSync)[\s\S]{0,320}(?:CVE-2026-45504|PT-2026-47976|SSRF|server-side request forgery|file read|Exchange File Read|elevate privileges)|(?:CVE-2026-45504|PT-2026-47976|SSRF|server-side request forgery|file read|Exchange File Read|elevate privileges)[\s\S]{0,320}(?:Microsoft Exchange|Exchange Server|OWA|ECP|EWS|ActiveSync)/i.test(text)) {
       addFinding(findings, "warning", "exchange-cve-2026-45504-ssrf-file-read-review", "Exchange CVE-2026-45504 SSRF/file-read or privilege-escalation terms appear in scanned metadata.", relative, "Treat this as an Exchange inventory and log-review lead. Review authenticated mailbox activity, cross-mailbox access, IIS logs, and Exchange service logs from a clean administrative host.");
     }
@@ -4367,7 +4405,18 @@ function checkExchangeCve202645504(findings, targetRoot, homePath) {
     }
 
     for (const build of exchangeBuildsBelowCve202645504Fixed(text)) {
-      addFinding(findings, "critical", "exchange-cve-2026-45504-possibly-unpatched-build", "Exchange build text appears below the CVE-2026-45504 fixed build for a June 2026 update train.", `${relative}: ${build}`, "Confirm directly on the Exchange server with supported Microsoft inventory commands and apply the matching June 2026 security update if this export is current.");
+      if (/CVE-2026-45502|InstallApp|ManifestUrl|ManifestUrlValidation|ManifestUrlCheck|Microsoft\.Exchange\.Data\.ApplicationLogic\.dll/i.test(text)) {
+        addFinding(findings, "critical", "exchange-cve-2026-45502-possibly-unpatched-build", "Exchange build text appears below the CVE-2026-45502 fixed build for a June 2026 update train.", `${relative}: ${build}`, "Confirm directly on the Exchange server with supported Microsoft inventory commands and apply the matching June 2026 security update if this export is current.");
+      }
+      if (/CVE-2026-45504|PT-2026-47976|file read|Exchange File Read|elevate privileges|hawktrace/i.test(text)) {
+        addFinding(findings, "critical", "exchange-cve-2026-45504-possibly-unpatched-build", "Exchange build text appears below the CVE-2026-45504 fixed build for a June 2026 update train.", `${relative}: ${build}`, "Confirm directly on the Exchange server with supported Microsoft inventory commands and apply the matching June 2026 security update if this export is current.");
+      }
+    }
+
+    for (const indicator of EXCHANGE_CVE202645502_TEXT_INDICATORS) {
+      if (text.includes(indicator) && /CVE-2026-45502|Exchange|EWS|InstallApp|ManifestUrl|KB50941(?:39|40|42|44)/i.test(text)) {
+        addFinding(findings, "review", "exchange-cve-2026-45502-text-indicator", "Exchange CVE-2026-45502 advisory or EWS InstallApp SSRF term appears in scanned metadata.", `${relative}: ${indicator}`, "Use this as an inventory, patch-verification, and authorized-PoC-provenance lead for on-prem or hybrid Exchange.");
+      }
     }
 
     for (const indicator of EXCHANGE_CVE202645504_TEXT_INDICATORS) {
@@ -5160,7 +5209,7 @@ function langflowVersionsInText(text) {
 }
 
 function exchangeBuildsBelowCve202645504Fixed(text) {
-  if (!/Exchange|CVE-2026-45504|KB50941(?:39|40|42|44)/i.test(text)) return [];
+  if (!/Exchange|CVE-2026-4550(?:2|4)|KB50941(?:39|40|42|44)/i.test(text)) return [];
   const builds = new Set();
   for (const match of text.matchAll(/\b15\.(?:01|02)\.\d{4}\.\d{3}\b/g)) {
     const build = match[0];
