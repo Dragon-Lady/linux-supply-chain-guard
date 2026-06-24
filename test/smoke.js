@@ -315,6 +315,9 @@ function run() {
     "CISA urges hardening Fortinet devices after reports of credential exposure.",
     "FortiBleed triage: Fortinet/FortiGate VPN credentials and firewall configuration data reported.",
     "FortiGate SSL VPN brute forcing, VPN authentication hashes, credential attempts, and plaintext passwords.",
+    "FortigateSniffer fg_sniffer_linux_amd64 uses diagnose sniffer packet and SNIFTRAN PCAP Deep Analysis Toolkit.",
+    "mpbrute2.bin forticheck ipgeo.csv harvestresults Shodan_Recon FortiProbe-fast gen_rotator backup_dfs.py.",
+    "Aggregator 85.11.187[.]8 sniffer node 194.113.39[.]71 credential validation 193.8.187[.]42.",
     "Review FortiCloud SSO and admin-forticloud-sso-login posture."
   ].join("\n"));
   write(path.join(root, "var", "lib", "dpkg", "status"), [
@@ -648,6 +651,8 @@ function run() {
   assert(ids.has("fortinet-credential-exposure-indicator"));
   assert(ids.has("fortinet-fortigate-credential-dump-triage"));
   assert(ids.has("fortinet-forticloud-sso-review"));
+  assert(ids.has("fortibleed-network-indicator"));
+  assert(ids.has("fortibleed-tool-indicator"));
   assert(ids.has("squidbleed-squid-package-review"));
   assert(ids.has("squidbleed-squid-config-present"));
   assert(ids.has("squidbleed-ftp-safe-port-exposure"));
