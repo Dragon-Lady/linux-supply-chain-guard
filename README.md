@@ -102,6 +102,11 @@ before `1.14.2`, Plugin Daemon/internal API exposure terms, file-preview and
 chat-message file UUID routes, trace-provider exfiltration risk, and PDFium
 document-parser review markers.
 
+The June 2026 Langflow watch pack adds local deployment checks for Langflow
+versions before `1.9.1`, deprecated `/api/v1/upload/{flow_id}` route exposure,
+absolute upload `file_path` leak artifacts, public-bind review, upload-size
+limit markers, and the `LOGSPACE-LangFlow` FOFA/product fingerprint context.
+
 The June 2026 AryStinger watch pack adds router/NAS edge-device malware checks
 for `/tmp/bin` `syswapd0`/Dropbear artifacts, port `2332` Dropbear persistence,
 `ajb8`/`auq8`/`dataexplore`/`opi7` infrastructure, and legacy
@@ -673,6 +678,8 @@ the known indicators it checks.
   https://thehackernews.com/2026/06/researchers-detail-difytap-flaws-in.html
 - SecurityWeek DifyTap data exposure summary:
   https://www.securityweek.com/data-exposure-flaws-threaten-dify-ai-platform-powering-over-1-million-apps/
+- GitHub Security Advisory GHSA-x223-p2gf-v735 / Langflow CVE-2026-55450:
+  https://github.com/langflow-ai/langflow/security/advisories/GHSA-x223-p2gf-v735
 - GitHub npm v12 breaking changes notice:
   https://github.blog/changelog/2026-06-09-upcoming-breaking-changes-for-npm-v12/
 - The Hacker News npm v12 install-script default change summary:

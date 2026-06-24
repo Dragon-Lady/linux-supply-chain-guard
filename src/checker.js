@@ -1201,6 +1201,19 @@ const DIFY_DEPLOYMENT_TERMS = [
   "dify-plugin-daemon",
 ];
 
+const LANGFLOW_FIXED = "1.9.1";
+const LANGFLOW_DEPLOYMENT_TERMS = [
+  "Langflow",
+  "langflow",
+  "langflow-ai/langflow",
+  "langflowai/langflow",
+  "LOGSPACE-LangFlow",
+  "CVE-2026-55450",
+  "GHSA-x223-p2gf-v735",
+  "/api/v1/upload/{flow_id}",
+  "max_file_size_upload",
+];
+
 const FFMPEG_PIXELSMASH_FIXED = "8.1.2";
 const FFMPEG_PIXELSMASH_PACKAGES = [
   "ffmpeg",
@@ -1556,6 +1569,7 @@ function scanHost(options = {}) {
   checkNginxCritical2026Exposure(findings, targetRoot, homePath);
   checkLiteLlmGatewayExposure(findings, targetRoot, homePath);
   checkDifyTapExposure(findings, targetRoot, homePath);
+  checkLangflowUploadExposure(findings, targetRoot, homePath);
   checkOpenClawAgentExposure(findings, targetRoot, homePath);
   checkAgentjackingSentryMcpExposure(findings, targetRoot, homePath);
   checkAutoJackAgentLocalhostExposure(findings, targetRoot, homePath);
@@ -3683,6 +3697,57 @@ function checkDifyTapExposure(findings, targetRoot, homePath) {
   }
 }
 
+function checkLangflowUploadExposure(findings, targetRoot, homePath) {
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const roots = [
+    homeRelative,
+    "/opt",
+    "/srv",
+    "/var/www",
+    "/etc",
+    "/root",
+  ].filter(Boolean);
+  const files = [];
+  for (const root of roots) {
+    files.push(...findWatchFiles(mapLinuxPath(targetRoot, root), 25000 - files.length));
+    if (files.length >= 25000) break;
+  }
+
+  for (const filePath of files) {
+    const text = readText(filePath);
+    if (!text) continue;
+    const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+    const hasLangflow = hasAnyTerm(text, LANGFLOW_DEPLOYMENT_TERMS) || /\/api\/v1\/upload\/(?:\{flow_id\}|<flow_id>|[0-9a-f-]{8})/i.test(text);
+    if (!hasLangflow) continue;
+
+    for (const version of langflowVersionsInText(text)) {
+      if (compareDottedVersion(normalizeDottedVersion(version), LANGFLOW_FIXED) < 0) {
+        addFinding(findings, "critical", "langflow-cve-2026-55450-vulnerable-version", "Langflow version appears older than the CVE-2026-55450 fixed release.", `${relative}: Langflow ${version}`, `Upgrade Langflow to ${LANGFLOW_FIXED} or newer and restrict upload routes until patched.`);
+      }
+    }
+
+    if (/\/api\/v1\/upload\/(?:\{flow_id\}|<flow_id>|[0-9a-f-]{8})|POST\s+\/api\/v1\/upload|curl[^\n\r]+\/api\/v1\/upload/i.test(text)) {
+      addFinding(findings, "warning", "langflow-deprecated-upload-route-review", "Langflow deprecated upload endpoint terms appear in scanned configuration/source.", relative, "Confirm the route is not reachable without authentication and patch to Langflow 1.9.1 or newer.");
+    }
+
+    if (/file_path/i.test(text) && /(?:\/Users\/[^ \n\r]+\/Library\/Caches\/langflow|\/home\/[^ \n\r]+\/(?:\.cache|\.local\/share)\/langflow|[A-Za-z]:\\Users\\[^ \n\r]+\\AppData\\[^ \n\r]+\\langflow)/i.test(text)) {
+      addFinding(findings, "warning", "langflow-absolute-path-disclosure-artifact", "Langflow upload response or logs appear to include an absolute cache path.", relative, "Review logs for exposed local paths and verify patched upload handling before exposing Langflow.");
+    }
+
+    if (/LOGSPACE-LangFlow|FOFA\s+Query|app=["']LOGSPACE-LangFlow["']/i.test(text)) {
+      addFinding(findings, "review", "langflow-fofa-exposure-fingerprint", "Langflow FOFA/product fingerprint terms appear in scanned host metadata.", relative, "If this system is internet-facing, verify patch level and remove unintended public exposure.");
+    }
+
+    if (exposesAllInterfaces(text) && /langflow/i.test(text)) {
+      addFinding(findings, "warning", "langflow-public-bind", "Langflow-related config appears to bind a service to all interfaces.", relative, "Bind Langflow to localhost/private interfaces unless deliberate, and require authentication in front of upload-capable routes.");
+    }
+
+    if (/max_file_size_upload/i.test(text)) {
+      addFinding(findings, "review", "langflow-upload-size-limit-present", "Langflow upload-size mitigation setting appears in scanned configuration/source.", relative, "Keep upload-size limits enabled and verify the deployment is also on Langflow 1.9.1 or newer.");
+    }
+  }
+}
+
 function checkOpenClawAgentExposure(findings, targetRoot, homePath) {
   const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
   const roots = [
@@ -4843,6 +4908,20 @@ function packageVersionsInText(text, packageName) {
     new RegExp(`\\b${escaped}\\b\\s*(?:==|===|=|~=|>=|<=|>|<)\\s*["']?([0-9]+\\.[0-9]+\\.[0-9]+)`, "gi"),
     new RegExp(`\\b${escaped}\\b["']?\\s*[:=]\\s*["']?[^0-9\\n\\r]{0,12}([0-9]+\\.[0-9]+\\.[0-9]+)`, "gi"),
     new RegExp(`name\\s*=\\s*["']${escaped}["'][\\s\\S]{0,300}?version\\s*=\\s*["']([0-9]+\\.[0-9]+\\.[0-9]+)["']`, "gi"),
+  ];
+  for (const pattern of patterns) {
+    for (const match of text.matchAll(pattern)) {
+      versions.add(match[1]);
+    }
+  }
+  return Array.from(versions);
+}
+
+function langflowVersionsInText(text) {
+  const versions = new Set(packageVersionsInText(text, "langflow"));
+  const patterns = [
+    /\blangflow(?:-ai)?\/langflow\s*:\s*v?([0-9]+\.[0-9]+\.[0-9]+)/gi,
+    /\blangflowai\/langflow\s*:\s*v?([0-9]+\.[0-9]+\.[0-9]+)/gi,
   ];
   for (const pattern of patterns) {
     for (const match of text.matchAll(pattern)) {

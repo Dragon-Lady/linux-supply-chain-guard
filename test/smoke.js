@@ -607,6 +607,21 @@ function run() {
     "      - route=/chat-messages",
     "    notes: files: [file_uuid] PDFium CVE-2024-5846 document parser"
   ].join("\n"));
+  write(path.join(home, "langflow", "docker-compose.yml"), [
+    "services:",
+    "  langflow:",
+    "    image: langflowai/langflow:1.9.0",
+    "    command: langflow run --host 0.0.0.0",
+    "    environment:",
+    "      LANGFLOW_VERSION: 1.9.0",
+    "      LOGSPACE-LangFlow: true",
+    "      max_file_size_upload: 10485760",
+    "    labels:",
+    "      - route=/api/v1/upload/{flow_id}",
+    "    notes: POST /api/v1/upload/11111111-1111-1111-1111-111111111111 file_path=/Users/ori/Library/Caches/langflow/uploads/example.txt",
+    "    advisory: CVE-2026-55450 GHSA-x223-p2gf-v735 FOFA Query app=\"LOGSPACE-LangFlow\"",
+  ].join("\n"));
+  write(path.join(home, "langflow", "requirements.txt"), "langflow==1.9.0\n");
   write(path.join(root, "tmp", "bin", "syswapd0"), "placeholder");
   write(path.join(root, "tmp", "bin", "dropbear"), "placeholder");
   write(path.join(root, "var", "log", "arystinger.log"), [
@@ -820,6 +835,12 @@ function run() {
   assert(ids.has("difytap-chat-file-uuid-review"));
   assert(ids.has("difytap-trace-exfiltration-review"));
   assert(ids.has("difytap-pdfium-parser-review"));
+  assert(ids.has("langflow-cve-2026-55450-vulnerable-version"));
+  assert(ids.has("langflow-deprecated-upload-route-review"));
+  assert(ids.has("langflow-absolute-path-disclosure-artifact"));
+  assert(ids.has("langflow-fofa-exposure-fingerprint"));
+  assert(ids.has("langflow-public-bind"));
+  assert(ids.has("langflow-upload-size-limit-present"));
   assert(ids.has("arystinger-edge-proxy-artifact-path"));
   assert(ids.has("arystinger-edge-proxy-indicator"));
   assert(ids.has("arystinger-dropbear-2332-persistence"));
