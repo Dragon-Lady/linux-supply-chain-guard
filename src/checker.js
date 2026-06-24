@@ -1400,6 +1400,31 @@ const CLICKFIX_KB4_TEXT_INDICATORS = [
   "d7d2f0ee187549f3f4a114d716be12521fbf62d6d26e2ac23d2a32d521d08fd8",
 ];
 
+const EVILTOKENS_DEVICE_CODE_NETWORK_INDICATORS = [
+  "emp01825.workers.dev",
+  "emp01825[.]workers[.]dev",
+  "/api/device/start",
+  "/api/device/gate/",
+  "/api/device/status/",
+];
+
+const EVILTOKENS_DEVICE_CODE_TEXT_INDICATORS = [
+  "EvilTokens",
+  "eviltokens",
+  "oauth-ms-phish",
+  "Microsoft OAuth device-code phishing",
+  "Microsoft OAuth device-code phishing has been detected",
+  "device-code phishing",
+  "Device Code Flow Configuration",
+  "AES-GCM",
+  "browser-side decryption",
+  "decrypted HTML DOM",
+  "userCode",
+  "sessionId",
+  "verification URI",
+  "fcd1b654a0b3e8f85ca7cfdafe494d4b",
+];
+
 function scanHost(options = {}) {
   const targetRoot = path.resolve(options.targetRoot || "/");
   const homePath = options.homePath || process.env.HOME || "";
@@ -1445,6 +1470,7 @@ function scanHost(options = {}) {
   checkRedcapExposure(findings, targetRoot, homePath);
   checkFortinetCredentialExposure(findings, targetRoot, homePath);
   checkClickFixKb4Phishing(findings, targetRoot, homePath);
+  checkEvilTokensDeviceCodePhishing(findings, targetRoot, homePath);
   checkFfmpegPixelSmashExposure(findings, targetRoot, homePath);
   checkLibssh2Cve202655200Exposure(findings, targetRoot, homePath);
   checkShapedPluginSupplyChainCompromise(findings, targetRoot, homePath);
@@ -3018,6 +3044,52 @@ function checkClickFixKb4Phishing(findings, targetRoot, homePath) {
 
     if (/\.lnk[\s\S]{0,240}(?:Win\s*\+\s*R|clipboard|PowerShell|DNS TXT|OneDrive)|(?:Win\s*\+\s*R|clipboard|PowerShell|DNS TXT|OneDrive)[\s\S]{0,240}\.lnk/i.test(text)) {
       addFinding(findings, "warning", "clickfix-kb4-lnk-clipboard-stager", "KnowBe4 ClickFix .lnk plus clipboard/PowerShell/DNS-TXT staging behavior appears in scanned metadata.", relative, "Preserve the shortcut and command history. Check clipboard access, PowerShell execution policy bypasses, DNS TXT responses, and spawned MSI/RMM or spyware payloads.");
+    }
+  }
+}
+
+function checkEvilTokensDeviceCodePhishing(findings, targetRoot, homePath) {
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const roots = [
+    homeRelative,
+    "/home",
+    "/root",
+    "/tmp",
+    "/var/tmp",
+    "/opt",
+    "/srv",
+    "/var/www",
+    "/var/log",
+    "/mnt",
+    "/media",
+    "/ProgramData",
+    "/Users",
+  ].filter(Boolean);
+  const files = [];
+  for (const root of roots) {
+    files.push(...findWatchFiles(mapLinuxPath(targetRoot, root), 25000 - files.length));
+    if (files.length >= 25000) break;
+  }
+
+  for (const filePath of files) {
+    const text = readText(filePath);
+    if (!text) continue;
+    const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+
+    for (const indicator of EVILTOKENS_DEVICE_CODE_NETWORK_INDICATORS) {
+      if (text.includes(indicator)) {
+        addFinding(findings, "critical", "eviltokens-device-code-network-indicator", "EvilTokens Microsoft OAuth device-code phishing endpoint or domain appears in scanned metadata.", `${relative}: ${indicator}`, "Correlate browser, proxy, DNS, IdP, and Microsoft Entra sign-in telemetry. Revoke affected OAuth/device sessions and investigate mailbox, SharePoint, OneDrive, and token activity.");
+      }
+    }
+
+    for (const indicator of EVILTOKENS_DEVICE_CODE_TEXT_INDICATORS) {
+      if (text.includes(indicator)) {
+        addFinding(findings, "warning", "eviltokens-device-code-text-indicator", "EvilTokens or Microsoft OAuth device-code phishing indicator appears in scanned metadata.", `${relative}: ${indicator}`, "Review the original URL/sample in a browser-aware sandbox. Static URL inspection may miss AES-GCM decrypted DOM and device-code flow behavior.");
+      }
+    }
+
+    if (/\/api\/device\/gate\/[A-Za-z0-9_-]+[\s\S]{0,800}\/api\/device\/start[\s\S]{0,800}\/api\/device\/status\/\{?sessionId\}?|\/api\/device\/start[\s\S]{0,800}userCode[\s\S]{0,800}verification\s*URI/i.test(text)) {
+      addFinding(findings, "critical", "eviltokens-device-code-flow-shape", "EvilTokens-style device-code flow endpoints and user-code display logic co-occur.", relative, "Treat as likely Microsoft OAuth device-code phishing material. Preserve the sample and review Entra sign-ins for device-code grants, suspicious successful MFA/device authorization, and follow-on mailbox or file access.");
     }
   }
 }

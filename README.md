@@ -113,6 +113,12 @@ clipboard-injected PowerShell, DNS TXT staging, `document-auth[.]icu`,
 `italy-news[.]info`, `lootrioya[.]info`, and the reported ZIP/MSI/password
 stealer SHA-256 values.
 
+The June 2026 EvilTokens watch pack adds Microsoft OAuth device-code phishing
+triage checks for browser-data/SOC exports, including AES-GCM browser-side
+decryption notes, `/api/device/start`, `/api/device/gate/`,
+`/api/device/status/`, `emp01825.workers.dev`, and the reported MD5. Shared
+Cloudflare IPs from the analysis are intentionally not treated as stable IOCs.
+
 The June 2026 PixelSmash watch pack adds FFmpeg/libavcodec posture checks for
 `CVE-2026-8461`, MagicYUV decoder exposure terms, older upstream-looking
 FFmpeg versions before `8.1.2`, and high-risk media ingestion surfaces such as
@@ -372,6 +378,14 @@ Exit codes:
   - infrastructure domains `document-auth[.]icu`, `italy-news[.]info`, and
     `lootrioya[.]info`
   - reported ZIP, MSI/RMM, and password-stealer SHA-256 values
+- EvilTokens Microsoft OAuth device-code phishing indicators:
+  - `EvilTokens`, `oauth-ms-phish`, and `Microsoft OAuth device-code phishing`
+    triage terms
+  - browser-side `AES-GCM` / decrypted DOM visibility-gap language
+  - `/api/device/start`, `/api/device/gate/`, `/api/device/status/`,
+    `emp01825.workers.dev`, and MD5 `fcd1b654a0b3e8f85ca7cfdafe494d4b`
+  - device-code flow co-occurrence checks for `userCode`, `sessionId`, and
+    verification URI handling
 - FFmpeg PixelSmash indicators:
   - installed `ffmpeg` / `libavcodec*` Debian-family packages
   - upstream-looking versions before FFmpeg `8.1.2` flagged for vendor-backport
@@ -664,6 +678,8 @@ the known indicators it checks.
   https://www.ic3.gov/PSA/2026/PSA260618
 - Ars Technica Microsoft Crypto Clipper USB worm report:
   https://arstechnica.com/security/2026/06/microsoft-spots-new-self-propagating-malware-for-stealing-cryptocurrency/
+- ANY.RUN EvilTokens Microsoft OAuth device-code phishing analysis:
+  https://any.run/cybersecurity-blog/eviltokens-ghost-code-analysis/
 - The Hacker News on NGINX CVE-2026-42945 active exploitation:
   https://thehackernews.com/2026/05/nginx-cve-2026-42945-exploited-in-wild.html
 - The Register on NGINX Rift exploitation:

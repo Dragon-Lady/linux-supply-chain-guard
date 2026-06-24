@@ -454,6 +454,14 @@ function run() {
     "adcd15f3d6b87f84d106ea426fa824fd20c9d64f6d199ce92580884290785f30",
     "d7d2f0ee187549f3f4a114d716be12521fbf62d6d26e2ac23d2a32d521d08fd8"
   ].join("\n"));
+  write(path.join(root, "Users", "alice", "Downloads", "eviltokens-browser-data.txt"), [
+    "ANY.RUN EvilTokens triage note",
+    "Microsoft OAuth device-code phishing has been detected threatName: eviltokens oauth-ms-phish",
+    "AES-GCM browser-side decryption revealed decrypted HTML DOM.",
+    "domainName: emp01825.workers.dev md5: fcd1b654a0b3e8f85ca7cfdafe494d4b",
+    "fetch('/api/device/gate/PAGE123') then POST /api/device/start returns userCode sessionId verification URI.",
+    "poll /api/device/status/{sessionId} until completed and redirect to OneDrive."
+  ].join("\n"));
   write(path.join(root, "var", "log", "pixelsmash-triage.log"), [
     "PixelSmash CVE-2026-8461 FFmpeg MagicYUV magicyuv VFS..D magicyuv",
     "Jellyfin ffprobe scans AVI MKV MOV media libraries with libavcodec",
@@ -727,6 +735,9 @@ function run() {
   assert(ids.has("clickfix-kb4-network-indicator"));
   assert(ids.has("clickfix-kb4-text-indicator"));
   assert(ids.has("clickfix-kb4-lnk-clipboard-stager"));
+  assert(ids.has("eviltokens-device-code-network-indicator"));
+  assert(ids.has("eviltokens-device-code-text-indicator"));
+  assert(ids.has("eviltokens-device-code-flow-shape"));
   assert(ids.has("ffmpeg-pixelsmash-package-review"));
   assert(ids.has("ffmpeg-pixelsmash-upstream-version-review"));
   assert(ids.has("ffmpeg-pixelsmash-text-indicator"));
