@@ -48,6 +48,8 @@
 - Cyber Security News FortiBleed scale and attack-chain summary: https://cybersecuritynews.com/fortibleed-attack-fortigate-firewalls/
 - CISA Known Exploited Vulnerabilities catalog: https://www.cisa.gov/known-exploited-vulnerabilities-catalog
 - CISA Known Exploited Vulnerabilities JSON feed, catalog version 2026.06.23: https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json
+- NVD CVE-2026-20230 record: https://nvd.nist.gov/vuln/detail/CVE-2026-20230
+- Cisco Unified Communications Manager WebDialer SSRF advisory: https://sec.cloudapps.cisco.com/security/center/content/CiscoSecurityAdvisory/cisco-sa-cucm-ssrf-cXPnHcW
 - The Hacker News Operation Endgame / SocGholish disruption report: https://thehackernews.com/2026/06/operation-endgame-disrupts-socgholish.html
 - FBI IC3 PSA on malicious traffic distribution systems: https://www.ic3.gov/PSA/2026/PSA260618
 - Ars Technica Microsoft Crypto Clipper USB worm report: https://arstechnica.com/security/2026/06/microsoft-spots-new-self-propagating-malware-for-stealing-cryptocurrency/

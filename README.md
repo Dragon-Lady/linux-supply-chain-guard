@@ -112,6 +112,12 @@ triage checks for Lantronix EDS5000 `CVE-2025-67038` and Ubiquiti UniFi OS
 `CVE-2026-34908`, `CVE-2026-34909`, and `CVE-2026-34910`, including BOD
 `26-04`, vendor advisory, product-family, and forensics-triage terms.
 
+The June 2026 Cisco CUCM WebDialer watch pack adds local/mounted-root triage
+checks for `CVE-2026-20230`, Cisco Unified Communications Manager / Unified CM
+SME, WebDialer SSRF, file-write-to-root escalation terms, Cisco advisory
+`cisco-sa-cucm-ssrf-cXPnHcW`, and OSINT-reported full-chain webshell/Tor
+exploitation language.
+
 The June 2026 KnowBe4 Threat Labs ClickFix watch pack adds local host and
 mounted-root checks for the `Review Past Due Doc.zip` / `.lnk` OneDrive lure,
 clipboard-injected PowerShell, DNS TXT staging, `document-auth[.]icu`,
@@ -348,6 +354,13 @@ Exit codes:
     command injection, path traversal, or improper access control language
   - CISA KEV, BOD `26-04`, and forensics-triage notes for exported appliance
     inventories or incident-response files
+- Cisco CUCM WebDialer / `CVE-2026-20230` indicators:
+  - Cisco Unified Communications Manager / Unified CM / Unified CM SME
+    references paired with WebDialer, SSRF, or Cisco advisory
+    `cisco-sa-cucm-ssrf-cXPnHcW`
+  - file-write and root-escalation language from the Cisco/NVD record
+  - OSINT escalation terms for full-chain exploitation, webshell drops, Tor, or
+    automated sweeps
 - REDCap exposure posture indicators:
   - REDCap version references older than `17.1.3`, the latest version cited by
     Censys/SecurityWeek on 2026-06-16
@@ -712,6 +725,10 @@ the known indicators it checks.
   https://www.cisa.gov/known-exploited-vulnerabilities-catalog
 - CISA Known Exploited Vulnerabilities JSON feed, catalog version `2026.06.23`:
   https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json
+- NVD CVE-2026-20230 record:
+  https://nvd.nist.gov/vuln/detail/CVE-2026-20230
+- Cisco Unified Communications Manager WebDialer SSRF advisory:
+  https://sec.cloudapps.cisco.com/security/center/content/CiscoSecurityAdvisory/cisco-sa-cucm-ssrf-cXPnHcW
 - The Hacker News Operation Endgame / SocGholish disruption report:
   https://thehackernews.com/2026/06/operation-endgame-disrupts-socgholish.html
 - FBI IC3 PSA on malicious traffic distribution systems:

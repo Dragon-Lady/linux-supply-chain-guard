@@ -624,6 +624,11 @@ function run() {
     "Ubiquiti UniFi OS Security Advisory Bulletin-064 CVE-2026-34908 improper access control",
     "UniFi OS CVE-2026-34909 path traversal and CVE-2026-34910 command injection",
   ].join("\n"));
+  write(path.join(root, "var", "log", "cisco-cucm-webdialer-20230.txt"), [
+    "Cisco Unified Communications Manager Unified CM SME CVE-2026-20230 cisco-sa-cucm-ssrf-cXPnHcW",
+    "WebDialer SSRF server-side request forgery can write files to the underlying operating system and elevate to root.",
+    "Defused OSINT escalation: automated sweeps dropping webshells via Tor, full-chain exploitation observed.",
+  ].join("\n"));
 
   const report = scanHost({ targetRoot: root, homePath: home, architecture: "aarch64" });
   const ids = new Set(report.findings.map((finding) => finding.id));
@@ -823,6 +828,10 @@ function run() {
   assert(ids.has("cisa-kev-lantronix-eds5000-review"));
   assert(ids.has("cisa-kev-unifi-os-review"));
   assert(ids.has("cisa-kev-edge-device-text-indicator"));
+  assert(ids.has("cisco-cucm-webdialer-cve-2026-20230-reference"));
+  assert(ids.has("cisco-cucm-webdialer-ssrf-review"));
+  assert(ids.has("cisco-cucm-webdialer-webshell-exploitation-review"));
+  assert(ids.has("cisco-cucm-webdialer-text-indicator"));
   const tokenFinding = report.findings.find((finding) => finding.id === "dynatrace-token-exposure");
   assert(tokenFinding.evidence.includes("dt0c01.ABCDEFGHIJKLMNOPQRSTUVWX.<redacted>"));
   assert(!tokenFinding.evidence.includes("ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ"));
