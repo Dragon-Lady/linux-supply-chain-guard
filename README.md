@@ -371,6 +371,15 @@ Exit codes:
   - media-ingestion surfaces including Jellyfin, Emby, Nextcloud, Immich,
     PhotoPrism, OBS, and Linux thumbnailers
   - mitigation notes such as `--disable-decoder=magicyuv`
+- HAProxy `CVE-2026-55203` / `CVE-2026-55204` indicators:
+  - installed `haproxy` Debian-family packages with upstream-looking versions
+    through `3.4.0` flagged for vendor-backport review
+  - FastCGI backend configuration terms such as `fcgi-app`, `use-fcgi-app`,
+    and `proto fcgi`
+  - HTTP/2/HPACK exposure terms such as `alpn h2`, `hpack_dht_insert`, and
+    `hpack_dht_defrag`
+  - upstream fix commit IDs `5985276735777634d8c85f1d73bb7764aab0d6dd` and
+    `9a6d1fe3f00d86ab4ea6ea6ea0a5d48fc058a513`
 - libssh2 `CVE-2026-55200` client-exposure indicators:
   - installed `libssh2*` Debian-family packages
   - upstream-looking versions through `1.11.1` flagged for vendor-backport
@@ -671,6 +680,12 @@ the known indicators it checks.
   https://www.bleepingcomputer.com/news/security/ffmpeg-fixes-pixelsmash-flaw-in-widely-used-video-decoder/
 - JFrog PixelSmash technical analysis:
   https://jfrog.com/blog/pixelsmash-critical-ffmpeg-vulnerability-turns-media-files-into-weapons/
+- SecurityOnline HAProxy `CVE-2026-55203` / `CVE-2026-55204` summary:
+  https://securityonline.info/haproxy-vulnerabilities-cve-2026-55203/
+- HAProxy upstream FastCGI demux record-length fix:
+  https://github.com/haproxy/haproxy/commit/5985276735777634d8c85f1d73bb7764aab0d6dd
+- HAProxy upstream HPACK dynamic-table NULL-check fix:
+  https://github.com/haproxy/haproxy/commit/9a6d1fe3f00d86ab4ea6ea6ea0a5d48fc058a513
 - libssh2 upstream PR #2052, additional packet-length boundary checks:
   https://github.com/libssh2/libssh2/pull/2052
 - NixOS security tracker issue for libssh2 `CVE-2026-55199` and

@@ -329,6 +329,10 @@ function run() {
     "Status: install ok installed",
     "Version: 1.31.1-1",
     "",
+    "Package: haproxy",
+    "Status: install ok installed",
+    "Version: 3.4.0-1",
+    "",
     "Package: ffmpeg",
     "Status: install ok installed",
     "Version: 8.1.1-1",
@@ -347,6 +351,20 @@ function run() {
     "acl Safe_ports port 21",
     "http_access deny !Safe_ports",
     "ftp_passive on"
+  ].join("\n"));
+  write(path.join(root, "etc", "haproxy", "haproxy.cfg"), [
+    "global",
+    "  log /dev/log local0",
+    "frontend public",
+    "  bind :443 ssl crt /etc/haproxy/site.pem alpn h2,http/1.1",
+    "  use_backend php_fcgi",
+    "backend php_fcgi",
+    "  mode http",
+    "  use-fcgi-app php-fpm",
+    "  server php1 127.0.0.1:9000 proto fcgi",
+    "# CVE-2026-55203 FastCGI Demux Record Length response smuggling",
+    "# CVE-2026-55204 hpack_dht_insert hpack_dht_defrag HPACK dynamic table",
+    "# fixed by 5985276735777634d8c85f1d73bb7764aab0d6dd and 9a6d1fe3f00d86ab4ea6ea6ea0a5d48fc058a513"
   ].join("\n"));
   write(path.join(root, "etc", "nginx", "nginx.conf"), [
     "events {}",
@@ -657,6 +675,11 @@ function run() {
   assert(ids.has("squidbleed-squid-config-present"));
   assert(ids.has("squidbleed-ftp-safe-port-exposure"));
   assert(ids.has("squidbleed-ftp-proxy-feature-review"));
+  assert(ids.has("haproxy-cve-2026-55203-package-review"));
+  assert(ids.has("haproxy-cve-2026-55203-affected-version-review"));
+  assert(ids.has("haproxy-cve-2026-55203-fastcgi-config-review"));
+  assert(ids.has("haproxy-cve-2026-55204-http2-hpack-review"));
+  assert(ids.has("haproxy-cve-2026-55203-text-indicator"));
   assert(ids.has("nginx-cve-2026-42530-affected-version"));
   assert(ids.has("nginx-cve-2026-42055-affected-version"));
   assert(ids.has("nginx-cve-2026-42530-http3-quic-config"));
