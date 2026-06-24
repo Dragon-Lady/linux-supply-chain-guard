@@ -361,6 +361,18 @@ function run() {
     "Clipboard inspection found wallet addresses and a seed phrase.",
     "PowerShell screenshot capture followed by Curl exfiltration."
   ].join("\n"));
+  write(path.join(root, "Users", "alice", "Downloads", "Review Past Due Doc.zip"), "placeholder");
+  write(path.join(root, "Users", "alice", "Downloads", "clickfix-kb4-triage.txt"), [
+    "KnowBe4 Threat Labs ClickFix triage note",
+    "document-auth.icu italy-news.info lootrioya.info",
+    "Review Past Due Doc.zip urgent past due secure OneDrive attachment",
+    ".lnk shortcut injects a clipboard stager and PowerShell command directly into their clipboard",
+    "Victim presses Win + R and the stager fetches payload instructions via DNS TXT",
+    "RMM / MSI Installer Password Stealer",
+    "7b7981c99d59595fe15377df84695bb72ce0b85560a3935f930657b2d162e5ef",
+    "adcd15f3d6b87f84d106ea426fa824fd20c9d64f6d199ce92580884290785f30",
+    "d7d2f0ee187549f3f4a114d716be12521fbf62d6d26e2ac23d2a32d521d08fd8"
+  ].join("\n"));
   write(path.join(root, "usr", "share", "man9", "ph", ".ph.man"), "captured ssh credential log placeholder\n");
   write(path.join(root, "lib", "systemd", "system", "chrom.service"), [
     "[Service]",
@@ -586,6 +598,10 @@ function run() {
   assert(ids.has("crypto-clipper-usb-worm-indicator"));
   assert(ids.has("crypto-clipper-usb-lnk-spread-review"));
   assert(ids.has("crypto-clipper-screenshot-exfil-review"));
+  assert(ids.has("clickfix-kb4-onedrive-zip-lure"));
+  assert(ids.has("clickfix-kb4-network-indicator"));
+  assert(ids.has("clickfix-kb4-text-indicator"));
+  assert(ids.has("clickfix-kb4-lnk-clipboard-stager"));
   assert(ids.has("operation-highland-ioc-path"));
   assert(ids.has("operation-highland-tool-filename"));
   assert(ids.has("operation-highland-network-indicator"));

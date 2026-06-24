@@ -101,6 +101,12 @@ for `/tmp/bin` `syswapd0`/Dropbear artifacts, port `2332` Dropbear persistence,
 `ajb8`/`auq8`/`dataexplore`/`opi7` infrastructure, and legacy
 D-Link/Linksys/QNAP CVE markers.
 
+The June 2026 KnowBe4 Threat Labs ClickFix watch pack adds local host and
+mounted-root checks for the `Review Past Due Doc.zip` / `.lnk` OneDrive lure,
+clipboard-injected PowerShell, DNS TXT staging, `document-auth[.]icu`,
+`italy-news[.]info`, `lootrioya[.]info`, and the reported ZIP/MSI/password
+stealer SHA-256 values.
+
 This project also tracks urgent Linux advisories as operator guidance when they
 intersect supply-chain response hosts. NGINX Rift / `CVE-2026-42945` and Sudo
 `CVE-2026-35535` are currently documented as advisory-only context; this guard
@@ -316,6 +322,12 @@ Exit codes:
     or wallet-address replacement behavior
   - `localhost:9050`, portable Tor client, PowerShell screenshot capture, and
     Curl/web-request exfiltration triage terms
+- KnowBe4 Threat Labs ClickFix phishing indicators:
+  - `Review Past Due Doc.zip` / `.lnk` OneDrive lure terms
+  - Win+R / clipboard-injected PowerShell / DNS TXT staging language
+  - infrastructure domains `document-auth[.]icu`, `italy-news[.]info`, and
+    `lootrioya[.]info`
+  - reported ZIP, MSI/RMM, and password-stealer SHA-256 values
 - Solana FakeFix / CMS Windows loader indicators:
   - Solana-themed npm names such as `@solana-labs/web3.js`,
     `solana-web3-stable`, `solana-rpc-client`, and `solana-mev-bot`
