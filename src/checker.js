@@ -616,6 +616,16 @@ const GENTLEMEN_KNOWN_HASHES = new Map([
   ["fe1033335a045c696c900d435119d210361966e2fb5cd1ba3382608cfa2c8e68", "Gentlemen ransomware wallpaper bitmap"],
 ]);
 
+const GENTLEMEN_KNOWN_SHA1_HASHES = new Map([
+  ["8ae6bd18b129061f63642531f1b684cf0383c75d", "Kasps.exe GentleKiller Kaspersky variant"],
+  ["ba914fe77b177b45799403b16dd14765c510a074", "eb.sys GentleKiller custom rootkit"],
+  ["56bee9df5833a637f5c54d5911df98b0812fe643", "G11.sys GentleKiller PoisonX rootkit"],
+  ["cf4d74df17a91b4a36a2911b22afec5d8fa93a01", "Avast.exe HexKiller with Gentlemen evasion layer"],
+  ["7131b377e96016dc1911020c9f95b1b4d042d7b4", "Sent.exe ThrottleBlood with Gentlemen evasion layer"],
+  ["f0537cbb773ae12100b36731e7c39f5a9d852b14", "Sophos.exe HavocKiller with Gentlemen evasion layer"],
+  ["a5cf917ec4a7dfbdfa43621398604805d860c718", "buildx641.exe OxideHarvest credential stealer"],
+]);
+
 const GENTLEMEN_TOOLKIT_FILES = new Set([
   "dControl.exe",
   "ConfigureDefender.exe",
@@ -637,6 +647,13 @@ const GENTLEMEN_TOOLKIT_FILES = new Set([
 
 const GENTLEMEN_EDR_KILLER_FILES = new Set([
   "eb.sys",
+  "G11.sys",
+  "havoc.sys",
+  "Kasps.exe",
+  "Avast.exe",
+  "Sent.exe",
+  "Sophos.exe",
+  "buildx641.exe",
   "nseckrnl.sys",
   "GameDriverX64.sys",
   "stpm_old.sys",
@@ -654,6 +671,16 @@ const GENTLEMEN_EDR_KILLER_NAMES = [
   "ThrottleBlood",
   "HavocKiller",
   "OxideHarvest",
+  "UnknownKiller",
+  "PoisonKiller",
+  "PoisonX",
+  "BdApi",
+  "TechPowerUp LLC",
+  "Huawei Audio",
+  "havoc.sys",
+  "buildx641.exe",
+  "hastalamuerte",
+  "quant",
 ];
 
 const GENTLEMEN_NETWORK_INDICATORS = [
@@ -2151,6 +2178,11 @@ function checkGentlemenRansomware(findings, targetRoot, homePath) {
       const label = GENTLEMEN_KNOWN_HASHES.get(digest);
       if (label) {
         addFinding(findings, "critical", "gentlemen-known-hash", "Known Gentlemen ransomware-related SHA-256 observed.", `${relative}: ${label}; sha256=${digest}`, "Contain the host and preserve the file for incident response. Do not execute the file.");
+      }
+      const sha1Digest = sha1File(filePath);
+      const sha1Label = GENTLEMEN_KNOWN_SHA1_HASHES.get(sha1Digest);
+      if (sha1Label) {
+        addFinding(findings, "critical", "gentlemen-known-sha1", "Known Gentlemen/GentleKiller SHA-1 observed.", `${relative}: ${sha1Label}; sha1=${sha1Digest}`, "Contain the host and preserve the file for incident response. Correlate with EDR-killer staging, vulnerable-driver loads, and process-termination telemetry.");
       }
     }
 
@@ -4047,7 +4079,7 @@ function isOpenClawConfigFileName(fileName) {
 
 function shouldHashGentlemenArtifact(fileName) {
   const lower = fileName.toLowerCase();
-  return GENTLEMEN_TOOLKIT_FILES.has(fileName) || lower === "psexec.exe" || lower === "gentlemen.bmp" || lower.endsWith(".exe") || lower.endsWith(".bmp");
+  return GENTLEMEN_TOOLKIT_FILES.has(fileName) || lower === "psexec.exe" || lower === "gentlemen.bmp" || lower.endsWith(".exe") || lower.endsWith(".sys") || lower.endsWith(".bmp");
 }
 
 function isGentlemenEdrKillerFileName(fileName) {
