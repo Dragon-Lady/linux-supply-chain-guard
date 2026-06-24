@@ -86,9 +86,76 @@ const KNOWN_COMPROMISED_NPM_PACKAGES = [
   "node-path-utils",
   "free-anthropic-claude",
   "mddriver",
+  "tailwindcss-merge",
+  "sass-format",
+  "tailwindcss-animates-kit",
+  "sass-formats",
+  "clsx-tailwind",
+  "tailwindcss-animatics",
+  "typeorm-encrypt",
+  "rate-limits-flexible",
+  "rate-limit-flexible",
 ];
 
 const ATOMIC_ARCH_AUR_PACKAGE = "atomic-lockfile";
+
+const CHAINVEIL_NPM_PACKAGES = [
+  "tailwindcss-merge",
+  "sass-format",
+  "tailwindcss-animates-kit",
+  "sass-formats",
+  "clsx-tailwind",
+  "tailwindcss-animatics",
+  "typeorm-encrypt",
+  "rate-limits-flexible",
+  "rate-limit-flexible",
+];
+
+const CHAINVEIL_NETWORK_INDICATORS = [
+  "166.88.54.158",
+  "198.105.127.210",
+  "23.27.202.27",
+  "/$/boot",
+  "/upload",
+  "ws://166.88.54.158:443",
+  "http://166.88.54.158/upload",
+  "http://166.88.54.158/$/boot",
+];
+
+const CHAINVEIL_BLOCKCHAIN_INDICATORS = [
+  "api.trongrid.io",
+  "fullnode.mainnet.aptoslabs.com",
+  "bsc-dataseed.binance.org",
+  "eth_getTransactionByHash",
+  "TMfKQEd7TJJa5xNZJZ2Lep838vrzrs7mAP",
+  "TXfxHUet9pJVU1BgVkBAbrES4YUc1nGzcG",
+  "TA48dct6rFW8BXsiLAtjFaVFoSuryMjD3v",
+  "0xbe037400670fbf1c32364f762975908dc43eeb38759263e7dfcdabc76380811e",
+  "0x533b2dbcaeff19cd1f799234a27b578d713d8fcaa341b7501e4526106483e0b1",
+  "0x80a1148ee589125bc1e57d36abac9f08089b2990d9372be3a33a1f057ad1ef89",
+  "0xa896af4f2876df59af1e705fb75031630ebd37fa89659a9896be4d3da8c87f02",
+  "0xb6c725890be6890fd2c735eedc47e24b85a350301f6c19a3864e43c35e470968",
+];
+
+const CHAINVEIL_TEXT_INDICATORS = [
+  "ChainVeil",
+  "SuccessKey",
+  "successkeyteck",
+  "global['_V']",
+  "global[\"_V\"]",
+  "A6-317",
+  "A6-318",
+  "A6-420",
+  "A6-420-#",
+  "A6-519-79",
+  "A6-519-81",
+  "A6-519-83",
+  "A6-519-85",
+  "2[gWfGj;",
+  "m6:tTh^D)cBz?NM]",
+  "ThZG+0jfXE6VAGOJ",
+  "lib/lib.min.js",
+];
 
 const OTTERCOOKIE_NPM_PACKAGES = [
   "bjs-lint-builders", // push-guard: ignore
@@ -1010,6 +1077,9 @@ const WATCH_FILE_NAMES = new Set([
   "docker-compose.yml",
   "docker-compose.yaml",
   ".npmrc",
+  ".bashrc",
+  ".zshrc",
+  ".profile",
   ".pypirc",
   ".SRCINFO",
   "PKGBUILD",
@@ -1346,6 +1416,7 @@ function scanHost(options = {}) {
   checkKernelModules(findings, targetRoot);
   checkPersistence(findings, targetRoot, homePath);
   checkCompromisedNpmPackages(findings, targetRoot, homePath);
+  checkChainVeilNpmCampaign(findings, targetRoot, homePath);
   checkAtomicArchAurCompromise(findings, targetRoot, homePath);
   checkDprkNpmRat(findings, targetRoot, homePath);
   checkDprkSocketIoLoader(findings, targetRoot, homePath);
@@ -1663,6 +1734,62 @@ function checkCompromisedNpmPackages(findings, targetRoot, homePath) {
       if (text.includes(packageName)) {
         addFinding(findings, "critical", "compromised-npm-package-reference", "Known compromised npm package appears in dependency metadata.", `${relative}: ${packageName}`, "Do not run npm install/build/test in this tree. Isolate affected systems if execution is suspected and rotate secrets from a clean posture.");
       }
+    }
+  }
+}
+
+function checkChainVeilNpmCampaign(findings, targetRoot, homePath) {
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const roots = [
+    homeRelative,
+    "/opt",
+    "/srv",
+    "/var/www",
+    "/usr/local/lib/node_modules",
+    "/tmp",
+    "/var/tmp",
+  ].filter(Boolean);
+  const files = [];
+  for (const root of roots) {
+    files.push(...findWatchFiles(mapLinuxPath(targetRoot, root), 30000 - files.length));
+    if (files.length >= 30000) break;
+  }
+
+  for (const filePath of files) {
+    const text = readText(filePath);
+    if (!text) continue;
+    const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+
+    for (const packageName of CHAINVEIL_NPM_PACKAGES) {
+      if (text.includes(packageName)) {
+        addFinding(findings, "critical", "chainveil-npm-package-reference", "Checkmarx ChainVeil / SuccessKey npm package name appears in scanned metadata.", `${relative}: ${packageName}`, "Do not import or run this project. Remove the typosquat package, regenerate lockfiles from a clean posture, and rotate developer credentials if the package may have executed.");
+      }
+    }
+
+    for (const indicator of CHAINVEIL_NETWORK_INDICATORS) {
+      if (text.includes(indicator)) {
+        addFinding(findings, "critical", "chainveil-network-indicator", "ChainVeil C2 endpoint or IP indicator appears in scanned host metadata.", `${relative}: ${indicator}`, "Correlate DNS, proxy, firewall, WebSocket, and process telemetry. Block the C2 IPs and rotate SSH, npm, cloud, API, and environment-derived credentials from a clean posture if execution occurred.");
+      }
+    }
+
+    for (const indicator of CHAINVEIL_BLOCKCHAIN_INDICATORS) {
+      if (text.includes(indicator)) {
+        addFinding(findings, "critical", "chainveil-blockchain-c2-indicator", "ChainVeil blockchain C2 wallet or transaction indicator appears in scanned code.", `${relative}: ${indicator}`, "Treat this as likely ChainVeil loader or copied IOC material. If found under node_modules or app source, preserve evidence and review import execution history.");
+      }
+    }
+
+    for (const indicator of CHAINVEIL_TEXT_INDICATORS) {
+      if (text.includes(indicator)) {
+        addFinding(findings, "warning", "chainveil-text-indicator", "ChainVeil loader, marker, key, or campaign term appears in scanned host metadata.", `${relative}: ${indicator}`, "Review for lib/lib.min.js import-time execution, A6 campaign markers, seeded shufflers, credential harvesting, and shell-config persistence.");
+      }
+    }
+
+    if (/global\[['"]_V['"]\]\s*=\s*['"]A6-/i.test(text) && /(?:trongrid\.io|aptoslabs\.com|bsc-dataseed|eth_getTransactionByHash|166\.88\.54\.158)/i.test(text)) {
+      addFinding(findings, "critical", "chainveil-loader-shape", "ChainVeil-style A6 campaign marker co-occurs with blockchain or primary C2 loader terms.", relative, "Do not execute or import this file. Preserve it, identify every project that resolved the package, kill suspicious node processes, and rotate developer credentials from a clean machine.");
+    }
+
+    if (/ {80,}.*(?:A6-3|A6-420|A6-519|global\[['"]_V['"]|eval\()/s.test(text) && /\.(?:bashrc|zshrc|profile|npmrc|ssh\/config)$/i.test(relative)) {
+      addFinding(findings, "critical", "chainveil-shell-config-persistence", "Shell or developer config contains long-space-padded ChainVeil-style persistence markers.", relative, "Inspect shell config horizontally past visible columns before editing. Preserve the original file, remove injected blocks from a trusted session, and rotate credentials after persistence is removed.");
     }
   }
 }

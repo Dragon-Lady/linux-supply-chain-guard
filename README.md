@@ -242,6 +242,16 @@ Exit codes:
   - `ecto-flag-read`
   - `@validate-sdk/v2`
   - `google-cloud-secret-manager-config-poc`
+- Checkmarx ChainVeil / SuccessKey npm indicators:
+  - typosquat package names including `tailwindcss-merge`, `sass-format`,
+    `sass-formats`, `tailwindcss-animates-kit`, `tailwindcss-animatics`,
+    `clsx-tailwind`, `typeorm-encrypt`, `rate-limits-flexible`, and
+    `rate-limit-flexible`
+  - import-time loader markers in `lib/lib.min.js`, `global['_V']='A6-*'`,
+    `successkeyteck`, XOR-key fragments, and seeded shuffler context
+  - C2 IPs `166.88.54.158`, `198.105.127.210`, and `23.27.202.27`, plus
+    `/$/boot`, `/upload`, WebSocket C2, Tron/Aptos/BSC C2 strings, and
+    long-space-padded shell-config persistence markers
 - Supply Chain Attack catalog npm malware indicators:
   - `free-claude`
   - `free-anthropic-claude`
@@ -586,6 +596,8 @@ the known indicators it checks.
   https://github.com/advisories/GHSA-g6v5-9xpp-6hpx
 - SupplyChainAttack incident for `ecto-flag-read`:
   https://supplychainattack.org/incident/malware-in-ecto-flag-read-m7p2-zqvzsn
+- Checkmarx ChainVeil / SuccessKey npm supply-chain report:
+  https://checkmarx.com/zero-post/chainveil-a-malicious-npm-supply-chain-attack-by-successkey/
 - Supply Chain Attack incident catalog, latest npm malware batch:
   https://supplychainattack.org/
 - Supply Chain Attack incident catalog, free-claude npm malware:

