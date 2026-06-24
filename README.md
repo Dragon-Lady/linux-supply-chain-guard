@@ -36,6 +36,12 @@ Solana wallet/keypair paths, Telegram exfiltration, suspicious Solana RPC
 redirection, Deno remote-loader execution, Windows Registry Run-key persistence,
 mutex markers, and EXE-dropper filenames.
 
+The June 2026 JFrog / The Hacker News PostCSS-lookalike Windows RAT watch pack
+adds checks for the `postcss-minify-selector-parser`,
+`postcss-minify-selector`, and `aes-decode-runner-pro` npm packages, plus
+PowerShell/VBS/Python/Nuitka payload-stage markers and Chrome
+credential/extension theft terms.
+
 The June 2026 Socket GlassWASM / Open VSX watch pack adds checks for trojanized
 Open VSX extension copies, suspicious WASM payload names, affected VSIX archive
 names and hashes, TinyGo/WebAssembly host fingerprints, Solana memo dead-drop
@@ -388,6 +394,13 @@ Exit codes:
   - Solana keypair/wallet path strings, Telegram API exfil paths, Deno
     `run -A`, fake RPC `104.239.66.223:8899`, and Windows Run-key/persistence
     markers
+- PostCSS-lookalike Windows RAT indicators:
+  - package names `postcss-minify-selector-parser`,
+    `postcss-minify-selector`, and `aes-decode-runner-pro`
+  - `settings.ps1`, `update.vbs`, `loader.py`, Nuitka `.pyd` module names,
+    `wscript.exe`, and publisher marker `abdrizak`
+  - C2/downloader markers `nvidiadriver[.]net` and `95.216.92[.]207:8080`
+  - Chrome credential, Chrome extension, and app-bound encryption theft terms
 - Socket GlassWASM / Open VSX indicators:
   - affected Open VSX extension references `vscode/exargd/vsblack@0.0.1` and
     `vscode/noellee-doc/flint-debug@0.1.1`
@@ -535,6 +548,8 @@ the known indicators it checks.
   https://cybersecuritynews.com/agentjacking-attack-hijacks-ai-coding-agent/
 - JFrog Solana FakeFix / CMS Windows loader report:
   https://research.jfrog.com/post/solana-fakefix/
+- The Hacker News / JFrog PostCSS-lookalike Windows RAT summary:
+  https://thehackernews.com/2026/06/malicious-npm-packages-pose-as-postcss.html
 - Socket GlassWASM Open VSX extension report:
   https://socket.dev/blog/glasswasm-malware-open-vsx-extensions
 - OX Security easy-day-js / Mastra npm supply-chain report:

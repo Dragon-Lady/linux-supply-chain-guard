@@ -147,7 +147,7 @@ function run() {
       "postcss-minify-selector-parser": "1.0.0",
       "aes-decode-runner-pro": "1.0.0"
     },
-    notes: "nvidiadriver[.]net 95.216.92[.]207:8080 winPatch.zip win-driver-xd7d csshost"
+    notes: "nvidiadriver[.]net 95.216.92[.]207:8080 settings.ps1 update.vbs loader.py config.pyd audiodriver.pyd Nuitka app-bound encryption winPatch.zip win-driver-xd7d csshost"
   }, null, 2));
   write(path.join(home, ".cursor", "extensions", "exargd.vsblack-0.0.1", "package.json"), JSON.stringify({
     publisher: "exargd",
