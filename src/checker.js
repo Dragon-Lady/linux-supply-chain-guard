@@ -1093,6 +1093,26 @@ const SQUIDBLEED_CONFIG_PATHS = [
   "/usr/local/squid/etc/squid.conf",
 ];
 
+const HAPROXY_CVE2026_AFFECTED_MAX = "3.4.0";
+const HAPROXY_CONFIG_ROOTS = [
+  "/etc/haproxy",
+  "/usr/local/etc/haproxy",
+  "/opt/haproxy",
+];
+const HAPROXY_CVE2026_TEXT_INDICATORS = [
+  "CVE-2026-55203",
+  "CVE-2026-55204",
+  "FastCGI Demux Record Length",
+  "FCGI Demux Record Length",
+  "Integer Overflow in FCGI",
+  "response smuggling",
+  "hpack_dht_insert",
+  "hpack_dht_defrag",
+  "HPACK dynamic table",
+  "5985276735777634d8c85f1d73bb7764aab0d6dd",
+  "9a6d1fe3f00d86ab4ea6ea6ea0a5d48fc058a513",
+];
+
 const NGINX_CONFIG_ROOTS = [
   "/etc/nginx",
   "/usr/local/nginx/conf",
@@ -1358,6 +1378,7 @@ function scanHost(options = {}) {
   checkLibssh2Cve202655200Exposure(findings, targetRoot, homePath);
   checkShapedPluginSupplyChainCompromise(findings, targetRoot, homePath);
   checkSquidbleedFtpProxyExposure(findings, targetRoot, homePath);
+  checkHaproxyCve202655203Exposure(findings, targetRoot, homePath);
   checkNginxCritical2026Exposure(findings, targetRoot, homePath);
   checkLiteLlmGatewayExposure(findings, targetRoot, homePath);
   checkDifyTapExposure(findings, targetRoot, homePath);
@@ -3114,6 +3135,59 @@ function checkSquidbleedFtpProxyExposure(findings, targetRoot, homePath) {
   }
 }
 
+function checkHaproxyCve202655203Exposure(findings, targetRoot, homePath) {
+  const packageStatus = readText(mapLinuxPath(targetRoot, "/var/lib/dpkg/status"));
+  const haproxyPackages = haproxyPackagesFromDpkgStatus(packageStatus);
+  for (const pkg of haproxyPackages) {
+    addFinding(findings, "review", "haproxy-cve-2026-55203-package-review", "HAProxy package appears installed on a host relevant to CVE-2026-55203 and CVE-2026-55204.", `${pkg.name} ${pkg.version}`, "Confirm HAProxy includes upstream commits 5985276735777634d8c85f1d73bb7764aab0d6dd and 9a6d1fe3f00d86ab4ea6ea6ea0a5d48fc058a513, or a vendor-fixed backport.");
+
+    const upstreamVersion = normalizePackageVersion(pkg.version);
+    if (upstreamVersion && compareDottedVersion(normalizeDottedVersion(upstreamVersion), HAPROXY_CVE2026_AFFECTED_MAX) <= 0) {
+      addFinding(findings, "warning", "haproxy-cve-2026-55203-affected-version-review", "HAProxy package version is at or below the reported affected range through 3.4.0.", `${pkg.name} ${pkg.version}`, "Verify distro backport status before treating the host as fixed. Prioritize reverse proxies using FastCGI backends, HTTP/2/HPACK, or untrusted upstream services.");
+    }
+  }
+
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const roots = [
+    ...HAPROXY_CONFIG_ROOTS,
+    "/etc",
+    "/opt",
+    "/srv",
+    "/var/log",
+    homeRelative,
+  ].filter(Boolean);
+  const files = [];
+  for (const root of roots) {
+    files.push(...findWatchFiles(mapLinuxPath(targetRoot, root), 25000 - files.length));
+    if (files.length >= 25000) break;
+  }
+
+  for (const filePath of files) {
+    const text = readText(filePath);
+    if (!text) continue;
+    const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+    const haystack = `${relative}\n${text}`;
+    const hasHaproxy = /haproxy|HAProxy|fcgi-app|proto\s+fcgi|use-fcgi-app|h2|http\/2|alpn\s+h2/i.test(haystack);
+
+    for (const indicator of HAPROXY_CVE2026_TEXT_INDICATORS) {
+      if (text.includes(indicator)) {
+        addFinding(findings, "review", "haproxy-cve-2026-55203-text-indicator", "HAProxy CVE-2026-55203/CVE-2026-55204 advisory marker appears in scanned host metadata.", `${relative}: ${indicator}`, "Track whether the active HAProxy build includes the FastCGI demux and HPACK dynamic-table fixes. Keep copied advisories out of deployment directories where possible.");
+      }
+    }
+
+    if (!hasHaproxy) continue;
+
+    const activeText = stripHashComments(text);
+    if (/fcgi-app|proto\s+fcgi|use-fcgi-app/i.test(activeText)) {
+      addFinding(findings, "warning", "haproxy-cve-2026-55203-fastcgi-config-review", "HAProxy configuration references FastCGI backend exposure relevant to CVE-2026-55203.", relative, "Confirm the active HAProxy build contains the mux-fcgi demux record-length fix. Treat untrusted or compromised FastCGI backends as higher-risk for response-smuggling behavior.");
+    }
+
+    if (/\b(?:h2|http\/2)\b|alpn\s+[^;\n]*h2|proto\s+h2/i.test(activeText)) {
+      addFinding(findings, "review", "haproxy-cve-2026-55204-http2-hpack-review", "HAProxy configuration references HTTP/2/HPACK exposure relevant to CVE-2026-55204.", relative, "Confirm the active HAProxy build includes the hpack_dht_defrag NULL-check fix and review memory-pressure crash telemetry.");
+    }
+  }
+}
+
 function checkNginxCritical2026Exposure(findings, targetRoot, homePath) {
   const packageStatus = readText(mapLinuxPath(targetRoot, "/var/lib/dpkg/status"));
   const nginxPackages = nginxPackagesFromDpkgStatus(packageStatus);
@@ -4001,6 +4075,19 @@ function squidPackagesFromDpkgStatus(text) {
     if (!/^Package:\s*squid(?:-[^\s]+)?\s*$/im.test(block)) continue;
     if (!/^Status:\s+install\s+ok\s+installed\s*$/im.test(block)) continue;
     const name = block.match(/^Package:\s*(\S+)/im)?.[1] || "squid";
+    const version = block.match(/^Version:\s*(\S+)/im)?.[1] || "unknown-version";
+    packages.push({ name, version });
+  }
+  return packages;
+}
+
+function haproxyPackagesFromDpkgStatus(text) {
+  const packages = [];
+  if (!text) return packages;
+  for (const block of text.split(/\n\n+/)) {
+    if (!/^Package:\s*haproxy(?:[-+][^\s]+)?\s*$/im.test(block)) continue;
+    if (!/^Status:\s+install\s+ok\s+installed\s*$/im.test(block)) continue;
+    const name = block.match(/^Package:\s*(\S+)/im)?.[1] || "haproxy";
     const version = block.match(/^Version:\s*(\S+)/im)?.[1] || "unknown-version";
     packages.push({ name, version });
   }
