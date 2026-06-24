@@ -706,6 +706,8 @@ the known indicators it checks.
   https://socradar.io/resources/whitepapers/dismantling-fortibleed-inside-a-russian-fortinet-compromise-operation/
 - Cyber Security News FortigateSniffer / FortiBleed tooling summary:
   https://cybersecuritynews.com/fortigatesniffer-tool-fortibleed/
+- Cyber Security News FortiBleed scale and attack-chain summary:
+  https://cybersecuritynews.com/fortibleed-attack-fortigate-firewalls/
 - CISA Known Exploited Vulnerabilities catalog:
   https://www.cisa.gov/known-exploited-vulnerabilities-catalog
 - CISA Known Exploited Vulnerabilities JSON feed, catalog version `2026.06.23`:

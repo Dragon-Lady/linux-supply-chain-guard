@@ -45,6 +45,7 @@
 - TechRadar summary of Fortinet/FortiGate credential exposure reporting: https://www.techradar.com/pro/security/fortinet-firewalls-hit-by-huge-password-stealing-attack-around-75-000-users-possibly-affected
 - SOCRadar FortiBleed / FortigateSniffer whitepaper landing page: https://socradar.io/resources/whitepapers/dismantling-fortibleed-inside-a-russian-fortinet-compromise-operation/
 - Cyber Security News FortigateSniffer / FortiBleed tooling summary: https://cybersecuritynews.com/fortigatesniffer-tool-fortibleed/
+- Cyber Security News FortiBleed scale and attack-chain summary: https://cybersecuritynews.com/fortibleed-attack-fortigate-firewalls/
 - CISA Known Exploited Vulnerabilities catalog: https://www.cisa.gov/known-exploited-vulnerabilities-catalog
 - CISA Known Exploited Vulnerabilities JSON feed, catalog version 2026.06.23: https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json
 - The Hacker News Operation Endgame / SocGholish disruption report: https://thehackernews.com/2026/06/operation-endgame-disrupts-socgholish.html
