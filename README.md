@@ -81,8 +81,10 @@ are local operator notifications only.
 
 The June 2026 Squidbleed review lane adds Squid proxy posture checks for
 installed Squid packages, Squid configuration files, and FTP proxy exposure via
-`Safe_ports` port 21. It is advisory/configuration guidance until final CVE and
-distro fixed-version data are available.
+`Safe_ports` port 21. It tracks `CVE-2026-47729`; because distribution
+backports and Squid 7.6/7.7 fixed-version reporting have been inconsistent,
+operator guidance still favors disabling FTP proxying unless it is explicitly
+required.
 
 The June 2026 NGINX critical exposure lane adds local checks for F5-reported
 NGINX Open Source affected ranges for `CVE-2026-42530` and `CVE-2026-42055`,
@@ -555,3 +557,5 @@ the known indicators it checks.
   https://thehackernews.com/2026/06/arystinger-malware-infects-4300-legacy.html
 - QiAnXin XLab AryStinger technical analysis and IOC list:
   https://blog.xlab.qianxin.com/arystinger-botnet-hijacks-legacy-routers-for-global-attacks-en/
+- The Hacker News Squidbleed `CVE-2026-47729` summary:
+  https://thehackernews.com/2026/06/29-year-old-squid-proxy-bug-squidbleed.html
