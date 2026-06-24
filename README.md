@@ -112,6 +112,13 @@ The June 2026 PixelSmash watch pack adds FFmpeg/libavcodec posture checks for
 FFmpeg versions before `8.1.2`, and high-risk media ingestion surfaces such as
 Jellyfin, Nextcloud movie previews, PhotoPrism, Immich, OBS, and thumbnailers.
 
+The June 2026 ShapedPlugin Pro WordPress supply-chain watch pack adds local
+WordPress tree checks for affected Pro plugin slugs and versions,
+`LicenseLoader.php`, fake `woocommerce-subscription` /
+`woocommerce-notification` plugin paths, `194.76.217[.]28:2871`,
+`generate[.]2faplugin[.]org`, the REST backdoor endpoint, 2FA secret markers,
+and the reported loader hash.
+
 This project also tracks urgent Linux advisories as operator guidance when they
 intersect supply-chain response hosts. NGINX Rift / `CVE-2026-42945` and Sudo
 `CVE-2026-35535` are currently documented as advisory-only context; this guard
@@ -342,6 +349,16 @@ Exit codes:
   - media-ingestion surfaces including Jellyfin, Emby, Nextcloud, Immich,
     PhotoPrism, OBS, and Linux thumbnailers
   - mitigation notes such as `--disable-decoder=magicyuv`
+- ShapedPlugin Pro WordPress supply-chain indicators:
+  - affected Pro plugin slugs `woo-product-slider-pro`, `testimonial-pro`, and
+    `smart-show-post-pro`
+  - `LicenseLoader.php`, `install-persistent.php`, fake
+    `woocommerce-subscription` / `woocommerce-notification` plugin paths, and
+    REST endpoint `/wp-json/wc/v3/settings/apply`
+  - C2/exfil infrastructure `194.76.217[.]28:2871`,
+    `generate[.]2faplugin[.]org`, and vendor update host
+    `account.shapedplugin[.]com`
+  - 2FA secret markers, login-bypass MD5, and reported loader SHA-256
 - Solana FakeFix / CMS Windows loader indicators:
   - Solana-themed npm names such as `@solana-labs/web3.js`,
     `solana-web3-stable`, `solana-rpc-client`, and `solana-mev-bot`
@@ -597,3 +614,7 @@ the known indicators it checks.
   https://www.bleepingcomputer.com/news/security/ffmpeg-fixes-pixelsmash-flaw-in-widely-used-video-decoder/
 - JFrog PixelSmash technical analysis:
   https://jfrog.com/blog/pixelsmash-critical-ffmpeg-vulnerability-turns-media-files-into-weapons/
+- Wordfence ShapedPlugin Pro supply-chain compromise PSA:
+  https://www.wordfence.com/blog/2026/06/psa-supply-chain-compromise-targets-shapedplugin-backdoored-pro-plugins-distributed-via-official-channels/
+- The Hacker News ShapedPlugin Pro supply-chain compromise summary:
+  https://thehackernews.com/2026/06/shapedplugin-wordpress-pro-plugins.html
