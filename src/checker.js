@@ -1393,6 +1393,27 @@ const CISA_KEV_EDGE_DEVICE_TEXT_INDICATORS = [
   "improper access control",
 ];
 
+const CISCO_CUCM_WEB_DIALER_TEXT_INDICATORS = [
+  "CVE-2026-20230",
+  "Cisco Unified Communications Manager",
+  "Unified Communications Manager",
+  "Unified CM",
+  "Unified CM SME",
+  "Session Management Edition",
+  "WebDialer",
+  "Web Dialer",
+  "cisco-sa-cucm-ssrf-cXPnHcW",
+  "CWE-918",
+  "server-side request forgery",
+  "SSRF",
+  "write files to the underlying operating system",
+  "elevate to root",
+  "webshell",
+  "web shell",
+  "full-chain",
+  "Tor",
+];
+
 const CLICKFIX_KB4_KNOWN_HASHES = new Map([
   ["7b7981c99d59595fe15377df84695bb72ce0b85560a3935f930657b2d162e5ef", "KnowBe4 ClickFix Review Past Due Doc ZIP"],
   ["adcd15f3d6b87f84d106ea426fa824fd20c9d64f6d199ce92580884290785f30", "KnowBe4 ClickFix RMM/MSI installer"],
@@ -1542,6 +1563,7 @@ function scanHost(options = {}) {
   checkOperationHighlandAuthStack(findings, targetRoot, homePath);
   checkAryStingerEdgeProxy(findings, targetRoot, homePath);
   checkCisaKevEdgeDeviceLatest(findings, targetRoot, homePath);
+  checkCiscoCucmWebDialer20230(findings, targetRoot, homePath);
   checkTransformersPayload(findings, targetRoot);
   checkSecretSurfaces(findings, targetRoot, homePath);
 
@@ -4014,6 +4036,50 @@ function checkCisaKevEdgeDeviceLatest(findings, targetRoot, homePath) {
     for (const indicator of CISA_KEV_EDGE_DEVICE_TEXT_INDICATORS) {
       if (text.includes(indicator) && /CVE-2025-67038|CVE-2026-3490[89]|CVE-2026-34910|Lantronix|EDS5000|Ubiquiti|UniFi/i.test(text)) {
         addFinding(findings, "review", "cisa-kev-edge-device-text-indicator", "CISA KEV edge-device advisory term appears in scanned metadata.", `${relative}: ${indicator}`, "Use this as an inventory and triage lead for the June 23, 2026 KEV additions covering Lantronix EDS5000 and Ubiquiti UniFi OS.");
+      }
+    }
+  }
+}
+
+function checkCiscoCucmWebDialer20230(findings, targetRoot, homePath) {
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const roots = [
+    homeRelative,
+    "/etc",
+    "/opt",
+    "/srv",
+    "/var/log",
+    "/var/www",
+    "/root",
+    "/mnt",
+    "/media",
+  ].filter(Boolean);
+  const files = [];
+  for (const root of roots) {
+    files.push(...findWatchFiles(mapLinuxPath(targetRoot, root), 25000 - files.length));
+    if (files.length >= 25000) break;
+  }
+
+  for (const filePath of files) {
+    const text = readText(filePath);
+    if (!text) continue;
+    const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+
+    if (text.includes("CVE-2026-20230")) {
+      addFinding(findings, "critical", "cisco-cucm-webdialer-cve-2026-20230-reference", "Cisco CUCM WebDialer CVE-2026-20230 reference appears in scanned metadata.", `${relative}: CVE-2026-20230`, "Inventory Cisco Unified CM and Unified CM SME appliances, verify whether WebDialer is enabled, apply Cisco fixed software, and preserve web/application logs before cleanup.");
+    }
+
+    if (/(?:Cisco|Unified Communications Manager|Unified CM|CUCM|Unified CM SME)[\s\S]{0,260}(?:WebDialer|Web Dialer|CVE-2026-20230|SSRF|server-side request forgery|write files|elevate to root)|(?:WebDialer|Web Dialer|CVE-2026-20230|SSRF|server-side request forgery|write files|elevate to root)[\s\S]{0,260}(?:Cisco|Unified Communications Manager|Unified CM|CUCM|Unified CM SME)/i.test(text)) {
+      addFinding(findings, "warning", "cisco-cucm-webdialer-ssrf-review", "Cisco CUCM/WebDialer SSRF-to-file-write exposure terms appear in scanned metadata.", relative, "Confirm WebDialer is disabled unless required, restrict CUCM management/service exposure, and patch affected Unified CM / Unified CM SME releases per Cisco guidance.");
+    }
+
+    if (/(?:CVE-2026-20230|CUCM|Unified CM|WebDialer|Web Dialer)[\s\S]{0,320}(?:webshell|web shell|full-chain|Tor|automated sweeps|dropping webshells)|(?:webshell|web shell|full-chain|Tor|automated sweeps|dropping webshells)[\s\S]{0,320}(?:CVE-2026-20230|CUCM|Unified CM|WebDialer|Web Dialer)/i.test(text)) {
+      addFinding(findings, "critical", "cisco-cucm-webdialer-webshell-exploitation-review", "Cisco CUCM/WebDialer full-chain webshell exploitation terms appear in scanned metadata.", relative, "Treat exposed CUCM appliances as active-exploitation priority. Preserve web roots, Tomcat/CUCM logs, reverse-proxy logs, Tor-sourced requests, unexpected JSP/webshell files, and file-write artifacts before remediation.");
+    }
+
+    for (const indicator of CISCO_CUCM_WEB_DIALER_TEXT_INDICATORS) {
+      if (text.includes(indicator) && /CVE-2026-20230|Cisco|Unified Communications Manager|Unified CM|CUCM|WebDialer|Web Dialer/i.test(text)) {
+        addFinding(findings, "review", "cisco-cucm-webdialer-text-indicator", "Cisco CUCM/WebDialer CVE-2026-20230 advisory term appears in scanned metadata.", `${relative}: ${indicator}`, "Use this as an inventory and triage lead for Cisco Unified CM / Unified CM SME WebDialer SSRF exposure.");
       }
     }
   }
