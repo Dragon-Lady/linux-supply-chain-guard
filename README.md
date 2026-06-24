@@ -107,6 +107,11 @@ for `/tmp/bin` `syswapd0`/Dropbear artifacts, port `2332` Dropbear persistence,
 `ajb8`/`auq8`/`dataexplore`/`opi7` infrastructure, and legacy
 D-Link/Linksys/QNAP CVE markers.
 
+The June 23, 2026 CISA KEV edge-device watch pack adds local/mounted-root
+triage checks for Lantronix EDS5000 `CVE-2025-67038` and Ubiquiti UniFi OS
+`CVE-2026-34908`, `CVE-2026-34909`, and `CVE-2026-34910`, including BOD
+`26-04`, vendor advisory, product-family, and forensics-triage terms.
+
 The June 2026 KnowBe4 Threat Labs ClickFix watch pack adds local host and
 mounted-root checks for the `Review Past Due Doc.zip` / `.lnk` OneDrive lure,
 clipboard-injected PowerShell, DNS TXT staging, `document-auth[.]icu`,
@@ -334,6 +339,15 @@ Exit codes:
     `/v1/postgres/recovery/backup` and `/v1/postgres/recovery/restore`
   - file-write/RCE-chain triage terms such as `.pgpass`, `pg_restore`,
     `pg_dump`, `backupFile`, and arbitrary file creation/truncation
+- CISA KEV June 23, 2026 edge-device indicators:
+  - Lantronix EDS5000 / EDS5008 / EDS5016 / EDS5032 references paired with
+    `CVE-2025-67038`, code injection, `username` parameter, or root-privilege
+    language
+  - Ubiquiti UniFi OS references paired with `CVE-2026-34908`,
+    `CVE-2026-34909`, `CVE-2026-34910`, Security Advisory Bulletin 064,
+    command injection, path traversal, or improper access control language
+  - CISA KEV, BOD `26-04`, and forensics-triage notes for exported appliance
+    inventories or incident-response files
 - REDCap exposure posture indicators:
   - REDCap version references older than `17.1.3`, the latest version cited by
     Censys/SecurityWeek on 2026-06-16
@@ -692,6 +706,10 @@ the known indicators it checks.
   https://socradar.io/resources/whitepapers/dismantling-fortibleed-inside-a-russian-fortinet-compromise-operation/
 - Cyber Security News FortigateSniffer / FortiBleed tooling summary:
   https://cybersecuritynews.com/fortigatesniffer-tool-fortibleed/
+- CISA Known Exploited Vulnerabilities catalog:
+  https://www.cisa.gov/known-exploited-vulnerabilities-catalog
+- CISA Known Exploited Vulnerabilities JSON feed, catalog version `2026.06.23`:
+  https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json
 - The Hacker News Operation Endgame / SocGholish disruption report:
   https://thehackernews.com/2026/06/operation-endgame-disrupts-socgholish.html
 - FBI IC3 PSA on malicious traffic distribution systems:

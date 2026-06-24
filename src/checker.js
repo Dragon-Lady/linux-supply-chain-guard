@@ -1367,6 +1367,32 @@ const ARYSTINGER_TEXT_INDICATORS = [
   "RTL819X",
 ];
 
+const CISA_KEV_EDGE_DEVICE_CVES = [
+  "CVE-2025-67038",
+  "CVE-2026-34908",
+  "CVE-2026-34909",
+  "CVE-2026-34910",
+];
+
+const CISA_KEV_EDGE_DEVICE_TEXT_INDICATORS = [
+  "Lantronix EDS5000",
+  "EDS5008",
+  "EDS5016",
+  "EDS5032",
+  "Ubiquiti UniFi OS",
+  "UniFi OS",
+  "Security Advisory Bulletin-064",
+  "Security-Advisory-Bulletin-064",
+  "BOD 26-04",
+  "Known Exploited Vulnerabilities",
+  "Forensics Triage Requirements",
+  "code injection vulnerability",
+  "username parameter",
+  "command injection",
+  "path traversal",
+  "improper access control",
+];
+
 const CLICKFIX_KB4_KNOWN_HASHES = new Map([
   ["7b7981c99d59595fe15377df84695bb72ce0b85560a3935f930657b2d162e5ef", "KnowBe4 ClickFix Review Past Due Doc ZIP"],
   ["adcd15f3d6b87f84d106ea426fa824fd20c9d64f6d199ce92580884290785f30", "KnowBe4 ClickFix RMM/MSI installer"],
@@ -1515,6 +1541,7 @@ function scanHost(options = {}) {
   checkNpmV12Readiness(findings, targetRoot, homePath);
   checkOperationHighlandAuthStack(findings, targetRoot, homePath);
   checkAryStingerEdgeProxy(findings, targetRoot, homePath);
+  checkCisaKevEdgeDeviceLatest(findings, targetRoot, homePath);
   checkTransformersPayload(findings, targetRoot);
   checkSecretSurfaces(findings, targetRoot, homePath);
 
@@ -3942,6 +3969,52 @@ function checkAryStingerEdgeProxy(findings, targetRoot, homePath) {
 
     if (/curl\s+-sk?L\s+https?:\/\/hgodpcx[.\[](?:ajb8|auq8)|wget[\s\S]{0,120}hgodpcx[.\[]ajb8/i.test(text)) {
       addFinding(findings, "critical", "arystinger-downloader-command", "AryStinger downloader command pattern appears in scanned host metadata.", relative, "Preserve command history/scripts and block related downloader/C2 domains at the edge while replacing or reimaging affected appliances.");
+    }
+  }
+}
+
+function checkCisaKevEdgeDeviceLatest(findings, targetRoot, homePath) {
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const roots = [
+    homeRelative,
+    "/etc",
+    "/opt",
+    "/srv",
+    "/var/log",
+    "/var/www",
+    "/root",
+    "/mnt",
+    "/media",
+  ].filter(Boolean);
+  const files = [];
+  for (const root of roots) {
+    files.push(...findWatchFiles(mapLinuxPath(targetRoot, root), 25000 - files.length));
+    if (files.length >= 25000) break;
+  }
+
+  for (const filePath of files) {
+    const text = readText(filePath);
+    if (!text) continue;
+    const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+
+    for (const cve of CISA_KEV_EDGE_DEVICE_CVES) {
+      if (text.includes(cve)) {
+        addFinding(findings, "critical", "cisa-kev-edge-device-cve-reference", "Latest CISA KEV edge-device CVE reference appears in scanned metadata.", `${relative}: ${cve}`, "Prioritize exposed Lantronix EDS5000 and Ubiquiti UniFi OS assets under CISA BOD 26-04 timelines. Apply vendor mitigations, preserve forensics triage evidence, and discontinue use if mitigations are unavailable.");
+      }
+    }
+
+    if (/(?:Lantronix|EDS5000|EDS5008|EDS5016|EDS5032)[\s\S]{0,220}(?:CVE-2025-67038|code injection|username parameter|root privileges|Known Exploited Vulnerabilities|BOD 26-04)|(?:CVE-2025-67038|code injection|username parameter|root privileges|Known Exploited Vulnerabilities|BOD 26-04)[\s\S]{0,220}(?:Lantronix|EDS5000|EDS5008|EDS5016|EDS5032)/i.test(text)) {
+      addFinding(findings, "warning", "cisa-kev-lantronix-eds5000-review", "Lantronix EDS5000 KEV exposure terms appear in scanned metadata.", relative, "Inventory EDS5008/EDS5016/EDS5032 appliances, apply current Lantronix firmware or mitigations, review command-injection forensics, and isolate management interfaces.");
+    }
+
+    if (/(?:Ubiquiti|UniFi OS|UniFi)[\s\S]{0,260}(?:CVE-2026-34908|CVE-2026-34909|CVE-2026-34910|Security Advisory Bulletin-064|command injection|path traversal|improper access control|Known Exploited Vulnerabilities|BOD 26-04)|(?:CVE-2026-34908|CVE-2026-34909|CVE-2026-34910|Security Advisory Bulletin-064|command injection|path traversal|improper access control|Known Exploited Vulnerabilities|BOD 26-04)[\s\S]{0,260}(?:Ubiquiti|UniFi OS|UniFi)/i.test(text)) {
+      addFinding(findings, "warning", "cisa-kev-unifi-os-review", "Ubiquiti UniFi OS KEV exposure terms appear in scanned metadata.", relative, "Inventory UniFi OS consoles/controllers, apply Ubiquiti Security Advisory Bulletin 064 mitigations, restrict management access, and preserve appliance logs before cleanup.");
+    }
+
+    for (const indicator of CISA_KEV_EDGE_DEVICE_TEXT_INDICATORS) {
+      if (text.includes(indicator) && /CVE-2025-67038|CVE-2026-3490[89]|CVE-2026-34910|Lantronix|EDS5000|Ubiquiti|UniFi/i.test(text)) {
+        addFinding(findings, "review", "cisa-kev-edge-device-text-indicator", "CISA KEV edge-device advisory term appears in scanned metadata.", `${relative}: ${indicator}`, "Use this as an inventory and triage lead for the June 23, 2026 KEV additions covering Lantronix EDS5000 and Ubiquiti UniFi OS.");
+      }
     }
   }
 }

