@@ -883,6 +883,7 @@ const WATCH_FILE_NAMES = new Set([
   PEOPLESOFT_EXTORTION_MARKER,
   "psappsrv.cfg",
   "config.xml",
+  "Review Past Due Doc.zip",
   ...PEOPLESOFT_MESH_AGENT_FILES,
   "gentlemen.bmp",
   "README-GENTLEMEN.txt",
@@ -926,6 +927,10 @@ const WATCH_FILE_EXTENSIONS = new Set([
   ".bmp",
   ".env",
   ".tf",
+  ".lnk",
+  ".zip",
+  ".msi",
+  ".iso",
 ]);
 
 const ASTRO_GITIGNORE_HIDE_FILES = [
@@ -1007,6 +1012,40 @@ const ARYSTINGER_TEXT_INDICATORS = [
   "RTL819X",
 ];
 
+const CLICKFIX_KB4_KNOWN_HASHES = new Map([
+  ["7b7981c99d59595fe15377df84695bb72ce0b85560a3935f930657b2d162e5ef", "KnowBe4 ClickFix Review Past Due Doc ZIP"],
+  ["adcd15f3d6b87f84d106ea426fa824fd20c9d64f6d199ce92580884290785f30", "KnowBe4 ClickFix RMM/MSI installer"],
+  ["d7d2f0ee187549f3f4a114d716be12521fbf62d6d26e2ac23d2a32d521d08fd8", "KnowBe4 ClickFix password stealer"],
+]);
+
+const CLICKFIX_KB4_NETWORK_INDICATORS = [
+  "document-auth.icu",
+  "document-auth[.]icu",
+  "italy-news.info",
+  "italy-news[.]info",
+  "lootrioya.info",
+  "lootrioya[.]info",
+];
+
+const CLICKFIX_KB4_TEXT_INDICATORS = [
+  "ClickFix",
+  "Review Past Due Doc.zip",
+  "Review Past Due Doc. zip",
+  "urgent past due",
+  "secure OneDrive attachment",
+  "Win + R",
+  "Win+R",
+  "Run dialog",
+  "clipboard stager",
+  "DNS TXT",
+  "PowerShell command directly into their clipboard",
+  "RMM / MSI Installer",
+  "Password Stealer",
+  "7b7981c99d59595fe15377df84695bb72ce0b85560a3935f930657b2d162e5ef",
+  "adcd15f3d6b87f84d106ea426fa824fd20c9d64f6d199ce92580884290785f30",
+  "d7d2f0ee187549f3f4a114d716be12521fbf62d6d26e2ac23d2a32d521d08fd8",
+];
+
 function scanHost(options = {}) {
   const targetRoot = path.resolve(options.targetRoot || "/");
   const homePath = options.homePath || process.env.HOME || "";
@@ -1050,6 +1089,7 @@ function scanHost(options = {}) {
   checkSplunkEnterpriseCve202620253(findings, targetRoot, homePath);
   checkRedcapExposure(findings, targetRoot, homePath);
   checkFortinetCredentialExposure(findings, targetRoot, homePath);
+  checkClickFixKb4Phishing(findings, targetRoot, homePath);
   checkSquidbleedFtpProxyExposure(findings, targetRoot, homePath);
   checkNginxCritical2026Exposure(findings, targetRoot, homePath);
   checkLiteLlmGatewayExposure(findings, targetRoot, homePath);
@@ -2479,6 +2519,67 @@ function checkFortinetCredentialExposure(findings, targetRoot, homePath) {
 
     if (/admin-forticloud-sso-login|FortiCloud SSO|FortiCloud login/i.test(text)) {
       addFinding(findings, "review", "fortinet-forticloud-sso-review", "FortiCloud SSO/login configuration or mitigation language appears in scanned files.", relative, "Verify current Fortinet vendor guidance for FortiCloud SSO, restrict management-plane access, and confirm whether SSO-related mitigations or updates apply to this deployment.");
+    }
+  }
+}
+
+function checkClickFixKb4Phishing(findings, targetRoot, homePath) {
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const roots = [
+    homeRelative,
+    "/home",
+    "/root",
+    "/tmp",
+    "/var/tmp",
+    "/opt",
+    "/srv",
+    "/var/www",
+    "/mnt",
+    "/media",
+    "/ProgramData",
+    "/Users",
+  ].filter(Boolean);
+  const files = [];
+  for (const root of roots) {
+    files.push(...findWatchFiles(mapLinuxPath(targetRoot, root), 25000 - files.length));
+    if (files.length >= 25000) break;
+  }
+
+  for (const filePath of files) {
+    const base = path.basename(filePath);
+    const ext = path.extname(base).toLowerCase();
+    const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+    const size = fileSizeBytes(filePath);
+
+    if (/^Review Past Due Doc\. ?zip$/i.test(base)) {
+      addFinding(findings, "warning", "clickfix-kb4-onedrive-zip-lure", "KnowBe4 ClickFix OneDrive lure ZIP filename appears in scanned host tree.", relative, "Preserve the ZIP and any extracted .lnk shortcut. Review shell/run dialog telemetry, clipboard access, DNS TXT lookups, and PowerShell child processes.");
+    }
+
+    if ([".zip", ".msi", ".iso", ".lnk", ".js", ".vbs", ".exe"].includes(ext) && size > 0 && size <= 500 * 1024 * 1024) {
+      const digest = sha256File(filePath);
+      const label = CLICKFIX_KB4_KNOWN_HASHES.get(digest);
+      if (label) {
+        addFinding(findings, "critical", "clickfix-kb4-known-sha256", "Known KnowBe4 ClickFix campaign SHA-256 observed.", `${relative}: ${label}; sha256=${digest}`, "Do not execute the artifact. Preserve it for incident response, isolate affected endpoints, and rotate credentials if the stager or payload may have run.");
+      }
+    }
+
+    const text = size <= 1024 * 1024 ? readText(filePath) : "";
+    if (!text) continue;
+
+    for (const indicator of CLICKFIX_KB4_NETWORK_INDICATORS) {
+      if (text.includes(indicator)) {
+        addFinding(findings, "critical", "clickfix-kb4-network-indicator", "KnowBe4 ClickFix phishing infrastructure indicator appears in scanned host metadata.", `${relative}: ${indicator}`, "Correlate with DNS, proxy, browser, PowerShell, and EDR telemetry. Preserve the original lure and review credential/RMM exposure.");
+      }
+    }
+
+    for (const indicator of CLICKFIX_KB4_TEXT_INDICATORS) {
+      if (text.includes(indicator)) {
+        addFinding(findings, "warning", "clickfix-kb4-text-indicator", "KnowBe4 ClickFix lure, stager, or payload indicator appears in scanned host metadata.", `${relative}: ${indicator}`, "Review for ZIP/.lnk execution, victim-assisted Win+R paste behavior, DNS TXT staging, MSI/RMM drops, spyware, and password-stealer execution.");
+      }
+    }
+
+    if (/\.lnk[\s\S]{0,240}(?:Win\s*\+\s*R|clipboard|PowerShell|DNS TXT|OneDrive)|(?:Win\s*\+\s*R|clipboard|PowerShell|DNS TXT|OneDrive)[\s\S]{0,240}\.lnk/i.test(text)) {
+      addFinding(findings, "warning", "clickfix-kb4-lnk-clipboard-stager", "KnowBe4 ClickFix .lnk plus clipboard/PowerShell/DNS-TXT staging behavior appears in scanned metadata.", relative, "Preserve the shortcut and command history. Check clipboard access, PowerShell execution policy bypasses, DNS TXT responses, and spawned MSI/RMM or spyware payloads.");
     }
   }
 }
