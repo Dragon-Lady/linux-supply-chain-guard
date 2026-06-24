@@ -123,6 +123,11 @@ SME, WebDialer SSRF, file-write-to-root escalation terms, Cisco advisory
 `cisco-sa-cucm-ssrf-cXPnHcW`, and OSINT-reported full-chain webshell/Tor
 exploitation language.
 
+The June 2026 Microsoft Exchange watch pack adds local/mounted-root triage
+checks for `CVE-2026-45504`, Microsoft Exchange Server build/update exports,
+June 2026 KB/build markers, SSRF/file-read privilege-escalation language,
+`PT-2026-47976`, and public hawktrace PoC artifact markers.
+
 The June 2026 KnowBe4 Threat Labs ClickFix watch pack adds local host and
 mounted-root checks for the `Review Past Due Doc.zip` / `.lnk` OneDrive lure,
 clipboard-injected PowerShell, DNS TXT staging, `document-auth[.]icu`,
@@ -736,6 +741,10 @@ the known indicators it checks.
   https://nvd.nist.gov/vuln/detail/CVE-2026-20230
 - Cisco Unified Communications Manager WebDialer SSRF advisory:
   https://sec.cloudapps.cisco.com/security/center/content/CiscoSecurityAdvisory/cisco-sa-cucm-ssrf-cXPnHcW
+- Microsoft MSRC Update Guide for `CVE-2026-45504`:
+  https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-45504
+- hawktrace public PoC repository for `CVE-2026-45504`:
+  https://github.com/hawktrace/CVE-2026-45504
 - The Hacker News Operation Endgame / SocGholish disruption report:
   https://thehackernews.com/2026/06/operation-endgame-disrupts-socgholish.html
 - FBI IC3 PSA on malicious traffic distribution systems:

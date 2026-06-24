@@ -644,6 +644,12 @@ function run() {
     "WebDialer SSRF server-side request forgery can write files to the underlying operating system and elevate to root.",
     "Defused OSINT escalation: automated sweeps dropping webshells via Tor, full-chain exploitation observed.",
   ].join("\n"));
+  write(path.join(root, "var", "log", "exchange-cve-2026-45504.txt"), [
+    "Microsoft Exchange Server 2016 Cumulative Update 23 CVE-2026-45504 PT-2026-47976",
+    "Server-side request forgery SSRF can allow an authorized attacker to elevate privileges over a network.",
+    "Exchange File Read public PoC: hawktrace/CVE-2026-45504 CVE-2026-45504.py --target-file C:/Windows/System32/drivers/etc/hosts",
+    "Inventory export: Exchange Server 2016 CU23 build 15.01.2507.060, fixed by KB5094144 build 15.01.2507.069.",
+  ].join("\n"));
 
   const report = scanHost({ targetRoot: root, homePath: home, architecture: "aarch64" });
   const ids = new Set(report.findings.map((finding) => finding.id));
@@ -853,6 +859,11 @@ function run() {
   assert(ids.has("cisco-cucm-webdialer-ssrf-review"));
   assert(ids.has("cisco-cucm-webdialer-webshell-exploitation-review"));
   assert(ids.has("cisco-cucm-webdialer-text-indicator"));
+  assert(ids.has("exchange-cve-2026-45504-reference"));
+  assert(ids.has("exchange-cve-2026-45504-ssrf-file-read-review"));
+  assert(ids.has("exchange-cve-2026-45504-poc-artifact"));
+  assert(ids.has("exchange-cve-2026-45504-possibly-unpatched-build"));
+  assert(ids.has("exchange-cve-2026-45504-text-indicator"));
   const tokenFinding = report.findings.find((finding) => finding.id === "dynatrace-token-exposure");
   assert(tokenFinding.evidence.includes("dt0c01.ABCDEFGHIJKLMNOPQRSTUVWX.<redacted>"));
   assert(!tokenFinding.evidence.includes("ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ"));
