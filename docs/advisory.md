@@ -107,6 +107,14 @@ Operators handling suspected SocGholish/FakeUpdates exposure should review
 WordPress core/plugin/theme integrity, unauthorized CMS users, credential
 rotation, webinject residue, and DNS/domain-shadowing changes.
 
+BleepingComputer's June 24, 2026 Operation Endgame update expands the same
+law-enforcement posture context to Amadey and StealC infrastructure. The report
+describes 326 servers and 142 domains disrupted, about 27 million stolen
+credentials recovered from over 385,000 compromised systems, and more than 200
+malicious C2 domains/IPs identified in Microsoft's civil action. No stable
+server list, domain list, hashes, or file paths were published in the reachable
+article, so this remains source context rather than a local detector rule.
+
 The FBI IC3 June 18, 2026 PSA on malicious traffic distribution systems is
 tracked in the same advisory lane. It describes compromised websites, poisoned
 ads, phishing, and fake promotions redirecting users through TDS chains to

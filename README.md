@@ -407,6 +407,11 @@ Exit codes:
 - SocGholish / FakeUpdates WordPress triage context:
   - Operation Endgame disrupted 106 SocGholish-linked servers and reported
     cleanup of 14,971 infected WordPress sites
+  - the June 24, 2026 BleepingComputer update reports a related Operation
+    Endgame action against Amadey and StealC infrastructure: 326 servers and
+    142 domains disrupted, about 27 million stolen credentials recovered from
+    over 385,000 compromised systems, and more than 200 malicious C2 domains/IPs
+    identified in Microsoft's civil action
   - FBI IC3 warns that malicious traffic distribution systems route users from
     compromised websites, poisoned ads, phishing, or fake promotions to
     phishing pages, fake updates, malware, or financial scams
@@ -767,6 +772,8 @@ the known indicators it checks.
   https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-45502
 - The Hacker News Operation Endgame / SocGholish disruption report:
   https://thehackernews.com/2026/06/operation-endgame-disrupts-socgholish.html
+- BleepingComputer Operation Endgame Amadey/StealC disruption update:
+  https://www.bleepingcomputer.com/news/security/amadey-stealc-malware-operations-disrupted-in-operation-endgame-action/
 - FBI IC3 PSA on malicious traffic distribution systems:
   https://www.ic3.gov/PSA/2026/PSA260618
 - Ars Technica Microsoft Crypto Clipper USB worm report:
