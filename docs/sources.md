@@ -44,6 +44,7 @@
 - Huntress Heaven's Gate defensive overview: https://www.huntress.com/cybersecurity-101/topic/what-is-heavens-gate
 - Unit 42 PAN-OS CVE-2026-0257 active exploitation brief: https://unit42.paloaltonetworks.com/active-exploitation-of-pan-os-cve-2026-0257/
 - The Hacker News PAN-OS GlobalProtect CVE-2026-0257 summary: https://thehackernews.com/2026/06/palo-alto-warns-of-active-exploitation.html
+- Censys Joomla SP Page Builder CVE-2026-48908 advisory: https://censys.com/advisory/cve-2026-48908/
 - Cyber Security News Splunk Enterprise CVE-2026-20253 active exploitation: https://cybersecuritynews.com/splunk-enterprise-vulnerability-exploit/
 - Cyber Security News / watchTowr Splunk Enterprise sidecar chain summary: https://cybersecuritynews.com/splunk-enterprise-pre-auth-rce-chain-exposes/
 - SecurityWeek REDCap internet-exposure / UNC6508 report: https://www.securityweek.com/majority-of-internet-accessible-redcap-servers-outdated/
