@@ -17,6 +17,15 @@ kernel is below the upstream `6.15.0` fix baseline. Older distro kernels may be
 fixed by vendor backports, so those findings require advisory confirmation
 rather than a simple version-only verdict.
 
+Delphos Labs' May 15, 2026 DirtyCBC / Linux RxGK writeup is included as a
+kernel advisory and research-artifact provenance lane. The report describes
+AF_RXRPC/YFS-RxGK RESPONSE decrypt-before-MAC page-cache poisoning through
+`MSG_SPLICE_PAGES`, in-place `skb_to_sgvec()` / `crypto_krb5_decrypt()`
+handling, and upstream mitigation work beginning with commit `aa54b1d27fe0`.
+The guard flags copied advisory notes and local PoC markers only; it does not
+run PoCs or claim exploitability from kernel version alone because vendor
+backport status must be checked separately.
+
 The May 20, 2026 OX Security DPRK npm RAT report is now included because it
 targets developer workstations through npm package installation. This guard
 checks dependency metadata for `terminal-logger-utils`, `pretty-logger-utils`,
@@ -195,6 +204,18 @@ ITScape / `CVE-2026-46316` checks include:
 - loaded `kvm`, `kvm_arm`, or `kvm_arm64` modules
 - kernel config evidence for KVM and ARM GIC/vGIC ITS support
 - upstream `6.15.0` baseline review for exposed ARM64 KVM hosts
+
+DirtyCBC / Linux RxGK checks include:
+
+- copied advisory terms such as `DirtyCBC`, `AF_RXRPC`, `YFS-RxGK`,
+  `RxGK RESPONSE`, `MSG_SPLICE_PAGES`, and decrypt-before-MAC
+- code-path markers such as `rxgk_decrypt_skb`, `skb_to_sgvec`, and
+  `crypto_krb5_decrypt`
+- upstream mitigation markers such as `aa54b1d27fe0`, `SKBFL_SHARED_FRAG`, and
+  `skb_has_shared_frag`
+- local public-PoC/provenance markers including `poc.c`, `poc.py`,
+  `RXGK_SERVER_ENC_TOKEN`, `RXRPC_CHARGE_ACCEPT`, and
+  `RXRPC_CLIENT_INITIATED`
 
 Known supply-chain persistence checks include:
 

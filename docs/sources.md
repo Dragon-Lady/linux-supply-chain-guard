@@ -2,6 +2,7 @@
 
 - AlmaLinux Fragnesia / CVE-2026-46300 disclosure: https://almalinux.org/blog/2026-05-13-fragnesia-cve-2026-46300/
 - NVD CVE-2026-46300 record: https://nvd.nist.gov/vuln/detail/CVE-2026-46300
+- Delphos Labs DirtyCBC / Linux RxGK decrypt-before-MAC analysis: https://delphoslabs.com/blog/36142374-e1fe-80a9-9456-d3c64df81bd5/%20linux-rxgk-decrypt-mac
 - Cyber Security News, ITScape / CVE-2026-46316 ARM64 KVM guest-to-host escape PoC: https://cybersecuritynews.com/poc-exploit-released-linux-kernel-vulnerability/
 - JFrog Security Research, Shai-Hulud: Here We Go Again: https://research.jfrog.com/post/shai-hulud-here-we-go-again/
 - The Hacker News / JFrog PostCSS-lookalike Windows RAT summary: https://thehackernews.com/2026/06/malicious-npm-packages-pose-as-postcss.html

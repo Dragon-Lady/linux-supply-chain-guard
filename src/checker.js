@@ -1398,6 +1398,29 @@ const LIBSSH2_CVE202655200_POC_TEXT_INDICATORS = [
   "libpwn-rce-verified",
 ];
 
+const DIRTYCBC_RXGK_TEXT_INDICATORS = [
+  "DirtyCBC",
+  "linux-rxgk-decrypt-mac",
+  "AF_RXRPC",
+  "YFS-RxGK",
+  "RxGK RESPONSE",
+  "MSG_SPLICE_PAGES",
+  "aa54b1d27fe0",
+  "rxgk_verify_response",
+  "rxgk_extract_token",
+  "rxgk_decrypt_skb",
+  "skb_to_sgvec",
+  "crypto_krb5_decrypt",
+  "RXGK_SERVER_ENC_TOKEN",
+  "SKBFL_SHARED_FRAG",
+  "skb_has_shared_frag",
+  "RXRPC_CHARGE_ACCEPT",
+  "RXRPC_CLIENT_INITIATED",
+  "rxrpc_s",
+  "page-cache poisoning",
+  "decrypt-before-MAC",
+];
+
 const SHAPEDPLUGIN_KNOWN_HASHES = new Map([
   ["0e17c869d3e4586d4c160041042bd15123c2a37117a98a995fae885f0f4417fc", "ShapedPlugin LicenseLoader.php loader"],
 ]);
@@ -1713,6 +1736,7 @@ function scanHost(options = {}) {
   checkAlmaFragnesia(findings, osRelease, kernelRelease);
   checkItScapeArm64Kvm(findings, targetRoot, kernelRelease, architecture);
   checkKernelModules(findings, targetRoot);
+  checkDirtyCbcRxgk(findings, targetRoot, homePath);
   checkPersistence(findings, targetRoot, homePath);
   checkCompromisedNpmPackages(findings, targetRoot, homePath);
   checkChainVeilNpmCampaign(findings, targetRoot, homePath);
@@ -1937,6 +1961,50 @@ function checkKernelModules(findings, targetRoot) {
   });
   if (missing.length > 0) {
     addFinding(findings, "review", "fragnesia-module-blacklist-not-confirmed", "Temporary Fragnesia module blacklist was not fully confirmed.", `missing install /bin/false entries: ${missing.join(", ")}`, "This is only a mitigation check. Prefer patched kernels and reboot when available.");
+  }
+}
+
+function checkDirtyCbcRxgk(findings, targetRoot, homePath) {
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const roots = [
+    homeRelative,
+    "/etc",
+    "/opt",
+    "/srv",
+    "/var/log",
+    "/root",
+    "/mnt",
+    "/media",
+  ].filter(Boolean);
+  const files = [];
+  for (const root of roots) {
+    files.push(...findWatchFiles(mapLinuxPath(targetRoot, root), 25000 - files.length));
+    if (files.length >= 25000) break;
+  }
+
+  for (const filePath of files) {
+    const text = readText(filePath);
+    if (!text) continue;
+    const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+    const haystack = `${relative}\n${text}`;
+
+    if (/DirtyCBC|linux-rxgk-decrypt-mac/i.test(haystack)) {
+      addFinding(findings, "review", "dirtycbc-rxgk-reference", "DirtyCBC / Linux RxGK decrypt-before-MAC reference appears in scanned metadata.", relative, "Use this as a kernel advisory and local-PoC provenance lead. Confirm vendor-fixed kernel status and avoid running PoCs on production or credential-bearing hosts.");
+    }
+
+    if (/(?:AF_RXRPC|YFS-RxGK|RxGK|rxrpc)[\s\S]{0,360}(?:MSG_SPLICE_PAGES|page-cache poisoning|decrypt-before-MAC|skb_to_sgvec|rxgk_decrypt_skb|crypto_krb5_decrypt)|(?:MSG_SPLICE_PAGES|page-cache poisoning|decrypt-before-MAC|skb_to_sgvec|rxgk_decrypt_skb|crypto_krb5_decrypt)[\s\S]{0,360}(?:AF_RXRPC|YFS-RxGK|RxGK|rxrpc)/i.test(haystack)) {
+      addFinding(findings, "warning", "dirtycbc-rxgk-advisory-terms", "DirtyCBC-style AF_RXRPC/RxGK page-cache poisoning terms appear in scanned metadata.", relative, "Treat this as a Linux kernel patch and research-artifact review lead. Reboot after patching; package hashes and direct disk reads may not reveal page-cache mutation.");
+    }
+
+    if (/DirtyCBC[\s\S]{0,260}(?:poc\.c|poc\.py|proof-of-concept|PoC)|(?:poc\.c|poc\.py|proof-of-concept|PoC)[\s\S]{0,260}DirtyCBC|add_key\(\s*["']rxrpc_s["']|RXRPC_CHARGE_ACCEPT|RXRPC_CLIENT_INITIATED|RXGK_SERVER_ENC_TOKEN|aa54b1d27fe0/i.test(haystack)) {
+      addFinding(findings, "review", "dirtycbc-rxgk-poc-artifact", "DirtyCBC/RxGK PoC or exploit-construction marker appears in scanned metadata.", relative, "Verify this is authorized research material. Do not compile, execute, or open untrusted PoC trees in agents until the repo has been scanned and isolated.");
+    }
+
+    for (const indicator of DIRTYCBC_RXGK_TEXT_INDICATORS) {
+      if (text.includes(indicator) && /DirtyCBC|RxGK|AF_RXRPC|rxrpc|MSG_SPLICE_PAGES|page-cache/i.test(haystack)) {
+        addFinding(findings, "review", "dirtycbc-rxgk-text-indicator", "DirtyCBC/RxGK advisory term appears in scanned metadata.", `${relative}: ${indicator}`, "Correlate with kernel version, vendor backport status, loaded rxrpc/AFS usage, and whether any local PoC material is authorized.");
+      }
+    }
   }
 }
 
