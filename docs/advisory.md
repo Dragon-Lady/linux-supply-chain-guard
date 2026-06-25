@@ -56,6 +56,15 @@ approval. Findings in this lane should be handled by narrowing `allowScripts`,
 upgrade. This does not prove a host is compromised and does not eliminate
 runtime/import-time package risk.
 
+JFrog's June 24, 2026 VS Code autorun / blockchain dead-drop report is included
+because the malicious npm versions avoid normal lifecycle-script execution and
+instead rely on trusted editor folder-open task behavior. The guard checks for
+`html-to-gutenberg@4.2.11`, `fetch-page-assets@1.2.9`, folder-open tasks that
+launch `public/fonts/fa-solid-400.woff2`, JFrog-reported C2/dead-drop strings,
+runtime artifact terms, and Nextron's Go-package reuse lead as OSINT
+correlation only. These checks do not fetch public PoCs or open third-party
+repositories.
+
 Huntress' Heaven's Gate overview is included as weak-signal Windows evasion
 context. The guard looks for analysis-note references to WOW64 mode-switching
 or Heaven's Gate terms only when they co-occur with shellcode, injection, EDR

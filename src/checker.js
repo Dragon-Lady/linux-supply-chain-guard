@@ -157,6 +157,71 @@ const CHAINVEIL_TEXT_INDICATORS = [
   "lib/lib.min.js",
 ];
 
+const VSCODE_AUTORUN_BLOCKCHAIN_NPM_PACKAGES = {
+  "html-to-gutenberg": ["4.2.11"],
+  "fetch-page-assets": ["1.2.9"],
+};
+
+const VSCODE_AUTORUN_BLOCKCHAIN_NETWORK_INDICATORS = [
+  "166.88.134.62",
+  "166[.]88[.]134[.]62",
+  "198.105.127.210",
+  "198[.]105[.]127[.]210",
+  "23.27.202.27",
+  "23[.]27[.]202[.]27",
+  "/$/boot",
+  "/verify-human/",
+  "/snv",
+  "/u/e",
+  "/u/f",
+  "/d/python.zip",
+  "/d/python.7z",
+  "/d/7zr.exe",
+];
+
+const VSCODE_AUTORUN_BLOCKCHAIN_DEADDROP_INDICATORS = [
+  "api.trongrid.io",
+  "api[.]trongrid[.]io",
+  "fullnode.mainnet.aptoslabs.com",
+  "fullnode[.]mainnet[.]aptoslabs[.]com",
+  "bsc-dataseed.binance.org",
+  "bsc-dataseed[.]binance[.]org",
+  "bsc-rpc.publicnode.com",
+  "bsc-rpc[.]publicnode[.]com",
+  "eth_getTransactionByHash",
+  "TMfKQEd7TJJa5xNZJZ2Lep838vrzrs7mAP",
+  "TXfxHUet9pJVU1BgVkBAbrES4YUc1nGzcG",
+  "TA48dct6rFW8BXsiLAtjFaVFoSuryMjD3v",
+  "0xbe037400670fbf1c32364f762975908dc43eeb38759263e7dfcdabc76380811e",
+  "0x3f0e5781d0855fb460661ac63257376db1941b2bb522499e4757ecb3ebd5dce3",
+  "0x533b2dbcaeff19cd1f799234a27b578d713d8fcaa341b7501e4526106483e0b1",
+];
+
+const VSCODE_AUTORUN_BLOCKCHAIN_TEXT_INDICATORS = [
+  "fa-solid-400.woff2",
+  "eslint-check",
+  "Sec-V",
+  "global._V",
+  "global['_V']",
+  "global[\"_V\"]",
+  "~/.node_modules",
+  "/tmp/get-pip.py",
+  "/tmp/.npm",
+  "python.zip",
+  "python.7z",
+  "7zr.exe",
+];
+
+const VSCODE_AUTORUN_BLOCKCHAIN_HASHES = [
+  "53abf37710d6f2e35694fbe7cfaf1108127cbc001ce3e6bf994d0486cae5a0e8",
+  "13e9a3c41e038bf9d8fcb0831305819819e4f7f4452bc20a04b9bf2756ee22e8",
+];
+
+const NEXTRON_GO_BLOCKCHAIN_PAYLOAD_INDICATORS = [
+  "github.com/lambda-platform/lambda",
+  "lambda-platform/lambda",
+];
+
 const OTTERCOOKIE_NPM_PACKAGES = [
   "bjs-lint-builders", // push-guard: ignore
   "bjs-lint-builder", // push-guard: ignore
@@ -1651,6 +1716,7 @@ function scanHost(options = {}) {
   checkPersistence(findings, targetRoot, homePath);
   checkCompromisedNpmPackages(findings, targetRoot, homePath);
   checkChainVeilNpmCampaign(findings, targetRoot, homePath);
+  checkVsCodeAutorunBlockchainNpm(findings, targetRoot, homePath);
   checkAtomicArchAurCompromise(findings, targetRoot, homePath);
   checkDprkNpmRat(findings, targetRoot, homePath);
   checkDprkSocketIoLoader(findings, targetRoot, homePath);
@@ -2032,6 +2098,80 @@ function checkChainVeilNpmCampaign(findings, targetRoot, homePath) {
 
     if (/ {80,}.*(?:A6-3|A6-420|A6-519|global\[['"]_V['"]|eval\()/s.test(text) && /\.(?:bashrc|zshrc|profile|npmrc|ssh\/config)$/i.test(relative)) {
       addFinding(findings, "critical", "chainveil-shell-config-persistence", "Shell or developer config contains long-space-padded ChainVeil-style persistence markers.", relative, "Inspect shell config horizontally past visible columns before editing. Preserve the original file, remove injected blocks from a trusted session, and rotate credentials after persistence is removed.");
+    }
+  }
+}
+
+function checkVsCodeAutorunBlockchainNpm(findings, targetRoot, homePath) {
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const roots = [
+    homeRelative,
+    "/opt",
+    "/srv",
+    "/var/www",
+    "/tmp",
+    "/var/tmp",
+  ].filter(Boolean);
+  const files = [];
+  for (const root of roots) {
+    files.push(...findWatchFiles(mapLinuxPath(targetRoot, root), 25000 - files.length));
+    if (files.length >= 25000) break;
+  }
+
+  for (const filePath of files) {
+    const text = readText(filePath);
+    if (!text) continue;
+    const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+    const base = path.basename(filePath);
+
+    for (const [packageName, versions] of Object.entries(VSCODE_AUTORUN_BLOCKCHAIN_NPM_PACKAGES)) {
+      if (!text.includes(packageName)) continue;
+
+      const foundVersions = packageVersionsInText(text, packageName);
+      const matchedVersion = foundVersions.find((version) => versions.includes(version));
+      if (matchedVersion) {
+        addFinding(findings, "critical", "vscode-autorun-blockchain-npm-version", "JFrog-reported hijacked npm package version appears in scanned metadata.", `${relative}: ${packageName}@${matchedVersion}`, "Do not open this package folder as a trusted VS Code/Cursor workspace. Remove the dependency, regenerate lockfiles from a clean posture, and rotate developer credentials if it may have executed.");
+      } else {
+        addFinding(findings, "review", "vscode-autorun-blockchain-npm-package-review", "Package name from JFrog's VS Code autorun/blockchain-dead-drop report appears in scanned metadata.", `${relative}: ${packageName}`, `Verify whether the resolved version is one of ${versions.join(", ")} before trusting this tree.`);
+      }
+    }
+
+    for (const indicator of VSCODE_AUTORUN_BLOCKCHAIN_NETWORK_INDICATORS) {
+      if (text.includes(indicator)) {
+        addFinding(findings, "critical", "vscode-autorun-blockchain-c2-indicator", "JFrog-reported C2 endpoint or route appears in scanned host metadata.", `${relative}: ${indicator}`, "Correlate process, DNS, proxy, and package-manager history. If execution occurred, treat the workstation as compromised and rotate npm, GitHub, SSH, cloud, API, browser, and wallet credentials from a clean device.");
+      }
+    }
+
+    for (const indicator of VSCODE_AUTORUN_BLOCKCHAIN_DEADDROP_INDICATORS) {
+      if (text.includes(indicator)) {
+        addFinding(findings, "warning", "vscode-autorun-blockchain-deaddrop-indicator", "JFrog-reported blockchain dead-drop indicator appears in scanned host metadata.", `${relative}: ${indicator}`, "Review whether this is copied IOC text or loader code. If found under package source, node_modules, or editor task files, preserve evidence before cleanup.");
+      }
+    }
+
+    for (const indicator of VSCODE_AUTORUN_BLOCKCHAIN_TEXT_INDICATORS) {
+      if (text.includes(indicator)) {
+        addFinding(findings, "warning", "vscode-autorun-blockchain-text-indicator", "JFrog-reported fake-font loader or runtime artifact term appears in scanned host metadata.", `${relative}: ${indicator}`, "Review for VS Code/Cursor folder-open task execution and user-level runtime artifacts such as ~/.node_modules, /tmp/.npm, or staged Python downloads.");
+      }
+    }
+
+    if (
+      base === "tasks.json" &&
+      /runOn["']?\s*:\s*["']folderOpen["']/i.test(text) &&
+      /fa-solid-400\.woff2|node\s+\.\/public\/fonts\/fa-solid-400\.woff2/i.test(text)
+    ) {
+      addFinding(findings, "critical", "vscode-autorun-fake-font-task", "VS Code/Cursor folder-open task launches the JFrog-reported fake font payload path.", relative, "Do not trust or open this workspace in VS Code, Cursor, or forks. Preserve .vscode/tasks.json and package contents, then rebuild the project from clean dependencies.");
+    }
+
+    for (const hash of VSCODE_AUTORUN_BLOCKCHAIN_HASHES) {
+      if (text.includes(hash)) {
+        addFinding(findings, "critical", "vscode-autorun-fake-font-hash", "Nextron/JFrog fake-font payload SHA-256 appears in scanned metadata.", `${relative}: ${hash}`, "If this hash is from a local artifact rather than a copied IOC list, isolate the host and preserve the file for incident response.");
+      }
+    }
+
+    for (const indicator of NEXTRON_GO_BLOCKCHAIN_PAYLOAD_INDICATORS) {
+      if (text.includes(indicator)) {
+        addFinding(findings, "review", "nextron-go-blockchain-payload-lead", "Nextron-reported Go package follow-up indicator appears in scanned metadata.", `${relative}: ${indicator}`, "Treat as an OSINT correlation lead unless a local Go module, cache, or source tree contains the artifact. Do not fetch or run public PoCs on the host.");
+      }
     }
   }
 }
