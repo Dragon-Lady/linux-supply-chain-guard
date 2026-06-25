@@ -5,6 +5,14 @@
   "bin": {
     "linux-supply-chain-guard": "bin/linux-supply-chain-guard.js"
   },
+  "files": [
+    "bin/",
+    "src/",
+    "data/",
+    "docs/advisory.md",
+    "docs/recovery-playbook.md",
+    "docs/sources.md"
+  ],
   "scripts": {
     "test": "node --check bin/linux-supply-chain-guard.js && node --check src/checker.js && node test/smoke.js",
     "canary:socket-firewall": "sfw npm install --package-lock-only --ignore-scripts --audit=false --fund=false",
