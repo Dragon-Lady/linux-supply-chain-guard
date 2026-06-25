@@ -437,6 +437,9 @@ Exit codes:
     142 domains disrupted, about 27 million stolen credentials recovered from
     over 385,000 compromised systems, and more than 200 malicious C2 domains/IPs
     identified in Microsoft's civil action
+  - Proofpoint and IBM X-Force's June 24, 2026 StealC writeup adds technical
+    context on StealC C2 panels, RC4-encrypted HTTP POST JSON request types,
+    optional loader payload delivery, and the law-enforcement disruption
   - FBI IC3 warns that malicious traffic distribution systems route users from
     compromised websites, poisoned ads, phishing, or fake promotions to
     phishing pages, fake updates, malware, or financial scams
@@ -805,6 +808,8 @@ the known indicators it checks.
   https://thehackernews.com/2026/06/operation-endgame-disrupts-socgholish.html
 - BleepingComputer Operation Endgame Amadey/StealC disruption update:
   https://www.bleepingcomputer.com/news/security/amadey-stealc-malware-operations-disrupted-in-operation-endgame-action/
+- Proofpoint and IBM X-Force StealC / Operation Endgame technical context:
+  https://www.proofpoint.com/us/blog/threat-insight/stealc-you-later-proofpoint-and-ibm-x-force-support-operation-endgame
 - FBI IC3 PSA on malicious traffic distribution systems:
   https://www.ic3.gov/PSA/2026/PSA260618
 - Ars Technica Microsoft Crypto Clipper USB worm report:

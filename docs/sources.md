@@ -62,6 +62,7 @@
 - Microsoft MSRC Update Guide for CVE-2026-45502: https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-45502
 - The Hacker News Operation Endgame / SocGholish disruption report: https://thehackernews.com/2026/06/operation-endgame-disrupts-socgholish.html
 - BleepingComputer Operation Endgame Amadey/StealC disruption update: https://www.bleepingcomputer.com/news/security/amadey-stealc-malware-operations-disrupted-in-operation-endgame-action/
+- Proofpoint and IBM X-Force StealC / Operation Endgame technical context: https://www.proofpoint.com/us/blog/threat-insight/stealc-you-later-proofpoint-and-ibm-x-force-support-operation-endgame
 - FBI IC3 PSA on malicious traffic distribution systems: https://www.ic3.gov/PSA/2026/PSA260618
 - Ars Technica Microsoft Crypto Clipper USB worm report: https://arstechnica.com/security/2026/06/microsoft-spots-new-self-propagating-malware-for-stealing-cryptocurrency/
 - ANY.RUN EvilTokens Microsoft OAuth device-code phishing analysis: https://any.run/cybersecurity-blog/eviltokens-ghost-code-analysis/
