@@ -131,7 +131,8 @@ D-Link/Linksys/QNAP CVE markers.
 The June 23, 2026 CISA KEV edge-device watch pack adds local/mounted-root
 triage checks for Lantronix EDS5000 `CVE-2025-67038` and Ubiquiti UniFi OS
 `CVE-2026-34908`, `CVE-2026-34909`, and `CVE-2026-34910`, including BOD
-`26-04`, vendor advisory, product-family, and forensics-triage terms.
+`26-04`, vendor advisory, product-family, Bishop Fox unauthenticated RCE-chain
+triage markers, exposed management-interface notes, and forensics-triage terms.
 
 The June 2026 Cisco CUCM WebDialer watch pack adds local/mounted-root triage
 checks for `CVE-2026-20230`, Cisco Unified Communications Manager / Unified CM
@@ -406,6 +407,13 @@ Exit codes:
   - Ubiquiti UniFi OS references paired with `CVE-2026-34908`,
     `CVE-2026-34909`, `CVE-2026-34910`, Security Advisory Bulletin 064,
     command injection, path traversal, or improper access control language
+  - UniFi OS Server `5.0.6` / `unifi-core 5.0.126` vulnerable-version
+    metadata and `5.0.8` / `unifi-core 5.0.153` fixed-version context
+  - management-interface exposure terms including TCP `11443`, `0.0.0.0:11443`,
+    admin interface, and web interface notes
+  - Bishop Fox triage markers including `/api/auth/validate-sso/`,
+    `ucs/update/latest_package`, `package-update`, `ucs-update`, child-process,
+    and unexpected-sudo review terms
   - CISA KEV, BOD `26-04`, and forensics-triage notes for exported appliance
     inventories or incident-response files
 - Cisco CUCM WebDialer / `CVE-2026-20230` indicators:
@@ -799,6 +807,12 @@ the known indicators it checks.
   https://www.cisa.gov/known-exploited-vulnerabilities-catalog
 - CISA Known Exploited Vulnerabilities JSON feed, catalog version `2026.06.23`:
   https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json
+- BleepingComputer / CISA Ubiquiti and Lantronix KEV exploitation warning:
+  https://www.bleepingcomputer.com/news/security/cisa-warns-of-max-severity-ubiquiti-flaws-exploited-in-attacks/
+- Bishop Fox UniFi OS unauthenticated RCE chain detection and analysis:
+  https://bishopfox.com/blog/popping-root-on-unifi-os-server-unauthenticated-rce-chain-detection-analysis
+- Lantronix EDS5000 latest firmware page:
+  https://ltrxdev.atlassian.net/wiki/spaces/LTRXTS/pages/2538438657/Latest%2BFirmware%2Bfor%2Bthe%2BEDS5000%2Bseries%2BEDS5008%2BEDS5016%2BEDS5032
 - NVD CVE-2026-20230 record:
   https://nvd.nist.gov/vuln/detail/CVE-2026-20230
 - Cisco Unified Communications Manager WebDialer SSRF advisory:

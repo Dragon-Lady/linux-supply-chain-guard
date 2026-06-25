@@ -55,6 +55,9 @@
 - Cyber Security News FortiBleed scale and attack-chain summary: https://cybersecuritynews.com/fortibleed-attack-fortigate-firewalls/
 - CISA Known Exploited Vulnerabilities catalog: https://www.cisa.gov/known-exploited-vulnerabilities-catalog
 - CISA Known Exploited Vulnerabilities JSON feed, catalog version 2026.06.23: https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json
+- BleepingComputer / CISA Ubiquiti and Lantronix KEV exploitation warning: https://www.bleepingcomputer.com/news/security/cisa-warns-of-max-severity-ubiquiti-flaws-exploited-in-attacks/
+- Bishop Fox UniFi OS unauthenticated RCE chain detection and analysis: https://bishopfox.com/blog/popping-root-on-unifi-os-server-unauthenticated-rce-chain-detection-analysis
+- Lantronix EDS5000 latest firmware page: https://ltrxdev.atlassian.net/wiki/spaces/LTRXTS/pages/2538438657/Latest%2BFirmware%2Bfor%2Bthe%2BEDS5000%2Bseries%2BEDS5008%2BEDS5016%2BEDS5032
 - NVD CVE-2026-20230 record: https://nvd.nist.gov/vuln/detail/CVE-2026-20230
 - Cisco Unified Communications Manager WebDialer SSRF advisory: https://sec.cloudapps.cisco.com/security/center/content/CiscoSecurityAdvisory/cisco-sa-cucm-ssrf-cXPnHcW
 - Microsoft MSRC Update Guide for CVE-2026-45504: https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-45504
