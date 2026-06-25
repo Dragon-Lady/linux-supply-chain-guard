@@ -708,6 +708,9 @@ function run() {
     "Lantronix EDS5000 EDS5008 EDS5016 EDS5032 CVE-2025-67038 code injection vulnerability username parameter root privileges",
     "Ubiquiti UniFi OS Security Advisory Bulletin-064 CVE-2026-34908 improper access control",
     "UniFi OS CVE-2026-34909 path traversal and CVE-2026-34910 command injection",
+    "Bishop Fox validated unauthenticated RCE chain on UniFi OS Server 5.0.6 / unifi-core 5.0.126; fixed in UniFi OS Server 5.0.8 / unifi-core 5.0.153.",
+    "UniFi OS management interface TCP 11443 exposed on 0.0.0.0:11443.",
+    "UniFi OS triage notes: /api/auth/validate-sso/ ucs/update/latest_package package-update ucs-update unexpected sudo commands child processes",
   ].join("\n"));
   write(path.join(root, "var", "log", "cisco-cucm-webdialer-20230.txt"), [
     "Cisco Unified Communications Manager Unified CM SME CVE-2026-20230 cisco-sa-cucm-ssrf-cXPnHcW",
@@ -949,6 +952,9 @@ function run() {
   assert(ids.has("cisa-kev-edge-device-cve-reference"));
   assert(ids.has("cisa-kev-lantronix-eds5000-review"));
   assert(ids.has("cisa-kev-unifi-os-review"));
+  assert(ids.has("cisa-kev-unifi-os-vulnerable-version"));
+  assert(ids.has("cisa-kev-unifi-os-management-exposure"));
+  assert(ids.has("cisa-kev-unifi-os-rce-chain-triage-marker"));
   assert(ids.has("cisa-kev-edge-device-text-indicator"));
   assert(ids.has("cisco-cucm-webdialer-cve-2026-20230-reference"));
   assert(ids.has("cisco-cucm-webdialer-ssrf-review"));

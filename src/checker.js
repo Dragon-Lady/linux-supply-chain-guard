@@ -1577,6 +1577,15 @@ const CISA_KEV_EDGE_DEVICE_TEXT_INDICATORS = [
   "command injection",
   "path traversal",
   "improper access control",
+  "UniFi OS Server 5.0.6",
+  "UniFi OS Server 5.0.8",
+  "unifi-core 5.0.126",
+  "unifi-core 5.0.153",
+  "TCP 11443",
+  "/api/auth/validate-sso/",
+  "ucs/update/latest_package",
+  "ucs-update",
+  "package-update",
 ];
 
 const CISCO_CUCM_WEB_DIALER_TEXT_INDICATORS = [
@@ -4648,6 +4657,18 @@ function checkCisaKevEdgeDeviceLatest(findings, targetRoot, homePath) {
 
     if (/(?:Ubiquiti|UniFi OS|UniFi)[\s\S]{0,260}(?:CVE-2026-34908|CVE-2026-34909|CVE-2026-34910|Security Advisory Bulletin-064|command injection|path traversal|improper access control|Known Exploited Vulnerabilities|BOD 26-04)|(?:CVE-2026-34908|CVE-2026-34909|CVE-2026-34910|Security Advisory Bulletin-064|command injection|path traversal|improper access control|Known Exploited Vulnerabilities|BOD 26-04)[\s\S]{0,260}(?:Ubiquiti|UniFi OS|UniFi)/i.test(text)) {
       addFinding(findings, "warning", "cisa-kev-unifi-os-review", "Ubiquiti UniFi OS KEV exposure terms appear in scanned metadata.", relative, "Inventory UniFi OS consoles/controllers, apply Ubiquiti Security Advisory Bulletin 064 mitigations, restrict management access, and preserve appliance logs before cleanup.");
+    }
+
+    if (/(?:UniFi OS Server|unifi-core|Ubiquiti UniFi OS)[\s\S]{0,220}(?:5\.0\.6|5\.0\.126)|(?:5\.0\.6|5\.0\.126)[\s\S]{0,220}(?:UniFi OS Server|unifi-core|Ubiquiti UniFi OS)/i.test(text)) {
+      addFinding(findings, "critical", "cisa-kev-unifi-os-vulnerable-version", "UniFi OS Server metadata appears to reference a vulnerable Bishop Fox validated version.", relative, "Patch UniFi OS Server to 5.0.8 or later, verify the update from a clean host, restrict management reachability, and treat previously exposed pre-patch consoles as potential root-level compromise.");
+    }
+
+    if (/(?:UniFi OS|UniFi OS Server|Ubiquiti|unifi-core)[\s\S]{0,260}(?:tcp\s*:?\s*11443|TCP 11443|0\.0\.0\.0:11443|11443\/tcp|management interface|admin interface|web interface)|(?:tcp\s*:?\s*11443|TCP 11443|0\.0\.0\.0:11443|11443\/tcp|management interface|admin interface|web interface)[\s\S]{0,260}(?:UniFi OS|UniFi OS Server|Ubiquiti|unifi-core)/i.test(text)) {
+      addFinding(findings, "warning", "cisa-kev-unifi-os-management-exposure", "UniFi OS management-interface exposure terms appear in scanned metadata.", relative, "Ensure the UniFi OS web interface is not internet-facing or reachable from guest/untrusted networks; restrict it to a management network until patched and reviewed.");
+    }
+
+    if (/(?:\/api\/auth\/validate-sso\/|ucs\/update\/latest_package|package-update|ucs-update|unexpected sudo|sudo commands|child processes)[\s\S]{0,300}(?:UniFi OS|CVE-2026-34908|CVE-2026-34909|CVE-2026-34910|Bishop Fox|unauthenticated RCE)|(?:UniFi OS|CVE-2026-34908|CVE-2026-34909|CVE-2026-34910|Bishop Fox|unauthenticated RCE)[\s\S]{0,300}(?:\/api\/auth\/validate-sso\/|ucs\/update\/latest_package|package-update|ucs-update|unexpected sudo|sudo commands|child processes)/i.test(text)) {
+      addFinding(findings, "review", "cisa-kev-unifi-os-rce-chain-triage-marker", "UniFi OS RCE-chain triage marker appears in scanned metadata.", relative, "Review UniFi OS request logs and process history for the auth-bypass/update-path chain, suspicious ucs-update children, and unexpected sudo activity; patching alone does not remove prior persistence.");
     }
 
     for (const indicator of CISA_KEV_EDGE_DEVICE_TEXT_INDICATORS) {

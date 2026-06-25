@@ -97,6 +97,18 @@ component. The guard checks local Joomla/SP Page Builder metadata for affected
 versions, copied Censys/exploit notes, and upload/RCE triage terms so operators
 can patch, preserve evidence, and review uploaded files and web-server logs.
 
+CISA's June 2026 KEV edge-device additions are included as urgent appliance
+posture context. BleepingComputer reported active exploitation warnings for
+Ubiquiti UniFi OS `CVE-2026-34908`, `CVE-2026-34909`, `CVE-2026-34910`, and
+Lantronix EDS5000 `CVE-2025-67038`. Bishop Fox separately validated the UniFi
+OS chain against UniFi OS Server `5.0.6` / `unifi-core 5.0.126`, with UniFi OS
+Server `5.0.8` / `unifi-core 5.0.153` as the server fixed-version context. The
+guard checks exported notes and mounted roots for affected-version metadata,
+TCP `11443` management-interface exposure notes, auth-bypass/update-path triage
+terms, `ucs-update` child-process language, and unexpected-sudo review terms.
+Operators should patch, restrict management reachability, rotate secrets, and
+treat exposed pre-patch UniFi OS consoles as possible root-level compromise.
+
 Cyber Security News' Splunk Enterprise / `CVE-2026-20253` coverage is included
 as a local posture and log-triage lane. The guard looks for Splunk Enterprise
 10.x references, CISA KEV/BOD copied notes, PostgreSQL sidecar recovery
