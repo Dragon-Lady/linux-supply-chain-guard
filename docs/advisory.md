@@ -133,6 +133,17 @@ malicious C2 domains/IPs identified in Microsoft's civil action. No stable
 server list, domain list, hashes, or file paths were published in the reachable
 article, so this remains source context rather than a local detector rule.
 
+Proofpoint and IBM X-Force's June 24, 2026 StealC writeup adds technical
+context for the same Operation Endgame disruption. It describes StealC as a
+MaaS infostealer with Linux-based C2 panels, RC4-encrypted HTTP POST JSON C2
+traffic, request types such as `create`, `upload_file`, `loader`, and `done`,
+and optional loader delivery chains that can include other stealers, RATs,
+miners, or ransomware. It also describes a now-patched C2 panel directory
+traversal issue used in law-enforcement operations. Because the reachable
+writeup does not publish stable C2 domains, IPs, hashes, or broadly useful host
+file paths, the guard tracks it as advisory context rather than adding a local
+detector rule.
+
 The FBI IC3 June 18, 2026 PSA on malicious traffic distribution systems is
 tracked in the same advisory lane. It describes compromised websites, poisoned
 ads, phishing, and fake promotions redirecting users through TDS chains to
