@@ -547,6 +547,12 @@ function run() {
     "# bikini/exploitarium libssh2-cve-2026-55200-poc marker",
     "proof = 'RCE_PROOF=PASS libpwn-rce-verified'"
   ].join("\n"));
+  write(path.join(root, "var", "log", "dirtycbc-rxgk-triage.log"), [
+    "DirtyCBC linux-rxgk-decrypt-mac AF_RXRPC YFS-RxGK RxGK RESPONSE page-cache poisoning",
+    "MSG_SPLICE_PAGES rxgk_verify_response rxgk_extract_token rxgk_decrypt_skb skb_to_sgvec crypto_krb5_decrypt decrypt-before-MAC",
+    "aa54b1d27fe0 SKBFL_SHARED_FRAG skb_has_shared_frag RXGK_SERVER_ENC_TOKEN rxrpc_s RXRPC_CHARGE_ACCEPT RXRPC_CLIENT_INITIATED",
+    "PoC notes mention poc.c and poc.py for authorized defensive validation only"
+  ].join("\n"));
   write(path.join(root, "usr", "share", "man9", "ph", ".ph.man"), "captured ssh credential log placeholder\n");
   write(path.join(root, "lib", "systemd", "system", "chrom.service"), [
     "[Service]",
@@ -867,6 +873,10 @@ function run() {
   assert(ids.has("libssh2-cve-2026-55200-client-linkage-review"));
   assert(ids.has("libssh2-cve-2026-55200-poc-artifact"));
   assert(ids.has("libssh2-cve-2026-55200-poc-indicator"));
+  assert(ids.has("dirtycbc-rxgk-reference"));
+  assert(ids.has("dirtycbc-rxgk-advisory-terms"));
+  assert(ids.has("dirtycbc-rxgk-poc-artifact"));
+  assert(ids.has("dirtycbc-rxgk-text-indicator"));
   assert(ids.has("operation-highland-ioc-path"));
   assert(ids.has("operation-highland-tool-filename"));
   assert(ids.has("operation-highland-network-indicator"));

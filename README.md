@@ -6,8 +6,9 @@ runners, and build hosts.
 
 It checks local host posture related to the May 2026 Linux supply-chain response
 lane, including Fragnesia / `CVE-2026-46300` kernel exposure, ITScape /
-`CVE-2026-46316` ARM64 KVM exposure, risky module
-state, and known developer-tooling persistence paths reported in public
+`CVE-2026-46316` ARM64 KVM exposure, DirtyCBC/RxGK page-cache poisoning
+research-artifact leads, risky module state, and known developer-tooling
+persistence paths reported in public
 Shai-Hulud / Here We Go Again analysis. It also checks selected dependency
 metadata for the OX-reported DPRK npm RAT package names that target developer
 workstations through install-time payloads.
@@ -144,6 +145,13 @@ checks for `CVE-2026-45502` EWS `InstallApp` / `ManifestUrl` SSRF,
 Exchange Server build/update exports, June 2026 KB/build markers,
 `PT-2026-47976`, and public PoC artifact markers.
 
+The May 2026 Delphos DirtyCBC / Linux RxGK watch lane adds local/mounted-root
+checks for copied advisory notes and research-artifact markers around
+AF_RXRPC/YFS-RxGK RESPONSE decrypt-before-MAC page-cache poisoning,
+`MSG_SPLICE_PAGES`, `rxgk_decrypt_skb`, `skb_to_sgvec`, upstream commit
+`aa54b1d27fe0`, and public PoC context. This is a kernel posture and
+authorized-research provenance lane; it does not test exploitability.
+
 The June 2026 KnowBe4 Threat Labs ClickFix watch pack adds local host and
 mounted-root checks for the `Review Past Due Doc.zip` / `.lnk` OneDrive lure,
 clipboard-injected PowerShell, DNS TXT staging, `document-auth[.]icu`,
@@ -274,6 +282,16 @@ Exit codes:
   - kernel config signals for KVM and ARM GIC/vGIC ITS support
   - review finding when an exposed ARM64 KVM host is below upstream `6.15.0`
     and needs vendor backport confirmation
+- DirtyCBC / Linux RxGK review indicators:
+  - `DirtyCBC`, `AF_RXRPC`, `YFS-RxGK`, `RxGK RESPONSE`, and
+    `MSG_SPLICE_PAGES` advisory terms
+  - decrypt-before-MAC/page-cache poisoning terms near `rxgk_decrypt_skb`,
+    `skb_to_sgvec`, or `crypto_krb5_decrypt`
+  - upstream fix marker `aa54b1d27fe0`, `SKBFL_SHARED_FRAG`, and
+    `skb_has_shared_frag`
+  - public PoC/provenance markers such as `poc.c`, `poc.py`,
+    `RXGK_SERVER_ENC_TOKEN`, `RXRPC_CHARGE_ACCEPT`, and
+    `RXRPC_CLIENT_INITIATED`
 - Known Shai-Hulud / Here We Go Again persistence and payload paths:
   - `/tmp/transformers.pyz`
   - `gh-token-monitor.service`
@@ -648,6 +666,8 @@ the known indicators it checks.
   https://almalinux.org/blog/2026-05-13-fragnesia-cve-2026-46300/
 - NVD CVE-2026-46300:
   https://nvd.nist.gov/vuln/detail/CVE-2026-46300
+- Delphos Labs DirtyCBC / Linux RxGK decrypt-before-MAC analysis:
+  https://delphoslabs.com/blog/36142374-e1fe-80a9-9456-d3c64df81bd5/%20linux-rxgk-decrypt-mac
 - Cyber Security News on ITScape / CVE-2026-46316 ARM64 KVM guest-to-host
   escape PoC:
   https://cybersecuritynews.com/poc-exploit-released-linux-kernel-vulnerability/
