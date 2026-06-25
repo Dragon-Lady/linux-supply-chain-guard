@@ -52,6 +52,13 @@ suspicious `astro.config.*` loader behavior, blockchain/C2 relay markers,
 horizontally hidden executable-looking payload lines, and `.gitignore` entries
 that hide reported PR helper artifacts.
 
+The June 2026 JFrog VS Code autorun / blockchain dead-drop watch pack adds
+local checkout checks for hijacked `html-to-gutenberg@4.2.11` and
+`fetch-page-assets@1.2.9` npm metadata, `.vscode/tasks.json` folder-open tasks
+that launch the fake `fa-solid-400.woff2` payload path, JFrog-reported C2 and
+blockchain dead-drop strings, reported fake-font SHA-256 hashes, and Nextron's
+Go-package reuse lead as OSINT correlation only.
+
 The June 2026 OpenClaw agent-safety watch pack adds local checkout checks for
 OpenClaw versions before `2026.4.23` and risky OpenClaw configuration that
 combines open inbound DMs, wildcard sender allowlists, or host/main/disabled
@@ -680,6 +687,10 @@ the known indicators it checks.
   https://supplychainattack.org/incident/malware-in-ecto-flag-read-m7p2-zqvzsn
 - Checkmarx ChainVeil / SuccessKey npm supply-chain report:
   https://checkmarx.com/zero-post/chainveil-a-malicious-npm-supply-chain-attack-by-successkey/
+- JFrog VS Code autorun / blockchain dead-drop npm hijack report:
+  https://research.jfrog.com/post/hijacked-npm-vscode-tasks-blockchain/
+- Nextron Research X post on Go packages reusing the JFrog fake-font payload:
+  https://x.com/nextronresearch
 - Supply Chain Attack incident catalog, latest npm malware batch:
   https://supplychainattack.org/
 - Supply Chain Attack incident catalog, free-claude npm malware:

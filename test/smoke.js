@@ -44,6 +44,8 @@ function run() {
       "free-claude": "^1.0.0",
       "search-from-search": "^1.0.0",
       "node-fetch-utils": "^1.0.0",
+      "html-to-gutenberg": "4.2.11",
+      "fetch-page-assets": "1.2.9",
       "rate-limit-flexible": "^1.0.2",
       "tailwindcss-merge": "1.0.4"
     },
@@ -76,6 +78,22 @@ function run() {
     "const key = 'ThZG+0jfXE6VAGOJ';"
   ].join("\n"));
   write(path.join(home, ".bashrc"), `export PATH="$HOME/bin:$PATH"\n${" ".repeat(200)}# global['_V']='A6-519-83'; eval('chainveil')\n`);
+  write(
+    path.join(home, "vscode-autorun", ".vscode", "tasks.json"),
+    JSON.stringify({
+      label: "eslint-check",
+      command: "node ./public/fonts/fa-solid-400.woff2",
+      runOptions: { runOn: "folderOpen" }
+    }, null, 2)
+  );
+  write(
+    path.join(home, "vscode-autorun", "notes.txt"),
+    [
+      "166.88.134.62 /$/boot api.trongrid.io eth_getTransactionByHash Sec-V",
+      "github.com/lambda-platform/lambda",
+      "53abf37710d6f2e35694fbe7cfaf1108127cbc001ce3e6bf994d0486cae5a0e8"
+    ].join("\n")
+  );
   write(path.join(home, ".cache", "yay", "orphaned-tool", "PKGBUILD"), [
     "pkgname=orphaned-tool",
     "post_install() {",
@@ -926,6 +944,13 @@ function run() {
   assert(ids.has("dcat-auth-google-2fa-hardcoded-bypass"));
   assert(ids.has("dcat-auth-google-2fa-obfuscated-php"));
   assert(ids.has("dcat-auth-google-2fa-composer-lock"));
+  assert(ids.has("vscode-autorun-blockchain-npm-version"));
+  assert(ids.has("vscode-autorun-blockchain-c2-indicator"));
+  assert(ids.has("vscode-autorun-blockchain-deaddrop-indicator"));
+  assert(ids.has("vscode-autorun-blockchain-text-indicator"));
+  assert(ids.has("vscode-autorun-fake-font-task"));
+  assert(ids.has("vscode-autorun-fake-font-hash"));
+  assert(ids.has("nextron-go-blockchain-payload-lead"));
   const tokenFinding = report.findings.find((finding) => finding.id === "dynatrace-token-exposure");
   assert(tokenFinding.evidence.includes("dt0c01.ABCDEFGHIJKLMNOPQRSTUVWX.<redacted>"));
   assert(!tokenFinding.evidence.includes("ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ"));

@@ -17,6 +17,8 @@
 - Supply Chain Attack incident catalog, search-from-search npm malware: https://supplychainattack.org/incident/malware-in-search-from-search-1jc4kr
 - Supply Chain Attack incident catalog, node-fetch-utils npm malware: https://supplychainattack.org/incident/malware-in-node-fetch-utils-wwuwix
 - Checkmarx ChainVeil / SuccessKey npm supply-chain report: https://checkmarx.com/zero-post/chainveil-a-malicious-npm-supply-chain-attack-by-successkey/
+- JFrog VS Code autorun / blockchain dead-drop npm hijack report: https://research.jfrog.com/post/hijacked-npm-vscode-tasks-blockchain/
+- Nextron Research X post on Go packages reusing the JFrog fake-font payload: https://x.com/nextronresearch
 - Socket Hades PyPI wave analysis: https://socket.dev/blog/shai-hulud-descends-to-hades-miasma-pypi-wave
 - Socket newer Miasma/Hades PyPI wave analysis: https://socket.dev/blog/mini-shai-hulud-miasma-and-hades-worms-target-bioinformatics-and-mcp-developers-via-malicious
 - SecurityWeek Shai-Hulud Miasma/Hades summary: https://www.securityweek.com/over-100-npm-pypi-packages-hit-in-new-shai-hulud-supply-chain-attacks/
