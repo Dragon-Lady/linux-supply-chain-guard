@@ -21,6 +21,7 @@ const ROUNDCUBE_15_FIXED = "1.5.10";
 const ROUNDCUBE_16_FIXED = "1.6.11";
 const ROUNDCUBE_VULNERABLE_MIN = "1.1.0";
 const JOOMLA_JCE_FIXED = "2.9.99.6";
+const JOOMLA_SP_PAGE_BUILDER_FIXED = "6.6.2";
 const ITSCAPE_UPSTREAM_FIXED_KERNEL = "6.15.0";
 const SPLUNK_20253_REVIEW_MIN = "10.0.0";
 const REDCAP_REVIEW_LATEST = "17.1.3";
@@ -753,6 +754,29 @@ const JOOMLA_JCE_ROOT_HINTS = [
 
 const JOOMLA_JCE_CANDIDATE_FILE_NAMES = new Set([
   "jce.xml",
+  "manifest.xml",
+  "composer.json",
+  "configuration.php",
+  "README.md",
+  "CHANGELOG.md",
+  "error.php",
+  "access.log",
+  "access_log",
+  "error.log",
+  "error_log",
+]);
+
+const JOOMLA_SP_PAGE_BUILDER_ROOT_HINTS = [
+  "joomla",
+  "administrator/components/com_sppagebuilder",
+  "components/com_sppagebuilder",
+  "plugins/sppagebuilder",
+  "media/com_sppagebuilder",
+  "/sppagebuilder/",
+];
+
+const JOOMLA_SP_PAGE_BUILDER_CANDIDATE_FILE_NAMES = new Set([
+  "sppagebuilder.xml",
   "manifest.xml",
   "composer.json",
   "configuration.php",
@@ -1766,6 +1790,7 @@ function scanHost(options = {}) {
   checkPaloAltoGlobalProtect0257(findings, targetRoot, homePath);
   checkRoundcubeCve202549113(findings, targetRoot, homePath);
   checkJoomlaJceCve202648907(findings, targetRoot, homePath);
+  checkJoomlaSpPageBuilderCve202648908(findings, targetRoot, homePath);
   checkSplunkEnterpriseCve202620253(findings, targetRoot, homePath);
   checkRedcapExposure(findings, targetRoot, homePath);
   checkFortinetCredentialExposure(findings, targetRoot, homePath);
@@ -3346,6 +3371,52 @@ function checkJoomlaJceCve202648907(findings, targetRoot, homePath) {
 
     if (/new editor profiles?|rogue profiles?|upload and execution of PHP code|profiles?[^.\n]{0,120}unauthenticated|com_jce[^.\n]{0,160}upload/i.test(haystack)) {
       addFinding(findings, "warning", "joomla-jce-cve-2026-48907-profile-upload-review", "Joomla JCE profile/upload terms match CVE-2026-48907 triage language.", relative, "Review JCE editor profiles, Joomla administrator logs, uploaded PHP files, and web-server logs before clearing this host.");
+    }
+  }
+}
+
+function checkJoomlaSpPageBuilderCve202648908(findings, targetRoot, homePath) {
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const roots = [
+    homeRelative,
+    "/usr/share",
+    "/usr/local",
+    "/var/www",
+    "/var/lib",
+    "/opt",
+    "/srv",
+    "/etc",
+    "/root",
+    "/tmp",
+    "/var/tmp",
+  ].filter(Boolean);
+  const files = [];
+  for (const root of roots) {
+    files.push(...findJoomlaSpPageBuilderFiles(mapLinuxPath(targetRoot, root), 30000 - files.length));
+    if (files.length >= 30000) break;
+  }
+
+  for (const filePath of files) {
+    const text = readText(filePath);
+    if (!text) continue;
+    const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+    const loweredRelative = relative.toLowerCase();
+    const haystack = `${loweredRelative}\n${text}`;
+
+    if (hasJoomlaSpPageBuilder48908ExploitShape(text, loweredRelative)) {
+      addFinding(findings, "warning", "joomla-sppagebuilder-cve-2026-48908-exploit-reference", "Joomla SP Page Builder CVE-2026-48908 exploit or exposure reference appears in scanned files.", relative, "Treat as an active-exploitation lead. Keep exploit tooling and copied incident notes out of production web roots; review uploaded files, administrator access, and web-server logs.");
+    }
+
+    if (!hasJoomlaSpPageBuilderInstallSignal(text, loweredRelative)) continue;
+
+    for (const version of joomlaSpPageBuilderVersionsInText(text, loweredRelative)) {
+      if (compareDottedVersion(version, JOOMLA_SP_PAGE_BUILDER_FIXED) < 0 && compareDottedVersion(version, "1.0.0") >= 0) {
+        addFinding(findings, "critical", "joomla-sppagebuilder-cve-2026-48908-vulnerable-version", "Joomla SP Page Builder version is affected by CVE-2026-48908.", `${relative}: SP Page Builder ${version}`, `Update SP Page Builder to ${JOOMLA_SP_PAGE_BUILDER_FIXED} or later. Active exploitation has been reported; review unauthenticated upload paths, uploaded PHP artifacts, web-server logs, and site/database/hosting credentials from a clean posture.`);
+      }
+    }
+
+    if (/unauthenticated[^.\n]{0,160}file upload|file upload[^.\n]{0,160}(?:RCE|remote code execution)|SP Page Builder[^.\n]{0,220}(?:upload|RCE|active exploitation)|com_sppagebuilder[^.\n]{0,220}(?:upload|RCE|exploit)/i.test(haystack)) {
+      addFinding(findings, "warning", "joomla-sppagebuilder-cve-2026-48908-upload-rce-review", "Joomla SP Page Builder upload/RCE triage terms match CVE-2026-48908 reporting.", relative, "Review SP Page Builder upload handling, suspicious media/PHP files, Joomla administrator logs, and web-server POST activity before clearing this host.");
     }
   }
 }
@@ -5261,6 +5332,35 @@ function findJoomlaJceFiles(dirPath, maxFiles) {
   return files;
 }
 
+function findJoomlaSpPageBuilderFiles(dirPath, maxFiles) {
+  const files = [];
+  if (!dirPath || maxFiles <= 0) return files;
+  const skipDirs = new Set([".git", ".hg", ".svn", ".next", "dist", "build", "coverage", "node_modules", ".venv", "venv"]);
+  const stack = [dirPath];
+  const seenDirs = new Set();
+  while (stack.length > 0 && files.length < maxFiles) {
+    const current = stack.pop();
+    if (!current || seenDirs.has(current)) continue;
+    seenDirs.add(current);
+    let entries;
+    try {
+      entries = fs.readdirSync(current, { withFileTypes: true });
+    } catch {
+      continue;
+    }
+    for (const entry of entries) {
+      const fullPath = path.join(current, entry.name);
+      if (entry.isDirectory()) {
+        if (!skipDirs.has(entry.name)) stack.push(fullPath);
+      } else if (entry.isFile() && isJoomlaSpPageBuilderCandidateFile(entry.name, fullPath)) {
+        files.push(fullPath);
+        if (files.length >= maxFiles) break;
+      }
+    }
+  }
+  return files;
+}
+
 function isJoomlaJceCandidateFile(fileName, filePath) {
   const normalized = filePath.replace(/\\/g, "/").toLowerCase();
   if (JOOMLA_JCE_ROOT_HINTS.some((hint) => normalized.includes(hint))) {
@@ -5271,9 +5371,24 @@ function isJoomlaJceCandidateFile(fileName, filePath) {
   return false;
 }
 
+function isJoomlaSpPageBuilderCandidateFile(fileName, filePath) {
+  const normalized = filePath.replace(/\\/g, "/").toLowerCase();
+  if (JOOMLA_SP_PAGE_BUILDER_ROOT_HINTS.some((hint) => normalized.includes(hint))) {
+    if (JOOMLA_SP_PAGE_BUILDER_CANDIDATE_FILE_NAMES.has(fileName)) return true;
+    return /\.(php|xml|json|log|txt|md)$/i.test(fileName);
+  }
+  if (/cve-2026-48908|joomla.*sp[ -]?page[ -]?builder|sp[ -]?page[ -]?builder.*joomla|com_sppagebuilder/i.test(normalized)) return true;
+  return false;
+}
+
 function hasJoomlaJceInstallSignal(text, relativePath) {
   return JOOMLA_JCE_ROOT_HINTS.some((hint) => relativePath.includes(hint))
     || /Joomla Content Editor|JCE Pro|Widget Factory|com_jce|plugins\/editors\/jce|administrator\/components\/com_jce/i.test(text);
+}
+
+function hasJoomlaSpPageBuilderInstallSignal(text, relativePath) {
+  return JOOMLA_SP_PAGE_BUILDER_ROOT_HINTS.some((hint) => relativePath.includes(hint))
+    || /SP Page Builder|JoomShaper|com_sppagebuilder|components\/com_sppagebuilder|administrator\/components\/com_sppagebuilder/i.test(text);
 }
 
 function joomlaJceVersionsInText(text, relativePath) {
@@ -5293,10 +5408,33 @@ function joomlaJceVersionsInText(text, relativePath) {
   return Array.from(versions);
 }
 
+function joomlaSpPageBuilderVersionsInText(text, relativePath) {
+  const versions = new Set();
+  const scopedText = `${relativePath}\n${text}`;
+  const patterns = [
+    /(?:SP Page Builder|JoomShaper|com_sppagebuilder)[^0-9]{0,120}([0-9]+\.[0-9]+\.[0-9]+(?:\.[0-9]+)?)/gi,
+    /<name>[^<]*(?:SP Page Builder|JoomShaper)[^<]*<\/name>[\s\S]{0,600}?<version>([0-9]+\.[0-9]+\.[0-9]+(?:\.[0-9]+)?)<\/version>/gi,
+    /<version>([0-9]+\.[0-9]+\.[0-9]+(?:\.[0-9]+)?)<\/version>[\s\S]{0,600}?(?:SP Page Builder|JoomShaper|com_sppagebuilder)/gi,
+    /["'](?:name|element)["']\s*:\s*["'](?:SP Page Builder|com_sppagebuilder|sppagebuilder)["'][\s\S]{0,300}?["']version["']\s*:\s*["']([0-9]+\.[0-9]+\.[0-9]+(?:\.[0-9]+)?)["']/gi,
+  ];
+  for (const pattern of patterns) {
+    for (const match of scopedText.matchAll(pattern)) {
+      versions.add(match[1]);
+    }
+  }
+  return Array.from(versions);
+}
+
 function hasJoomlaJce48907PocOrKevShape(text, relativePath) {
   const haystack = `${relativePath}\n${text}`;
   return /cve-2026-48907/i.test(haystack)
     && /Joomla|JCE|com_jce|profile|upload|PHP|Known Exploited Vulnerabilities|CISA|BOD 26-04/i.test(haystack);
+}
+
+function hasJoomlaSpPageBuilder48908ExploitShape(text, relativePath) {
+  const haystack = `${relativePath}\n${text}`;
+  return /cve-2026-48908/i.test(haystack)
+    && /Joomla|SP Page Builder|JoomShaper|com_sppagebuilder|unauthenticated|file upload|RCE|remote code execution|active exploitation|Censys/i.test(haystack);
 }
 
 function isHadesWatchFile(fileName, filePath) {

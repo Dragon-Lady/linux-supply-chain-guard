@@ -302,6 +302,18 @@ function run() {
     "Widget Factory Joomla Content Editor improper access control",
     "rogue profile allowed upload and execution of PHP code"
   ].join("\n"));
+  write(path.join(root, "var", "www", "joomla", "administrator", "components", "com_sppagebuilder", "sppagebuilder.xml"), [
+    "<extension>",
+    "<name>SP Page Builder</name>",
+    "<version>6.6.1</version>",
+    "<element>com_sppagebuilder</element>",
+    "</extension>"
+  ].join("\n"));
+  write(path.join(root, "var", "www", "joomla", "components", "com_sppagebuilder", "incident-note.txt"), [
+    "CVE-2026-48908 Censys advisory",
+    "SP Page Builder active exploitation reported",
+    "unauthenticated file upload and potential RCE in com_sppagebuilder"
+  ].join("\n"));
   write(path.join(root, "var", "www", "wordpress", "wp-content", "plugins", "testimonial-pro", "readme.txt"), [
     "=== Real Testimonials Pro ===",
     "Stable tag: 3.2.5",
@@ -789,6 +801,9 @@ function run() {
   assert(ids.has("joomla-jce-cve-2026-48907-vulnerable-version"));
   assert(ids.has("joomla-jce-cve-2026-48907-poc-or-kev-reference"));
   assert(ids.has("joomla-jce-cve-2026-48907-profile-upload-review"));
+  assert(ids.has("joomla-sppagebuilder-cve-2026-48908-vulnerable-version"));
+  assert(ids.has("joomla-sppagebuilder-cve-2026-48908-exploit-reference"));
+  assert(ids.has("joomla-sppagebuilder-cve-2026-48908-upload-rce-review"));
   assert(ids.has("shapedplugin-fake-plugin-path"));
   assert(ids.has("shapedplugin-loader-or-persistence-file"));
   assert(ids.has("shapedplugin-affected-pro-version"));

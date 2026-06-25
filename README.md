@@ -387,6 +387,11 @@ Exit codes:
   - local CISA KEV / exploit notes referencing `CVE-2026-48907`
   - profile/upload triage terms matching the unauthenticated profile-creation
     and PHP upload/execution flaw
+- Joomla SP Page Builder / `CVE-2026-48908` indicators:
+  - SP Page Builder versions `1.0.0` through `6.6.1`
+  - local Censys/exploit notes referencing `CVE-2026-48908`, active
+    exploitation, unauthenticated file upload, or potential RCE
+  - upload/RCE triage terms around `com_sppagebuilder` and SP Page Builder
 - Splunk Enterprise / `CVE-2026-20253` indicators:
   - Splunk Enterprise `10.x` references for vendor mitigation review
   - CISA KEV / BOD `26-04` copied notes for `CVE-2026-20253`
@@ -772,6 +777,8 @@ the known indicators it checks.
   https://thehackernews.com/2026/06/palo-alto-warns-of-active-exploitation.html
 - BleepingComputer / CISA Joomla JCE CVE-2026-48907 active exploitation:
   https://www.bleepingcomputer.com/news/security/cisa-orders-feds-to-patch-max-severity-joomla-plugin-flaw-by-friday/
+- Censys Joomla SP Page Builder CVE-2026-48908 advisory:
+  https://censys.com/advisory/cve-2026-48908/
 - Cyber Security News Splunk Enterprise CVE-2026-20253 active exploitation:
   https://cybersecuritynews.com/splunk-enterprise-vulnerability-exploit/
 - Cyber Security News / watchTowr Splunk Enterprise sidecar chain summary:

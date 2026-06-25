@@ -88,6 +88,15 @@ values in GlobalProtect or PAN-OS log metadata. Successful gateway-connected
 events are prioritized because Unit 42 reported that only a small portion of
 probed devices established VPN sessions.
 
+Censys' June 24, 2026 Joomla SP Page Builder advisory is included as actively
+exploited web-application posture context. `CVE-2026-48908` has a CVSS 10.0
+rating and reportedly affects SP Page Builder versions `1.0.0` through `6.6.1`;
+the issue can enable unauthenticated file upload and potential RCE, and is
+patched in `6.6.2`. Censys reported 194,793 web properties loading the
+component. The guard checks local Joomla/SP Page Builder metadata for affected
+versions, copied Censys/exploit notes, and upload/RCE triage terms so operators
+can patch, preserve evidence, and review uploaded files and web-server logs.
+
 Cyber Security News' Splunk Enterprise / `CVE-2026-20253` coverage is included
 as a local posture and log-triage lane. The guard looks for Splunk Enterprise
 10.x references, CISA KEV/BOD copied notes, PostgreSQL sidecar recovery
