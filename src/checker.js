@@ -1291,6 +1291,7 @@ const WATCH_FILE_EXTENSIONS = new Set([
   ".msi",
   ".iso",
   ".dmg",
+  ".plist",
 ]);
 
 const ASTRO_GITIGNORE_HIDE_FILES = [
@@ -1732,6 +1733,39 @@ const CLICKFIX_MACOS_TEXT_INDICATORS = [
   "Trezor Suite",
 ];
 
+const GASLIGHT_KNOWN_HASHES = new Map([
+  ["6328567511d88fdc2ae0939c5ef17b7a63d2a833881900de018a4f12f4982525", "macOS.Gaslight Mach-O sample"],
+  ["77b4fd46994992f0e57302cfe76ed23c0d90101381d2b89fc2ddf5c4536e77ca", "Sibling BONZAI sample"],
+  ["baabf249c77bc54c54ab0e66e15af798bd28aa5b4683554456a8b73ab8741239", "macOS.Gaslight Python payload script"],
+  ["b3c56d689414343589f38394d19ba2fe9a518133281200faa0556ba4e4136394", "macOS.Gaslight bash installer script"],
+]);
+
+const GASLIGHT_TEXT_INDICATORS = [
+  "macOS.Gaslight",
+  "endpoint-macos-aarch64-5555494492fc075f441637fb9d894913dde3a2ea",
+  "com.apple.system.services.activity",
+  "tg_room_id",
+  "payload_path_macos",
+  "persist_name_macos",
+  "persist_type_macos",
+  "init_python_enable",
+  "persist_enable",
+  "temp/collected_data.zip",
+  "cpython-3.10.18",
+  "astral-sh/python-build-standalone",
+  "PY_VERSION=3.10.18",
+  "BUILD_DATE=20250708",
+  "login.keychain-db",
+  "system_profiler",
+  "IOPMAssertionCreateWithName",
+  "38 fabricated",
+  "LLM-assisted triage",
+  "token expiry",
+  "out-of-memory",
+  "disk exhaustion",
+  "static-analysis flags",
+];
+
 const EVILTOKENS_DEVICE_CODE_NETWORK_INDICATORS = [
   "emp01825.workers.dev",
   "emp01825[.]workers[.]dev",
@@ -1807,6 +1841,7 @@ function scanHost(options = {}) {
   checkFortinetCredentialExposure(findings, targetRoot, homePath);
   checkClickFixKb4Phishing(findings, targetRoot, homePath);
   checkClickFixMacosDmgStealer(findings, targetRoot, homePath);
+  checkMacosGaslight(findings, targetRoot, homePath);
   checkEvilTokensDeviceCodePhishing(findings, targetRoot, homePath);
   checkFfmpegPixelSmashExposure(findings, targetRoot, homePath);
   checkLibssh2Cve202655200Exposure(findings, targetRoot, homePath);
@@ -3697,6 +3732,74 @@ function checkClickFixMacosDmgStealer(findings, targetRoot, homePath) {
 
     if (/curl\s+-fsSL[\s\S]{0,220}\/tmp[\s\S]{0,220}hdiutil\s+attach\s+-nobrowse[\s\S]{0,220}(?:open\s+|\.app|\.pkg)|hdiutil\s+attach\s+-nobrowse[\s\S]{0,220}(?:\.app|\.pkg|open\s+)[\s\S]{0,220}(?:AMOS|Atomic macOS Stealer|Atomic Stealer|ClickFix)/i.test(text)) {
       addFinding(findings, "critical", "clickfix-macos-hidden-dmg-execution", "macOS ClickFix command chain for quiet DMG download, hidden mount, and app/pkg launch appears in scanned metadata.", relative, "Preserve command history and endpoint telemetry. Check /tmp random DMGs, hdiutil mount records, launched self-signed bundles, browser and Keychain access, Telegram/Discord data theft, and Ledger Live/Trezor Suite replacement.");
+    }
+  }
+}
+
+function checkMacosGaslight(findings, targetRoot, homePath) {
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const roots = [
+    homeRelative,
+    "/home",
+    "/root",
+    "/tmp",
+    "/var/tmp",
+    "/opt",
+    "/srv",
+    "/var/log",
+    "/Users",
+    "/Library",
+    "/Volumes",
+    "/mnt",
+    "/media",
+  ].filter(Boolean);
+  const files = [];
+  for (const root of roots) {
+    files.push(...findWatchFiles(mapLinuxPath(targetRoot, root), 25000 - files.length));
+    if (files.length >= 25000) break;
+  }
+
+  for (const filePath of files) {
+    const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+    const normalizedRelative = relative.toLowerCase();
+    const size = fileSizeBytes(filePath);
+    const text = size <= 1024 * 1024 ? readText(filePath) : "";
+    if (!text) continue;
+
+    if (/\/library\/launchagents\/[^/]+\.plist$/i.test(normalizedRelative) && text.includes("com.apple.system.services.activity")) {
+      addFinding(findings, "critical", "gaslight-launchagent-label", "SentinelOne-reported macOS.Gaslight LaunchAgent label appears in a scanned plist.", relative, "Preserve the plist and referenced binary. Review launchctl state, file quarantine/signing metadata, process history, Telegram traffic, and Keychain/browser-data access before cleanup.");
+    }
+
+    for (const [digest, label] of GASLIGHT_KNOWN_HASHES.entries()) {
+      if (text.includes(digest)) {
+        addFinding(findings, "critical", "gaslight-known-sha256-reference", "SentinelOne-reported macOS.Gaslight SHA-256 appears in scanned metadata.", `${relative}: ${label}; sha256=${digest}`, "Use this as a high-confidence lead for macOS.Gaslight triage. Preserve referenced artifacts and review endpoint telemetry before cleanup.");
+      }
+    }
+
+    for (const indicator of GASLIGHT_TEXT_INDICATORS) {
+      if (text.includes(indicator)) {
+        addFinding(findings, "warning", "gaslight-text-indicator", "macOS.Gaslight IOC or behavior marker appears in scanned host metadata.", `${relative}: ${indicator}`, "Correlate with LaunchAgents, ad hoc-signed Mach-O files, Telegram Bot API traffic, standalone CPython staging, Keychain/browser access, and analysis notes that may contain prompt-injection bait.");
+      }
+    }
+
+    if (/Telegram Bot API|getUpdates|api\.telegram\.org\/bot/i.test(text)
+      && /attach:\/\/|BotBlocked|InvalidToken|Conflict|tg_room_id/i.test(text)) {
+      addFinding(findings, "critical", "gaslight-telegram-c2-shape", "macOS.Gaslight-style Telegram Bot API polling and exfiltration terms appear together.", relative, "Correlate DNS/proxy logs, process command lines, bot-token redaction logs, and uploaded archive names. Rotate exposed credentials from a clean posture if execution is suspected.");
+    }
+
+    if (/astral-sh\/python-build-standalone|cpython-3\.10\.18|PY_VERSION=3\.10\.18/i.test(text)
+      && /BUILD_DATE=20250708|arm64|x86_64|base64/i.test(text)) {
+      addFinding(findings, "warning", "gaslight-standalone-cpython-stager", "macOS.Gaslight-style standalone CPython staging constants appear in scanned metadata.", relative, "Review installer provenance and shell history. Preserve the script, staged Python runtime, and collection module before cleanup.");
+    }
+
+    if (/login\.keychain-db|temp\/collected_data\.zip|system_profiler|ps aux/i.test(text)
+      && /Chrome|Brave|Firefox|Safari|Terminal command histories?|Telegram/i.test(text)) {
+      addFinding(findings, "warning", "gaslight-python-collector-shape", "macOS.Gaslight-style Python collection targets appear together.", relative, "Review Keychain/database access, browser profile reads, Terminal history access, process snapshots, system profile collection, and archive upload telemetry.");
+    }
+
+    if (/38 fabricated|LLM-assisted triage|token expiry|out-of-memory|disk exhaustion|static-analysis flags/i.test(text)
+      && /prompt[- ]injection|system messages?|analysis|triage agent|abort|refus/i.test(text)) {
+      addFinding(findings, "warning", "gaslight-llm-triage-prompt-injection", "macOS.Gaslight-style analyst-targeting prompt-injection terms appear in scanned metadata.", relative, "Do not feed raw payload text directly to an agent. Use static extraction and treat embedded analysis instructions as untrusted sample data.");
     }
   }
 }

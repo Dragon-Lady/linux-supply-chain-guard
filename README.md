@@ -171,6 +171,13 @@ downloads, `hdiutil attach -nobrowse`, automatic `.app`/`.pkg` launch,
 Atomic macOS Stealer/AMOS terms, `s.01M0td.dmg`, `NNApp.app`,
 `svs-verificationdate[.]beer`, and `196.251.107[.]171`.
 
+The June 2026 macOS.Gaslight watch pack adds local host and mounted-root checks
+for SentinelOne-reported Gaslight SHA-256 values, the
+`com.apple.system.services.activity` LaunchAgent label, Telegram Bot API
+polling/exfiltration terms, standalone CPython staging through
+`astral-sh/python-build-standalone`, Keychain/browser collection terms, and
+LLM-triage prompt-injection bait.
+
 The June 2026 EvilTokens watch pack adds Microsoft OAuth device-code phishing
 triage checks for browser-data/SOC exports, including AES-GCM browser-side
 decryption notes, `/api/device/start`, `/api/device/gate/`,
@@ -490,6 +497,18 @@ Exit codes:
   - `s.01M0td.dmg`, `NNApp.app`, Atomic macOS Stealer/AMOS, Keychain prompt,
     Ledger Live, and Trezor Suite replacement terms
   - infrastructure `svs-verificationdate[.]beer` and `196.251.107[.]171`
+- macOS.Gaslight indicators:
+  - SentinelOne-reported Mach-O, sibling BONZAI, Python payload, and bash
+    installer SHA-256 values
+  - `com.apple.system.services.activity` LaunchAgent label and
+    `endpoint-macos-aarch64-5555494492fc075f441637fb9d894913dde3a2ea`
+  - Telegram Bot API `getUpdates`, `attach://`, `tg_room_id`, and error-code
+    terms; `temp/collected_data.zip`; `login.keychain-db`
+  - `cpython-3.10.18`, `PY_VERSION=3.10.18`, `BUILD_DATE=20250708`, and
+    `astral-sh/python-build-standalone`
+  - LLM-triage prompt-injection bait terms such as `38 fabricated`,
+    `LLM-assisted triage`, `token expiry`, `out-of-memory`, `disk exhaustion`,
+    and `static-analysis flags`
 - EvilTokens Microsoft OAuth device-code phishing indicators:
   - `EvilTokens`, `oauth-ms-phish`, and `Microsoft OAuth device-code phishing`
     triage terms
@@ -844,6 +863,10 @@ the known indicators it checks.
   https://any.run/cybersecurity-blog/eviltokens-ghost-code-analysis/
 - BleepingComputer macOS ClickFix / AMOS DMG campaign summary:
   https://www.bleepingcomputer.com/news/security/new-macos-clickfix-attack-silently-mounts-dmgs-to-push-infostealer/
+- SentinelOne macOS.Gaslight Rust backdoor analysis:
+  https://www.sentinelone.com/labs/macos-gaslight-rust-backdoor-turns-prompt-injection-on-the-analyst-not-the-sandbox/
+- The Hacker News macOS.Gaslight summary:
+  https://thehackernews.com/2026/06/new-gaslight-macos-malware-uses-prompt.html
 - The Hacker News on NGINX CVE-2026-42945 active exploitation:
   https://thehackernews.com/2026/05/nginx-cve-2026-42945-exploited-in-wild.html
 - The Register on NGINX Rift exploitation:

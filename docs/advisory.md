@@ -59,6 +59,15 @@ versions, local runtime artifacts, suspicious Python package layouts, and
 GitHub/CI exfiltration or seeding markers. They do not execute Python, Bun,
 package managers, or cleanup actions.
 
+SentinelOne's June 2026 macOS.Gaslight analysis is included as mounted-root and
+developer-workstation triage context. The guard checks copied host metadata and
+analysis notes for the reported Gaslight SHA-256 values, the
+`com.apple.system.services.activity` LaunchAgent label, Telegram Bot API
+polling/exfiltration terms, standalone CPython staging through
+`astral-sh/python-build-standalone`, Keychain/browser collection terms, and
+LLM-triage prompt-injection bait. These checks do not execute Mach-O files,
+Python, shell installers, or payload text.
+
 The June 2026 npm v12 readiness lane is included as pre-execution posture
 guidance. GitHub, The Hacker News, and JFrog reporting all point to the same
 shift: npm is moving high-risk install behavior from implicit trust to explicit
