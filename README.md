@@ -127,9 +127,11 @@ chat-message file UUID routes, trace-provider exfiltration risk, and PDFium
 document-parser review markers.
 
 The June 2026 Langflow watch pack adds local deployment checks for Langflow
-versions before `1.9.1`, deprecated `/api/v1/upload/{flow_id}` route exposure,
-absolute upload `file_path` leak artifacts, public-bind review, upload-size
-limit markers, and the `LOGSPACE-LangFlow` FOFA/product fingerprint context.
+versions affected by `CVE-2026-10561`, `CVE-2026-7664`, and
+`CVE-2026-55450`, PythonREPL/auto-login and webhook/MCP auth-bypass terms,
+deprecated `/api/v1/upload/{flow_id}` route exposure, absolute upload
+`file_path` leak artifacts, public-bind review, upload-size limit markers, and
+the `LOGSPACE-LangFlow` FOFA/product fingerprint context.
 
 The June 2026 AryStinger watch pack adds router/NAS edge-device malware checks
 for `/tmp/bin` `syswapd0`/Dropbear artifacts, port `2332` Dropbear persistence,
@@ -835,6 +837,12 @@ the known indicators it checks.
   https://www.securityweek.com/data-exposure-flaws-threaten-dify-ai-platform-powering-over-1-million-apps/
 - GitHub Security Advisory GHSA-x223-p2gf-v735 / Langflow CVE-2026-55450:
   https://github.com/langflow-ai/langflow/security/advisories/GHSA-x223-p2gf-v735
+- IBM Security Bulletin / Langflow CVE-2026-10561 PythonREPL RCE:
+  https://www.ibm.com/support/pages/node/7277242
+- IBM Security Bulletin / Langflow CVE-2026-7664 webhook/MCP authorization bypass:
+  https://www.ibm.com/support/pages/node/7277243
+- SecurityOnline Langflow RCE summary:
+  https://securityonline.info/langflow-rce-vulnerability/
 - GitHub npm v12 breaking changes notice:
   https://github.blog/changelog/2026-06-09-upcoming-breaking-changes-for-npm-v12/
 - The Hacker News npm v12 install-script default change summary:

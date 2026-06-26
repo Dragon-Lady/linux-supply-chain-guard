@@ -40,6 +40,9 @@
 - The Hacker News DifyTap cross-tenant AI data exposure summary: https://thehackernews.com/2026/06/researchers-detail-difytap-flaws-in.html
 - SecurityWeek DifyTap data exposure summary: https://www.securityweek.com/data-exposure-flaws-threaten-dify-ai-platform-powering-over-1-million-apps/
 - GitHub Security Advisory GHSA-x223-p2gf-v735 / Langflow CVE-2026-55450: https://github.com/langflow-ai/langflow/security/advisories/GHSA-x223-p2gf-v735
+- IBM Security Bulletin / Langflow CVE-2026-10561 PythonREPL RCE: https://www.ibm.com/support/pages/node/7277242
+- IBM Security Bulletin / Langflow CVE-2026-7664 webhook/MCP authorization bypass: https://www.ibm.com/support/pages/node/7277243
+- SecurityOnline Langflow RCE summary: https://securityonline.info/langflow-rce-vulnerability/
 - GitHub npm v12 breaking changes notice: https://github.blog/changelog/2026-06-09-upcoming-breaking-changes-for-npm-v12/
 - The Hacker News npm v12 install-script default change summary: https://thehackernews.com/2026/06/github-to-disable-npm-install-scripts.html
 - JFrog npm v12 explicit trust analysis: https://jfrog.com/blog/npm-v12-from-implicit-to-explicit-trust/

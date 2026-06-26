@@ -1385,15 +1385,27 @@ const DIFY_DEPLOYMENT_TERMS = [
   "dify-plugin-daemon",
 ];
 
-const LANGFLOW_FIXED = "1.9.1";
+const LANGFLOW_UPLOAD_FIXED = "1.9.1";
+const LANGFLOW_WEBHOOK_AFFECTED_MAX = "1.8.4";
+const LANGFLOW_WEBHOOK_FIXED = "1.9.1";
+const LANGFLOW_PYTHON_REPL_FIXED = "1.9.4";
 const LANGFLOW_DEPLOYMENT_TERMS = [
   "Langflow",
   "langflow",
   "langflow-ai/langflow",
   "langflowai/langflow",
   "LOGSPACE-LangFlow",
+  "CVE-2026-10561",
+  "CVE-2026-7664",
   "CVE-2026-55450",
   "GHSA-x223-p2gf-v735",
+  "PythonREPLComponent",
+  "Python Interpreter",
+  "LANGFLOW_AUTO_LOGIN",
+  "/api/v1/auto_login",
+  "/api/v1/webhook/{flow_id}",
+  "WEBHOOK_AUTH_ENABLE",
+  "Streamable MCP",
   "/api/v1/upload/{flow_id}",
   "max_file_size_upload",
 ];
@@ -4623,9 +4635,24 @@ function checkLangflowUploadExposure(findings, targetRoot, homePath) {
     if (!hasLangflow) continue;
 
     for (const version of langflowVersionsInText(text)) {
-      if (compareDottedVersion(normalizeDottedVersion(version), LANGFLOW_FIXED) < 0) {
-        addFinding(findings, "critical", "langflow-cve-2026-55450-vulnerable-version", "Langflow version appears older than the CVE-2026-55450 fixed release.", `${relative}: Langflow ${version}`, `Upgrade Langflow to ${LANGFLOW_FIXED} or newer and restrict upload routes until patched.`);
+      const normalizedVersion = normalizeDottedVersion(version);
+      if (compareDottedVersion(normalizedVersion, LANGFLOW_PYTHON_REPL_FIXED) < 0) {
+        addFinding(findings, "critical", "langflow-cve-2026-10561-vulnerable-version", "Langflow version appears older than the CVE-2026-10561 fixed release.", `${relative}: Langflow ${version}`, `Upgrade Langflow to ${LANGFLOW_PYTHON_REPL_FIXED} or newer. Disable AUTO_LOGIN and keep Langflow behind authenticated network controls until patched.`);
       }
+      if (compareDottedVersion(normalizedVersion, LANGFLOW_WEBHOOK_AFFECTED_MAX) <= 0) {
+        addFinding(findings, "critical", "langflow-cve-2026-7664-vulnerable-version", "Langflow version appears in the CVE-2026-7664 affected range.", `${relative}: Langflow ${version}`, `Upgrade Langflow to ${LANGFLOW_WEBHOOK_FIXED} or newer and require webhook/MCP authentication.`);
+      }
+      if (compareDottedVersion(normalizedVersion, LANGFLOW_UPLOAD_FIXED) < 0) {
+        addFinding(findings, "critical", "langflow-cve-2026-55450-vulnerable-version", "Langflow version appears older than the CVE-2026-55450 fixed release.", `${relative}: Langflow ${version}`, `Upgrade Langflow to ${LANGFLOW_UPLOAD_FIXED} or newer and restrict upload routes until patched.`);
+      }
+    }
+
+    if (/PythonREPLComponent|Python Interpreter|get_globals\(\)|global_imports|builtins|LANGFLOW_AUTO_LOGIN|\/api\/v1\/auto_login/i.test(text)) {
+      addFinding(findings, "critical", "langflow-python-repl-rce-review", "Langflow PythonREPL RCE or auto-login terms appear in scanned configuration/source.", relative, "Patch to Langflow 1.9.4 or newer, disable AUTO_LOGIN, review backend process privileges, and rotate provider/vector-store secrets if exposure is plausible.");
+    }
+
+    if (/\/api\/v1\/webhook\/(?:\{flow_id\}|<flow_id>|[0-9a-f-]{8})|WEBHOOK_AUTH_ENABLE|Streamable MCP|MCP transport|get_user_by_flow_id_or_endpoint_name/i.test(text)) {
+      addFinding(findings, "warning", "langflow-webhook-mcp-auth-review", "Langflow webhook/MCP authentication-bypass terms appear in scanned configuration/source.", relative, "Patch to Langflow 1.9.1 or newer, enable webhook authentication, and review unauthenticated flow execution exposure.");
     }
 
     if (/\/api\/v1\/upload\/(?:\{flow_id\}|<flow_id>|[0-9a-f-]{8})|POST\s+\/api\/v1\/upload|curl[^\n\r]+\/api\/v1\/upload/i.test(text)) {
