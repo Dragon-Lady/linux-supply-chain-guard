@@ -35,6 +35,8 @@ Windows scheduled canary task:
 
 - AlmaLinux Fragnesia / `CVE-2026-46300` kernel posture.
 - ITScape / `CVE-2026-46316` ARM64 KVM exposure posture.
+- DirtyClone / `CVE-2026-43503` DirtyFrag-family advisory and PoC-provenance
+  metadata.
 - Loaded `esp4`, `esp6`, and `rxrpc` module state.
 - Temporary module blacklist visibility.
 - Known Shai-Hulud / Here We Go Again Linux persistence paths.

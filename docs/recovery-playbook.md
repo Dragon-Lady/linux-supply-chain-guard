@@ -33,6 +33,12 @@ when a Linux host may have executed compromised package payloads.
   kernel status and reboot after patching. Do not rely on package hashes or
   direct disk reads alone as proof of safety because the reported primitive
   modifies page cache rather than the on-disk file.
+- For DirtyClone / `CVE-2026-43503`, verify the host kernel includes the full
+  DirtyFrag-family patch series and reboot after patching. If immediate
+  patching is not possible, reduce temporary exposure by blocking unprivileged
+  `CAP_NET_ADMIN` acquisition through user namespaces and by using
+  vendor-approved `esp4`, `esp6`, and `rxrpc` mitigations only where those
+  workloads are not required.
 - For NGINX Rift / `CVE-2026-42945`, patch exposed NGINX Open Source or NGINX
   Plus deployments through vendor packages. Prioritize internet-facing reverse
   proxies, package mirrors, CI/build hosts, and self-hosted developer services.
