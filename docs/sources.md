@@ -70,6 +70,8 @@
 - Lantronix EDS5000 latest firmware page: https://ltrxdev.atlassian.net/wiki/spaces/LTRXTS/pages/2538438657/Latest%2BFirmware%2Bfor%2Bthe%2BEDS5000%2Bseries%2BEDS5008%2BEDS5016%2BEDS5032
 - NVD CVE-2026-20230 record: https://nvd.nist.gov/vuln/detail/CVE-2026-20230
 - Cisco Unified Communications Manager WebDialer SSRF advisory: https://sec.cloudapps.cisco.com/security/center/content/CiscoSecurityAdvisory/cisco-sa-cucm-ssrf-cXPnHcW
+- Google Threat Intelligence Group, Cisco Catalyst SD-WAN Manager zero-day exploitation: https://cloud.google.com/blog/topics/threat-intelligence/zero-day-exploitation-cisco-catalyst-sd-wan-manager/
+- Cyber Security News, Cisco Catalyst SD-WAN Manager 0-day summary: https://cybersecuritynews.com/cisco-catalyst-sd-wan-manager-0-day/
 - Microsoft MSRC Update Guide for CVE-2026-45504: https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-45504
 - hawktrace public PoC repository for CVE-2026-45504: https://github.com/hawktrace/CVE-2026-45504
 - Aretiq AI analysis for CVE-2026-45502 Exchange EWS InstallApp SSRF: https://aretiq.ai/research/vul260622-cve-2026-45502-microsoft-exchange-server-ews-installapp-server-side-request-forgery/
