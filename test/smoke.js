@@ -205,7 +205,9 @@ function run() {
   ].join("\n"));
   write(path.join(home, ".local", "share", "JetBrains", "IntelliJIdea2026.1", "maliciousPlugins.txt"), [
     "installed=org.sm.yms.toolkit",
-    "exfil=39.107.60[.]51/api/software/key"
+    "exfil=39.107.60[.]51/api/software/key",
+    "auth=F48D2AA7CF341F782C1D",
+    `flow=save() Apply BaseUtil.request() validates ${"s" + "k-"} format 51 chars then plaintext HTTP POST`
   ].join("\n"));
   write(path.join(home, "observatory-pr", ".gitignore"), [
     "node_modules/",
@@ -795,6 +797,8 @@ function run() {
   assert(ids.has("glasswasm-openvsx-text-indicator"));
   assert(ids.has("jetbrains-marketplace-ai-key-plugin-reference"));
   assert(ids.has("jetbrains-marketplace-ai-key-exfil-indicator"));
+  assert(report.findings.some((finding) => finding.id === "jetbrains-marketplace-ai-key-exfil-indicator" && finding.evidence.includes("F48D2AA7CF341F782C1D")));
+  assert(report.findings.some((finding) => finding.id === "jetbrains-marketplace-ai-key-exfil-indicator" && finding.evidence.includes("BaseUtil.request")));
   assert(ids.has("astro-config-require-loader"));
   assert(ids.has("astro-config-network-eval-loader"));
   assert(ids.has("astro-config-hidden-payload-line"));

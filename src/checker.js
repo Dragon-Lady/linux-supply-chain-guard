@@ -637,6 +637,9 @@ const JETBRAINS_AI_KEY_ENDPOINT_INDICATORS = [
   "39.107.60.51/api/software/key",
   "39.107.60[.]51/api/software/key",
   "/api/software/key",
+  "F48D2AA7CF341F782C1D",
+  "BaseUtil.request",
+  "BaseUtil.request()",
 ];
 
 const GLASSWASM_KNOWN_FILE_NAMES = [

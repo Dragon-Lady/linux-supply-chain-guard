@@ -589,6 +589,9 @@ Exit codes:
     `com.dp.git.ai.tool`
   - reported exfiltration endpoint indicators including
     `39.107.60[.]51/api/software/key`
+  - DFIR Radar's June 25 implementation markers including
+    `F48D2AA7CF341F782C1D`, `BaseUtil.request()`, and `save()`/Apply plaintext
+    HTTP POST behavior
 - Astro config-as-code supply-chain indicators:
   - `astro.config.*` files that reconstruct `require` and combine loader,
     eval/function, global mutation, or blockchain/C2 relay markers
