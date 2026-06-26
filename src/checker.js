@@ -691,6 +691,8 @@ const HADES_TEXT_INDICATORS = [
   joinParts("results/results-", "*.json"),
   joinParts("format", "-results"),
   joinParts("Run ", "Copilot"),
+  joinParts("SEED", "_PAT"),
+  "Seeder",
   joinParts(".bun", "_ran"),
   joinParts("bun-v1.3.", "13"),
   joinParts("bun-v1.3.", "14"),
