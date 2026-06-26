@@ -50,6 +50,7 @@ const KNOWN_COMPROMISED_NPM_PACKAGES = [
   "aillmgen",
   "search-from-search",
   "@ravespaceio/browser-input",
+  "signup-embedder",
   "node-core-libs",
   "ts-grok",
   "ts-wross",

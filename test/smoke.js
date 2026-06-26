@@ -44,6 +44,7 @@ function run() {
       "free-claude": "^1.0.0",
       "search-from-search": "^1.0.0",
       "node-fetch-utils": "^1.0.0",
+      "signup-embedder": "^1.0.0",
       "node-core-libs": "^1.0.0",
       "ts-grok": "^1.0.0",
       "html-to-gutenberg": "4.2.11",
@@ -792,6 +793,7 @@ function run() {
   assert(report.findings.some((finding) => finding.id === "compromised-npm-package-reference" && finding.evidence.includes("free-claude")));
   assert(report.findings.some((finding) => finding.id === "compromised-npm-package-reference" && finding.evidence.includes("search-from-search")));
   assert(report.findings.some((finding) => finding.id === "compromised-npm-package-reference" && finding.evidence.includes("node-fetch-utils")));
+  assert(report.findings.some((finding) => finding.id === "compromised-npm-package-reference" && finding.evidence.includes("signup-embedder")));
   assert(report.findings.some((finding) => finding.id === "compromised-npm-package-reference" && finding.evidence.includes("node-core-libs")));
   assert(report.findings.some((finding) => finding.id === "compromised-npm-package-reference" && finding.evidence.includes("ts-grok")));
   assert(ids.has("chainveil-npm-package-reference"));
