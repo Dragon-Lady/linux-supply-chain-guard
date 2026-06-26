@@ -51,6 +51,7 @@ const KNOWN_COMPROMISED_NPM_PACKAGES = [
   "search-from-search",
   "@ravespaceio/browser-input",
   "node-core-libs",
+  "ts-grok",
   "ts-wross",
   "@muaththir/api",
   "onboarding-respects-modal",

@@ -323,6 +323,7 @@ Exit codes:
   - `ecto-flag-read`
   - `@validate-sdk/v2`
   - `google-cloud-secret-manager-config-poc`
+  - `ts-grok`
 - Checkmarx ChainVeil / SuccessKey npm indicators:
   - typosquat package names including `tailwindcss-merge`, `sass-format`,
     `sass-formats`, `tailwindcss-animates-kit`, `tailwindcss-animatics`,
@@ -745,6 +746,10 @@ the known indicators it checks.
   https://github.com/advisories/GHSA-g6v5-9xpp-6hpx
 - SupplyChainAttack incident for `ecto-flag-read`:
   https://supplychainattack.org/incident/malware-in-ecto-flag-read-m7p2-zqvzsn
+- Supply Chain Attack incident catalog, ts-grok npm malware:
+  https://supplychainattack.org/incident/malware-in-ts-grok-jjsh0j
+- GitHub Advisory Database, GHSA-qp73-r9hh-6vq9 / ts-grok npm malware:
+  https://github.com/advisories/GHSA-qp73-r9hh-6vq9
 - Checkmarx ChainVeil / SuccessKey npm supply-chain report:
   https://checkmarx.com/zero-post/chainveil-a-malicious-npm-supply-chain-attack-by-successkey/
 - JFrog VS Code autorun / blockchain dead-drop npm hijack report:

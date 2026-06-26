@@ -45,6 +45,7 @@ function run() {
       "search-from-search": "^1.0.0",
       "node-fetch-utils": "^1.0.0",
       "node-core-libs": "^1.0.0",
+      "ts-grok": "^1.0.0",
       "html-to-gutenberg": "4.2.11",
       "fetch-page-assets": "1.2.9",
       "rate-limit-flexible": "^1.0.2",
@@ -766,6 +767,7 @@ function run() {
   assert(report.findings.some((finding) => finding.id === "compromised-npm-package-reference" && finding.evidence.includes("search-from-search")));
   assert(report.findings.some((finding) => finding.id === "compromised-npm-package-reference" && finding.evidence.includes("node-fetch-utils")));
   assert(report.findings.some((finding) => finding.id === "compromised-npm-package-reference" && finding.evidence.includes("node-core-libs")));
+  assert(report.findings.some((finding) => finding.id === "compromised-npm-package-reference" && finding.evidence.includes("ts-grok")));
   assert(ids.has("chainveil-npm-package-reference"));
   assert(ids.has("chainveil-network-indicator"));
   assert(ids.has("chainveil-blockchain-c2-indicator"));
