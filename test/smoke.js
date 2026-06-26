@@ -732,14 +732,18 @@ function run() {
     "    command: langflow run --host 0.0.0.0",
     "    environment:",
     "      LANGFLOW_VERSION: 1.9.0",
+    "      LANGFLOW_AUTO_LOGIN: true",
+    "      WEBHOOK_AUTH_ENABLE: false",
     "      LOGSPACE-LangFlow: true",
     "      max_file_size_upload: 10485760",
     "    labels:",
     "      - route=/api/v1/upload/{flow_id}",
+    "      - route=/api/v1/webhook/{flow_id}",
     "    notes: POST /api/v1/upload/11111111-1111-1111-1111-111111111111 file_path=/Users/ori/Library/Caches/langflow/uploads/example.txt",
-    "    advisory: CVE-2026-55450 GHSA-x223-p2gf-v735 FOFA Query app=\"LOGSPACE-LangFlow\"",
+    "    advisory: CVE-2026-10561 CVE-2026-7664 CVE-2026-55450 GHSA-x223-p2gf-v735 FOFA Query app=\"LOGSPACE-LangFlow\" PythonREPLComponent Streamable MCP",
   ].join("\n"));
   write(path.join(home, "langflow", "requirements.txt"), "langflow==1.9.0\n");
+  write(path.join(home, "langflow", "legacy.txt"), "langflow==1.8.4 /api/v1/webhook/{flow_id} WEBHOOK_AUTH_ENABLE=False get_user_by_flow_id_or_endpoint_name\n");
   write(path.join(root, "tmp", "bin", "syswapd0"), "placeholder");
   write(path.join(root, "tmp", "bin", "dropbear"), "placeholder");
   write(path.join(root, "var", "log", "arystinger.log"), [
@@ -1020,7 +1024,11 @@ function run() {
   assert(ids.has("difytap-chat-file-uuid-review"));
   assert(ids.has("difytap-trace-exfiltration-review"));
   assert(ids.has("difytap-pdfium-parser-review"));
+  assert(ids.has("langflow-cve-2026-10561-vulnerable-version"));
+  assert(ids.has("langflow-cve-2026-7664-vulnerable-version"));
   assert(ids.has("langflow-cve-2026-55450-vulnerable-version"));
+  assert(ids.has("langflow-python-repl-rce-review"));
+  assert(ids.has("langflow-webhook-mcp-auth-review"));
   assert(ids.has("langflow-deprecated-upload-route-review"));
   assert(ids.has("langflow-absolute-path-disclosure-artifact"));
   assert(ids.has("langflow-fofa-exposure-fingerprint"));
