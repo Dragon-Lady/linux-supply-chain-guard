@@ -339,6 +339,16 @@ Exit codes:
     `esp_input()`, and `kernel.unprivileged_userns_clone=0` terms
   - upstream fix/release markers including `48f6a5356a33`, `9e171fc1d7d7`,
     `v7.1-rc5`, and `SKBFL_SHARED_FRAG`
+- Pedit COW / `CVE-2026-46331` review indicators:
+  - `Pedit COW`, `CVE-2026-46331`, `act_pedit`, and
+    `net/sched/act_pedit.c` advisory terms
+  - traffic-control mutation path terms such as `tcf_pedit_act`, `tc pedit`,
+    `TCA_PEDIT_KEY_EX`, `pedit ex`, `skb_ensure_writable`, and
+    `skb_linearize`
+  - exposure/mitigation terms including `cls_u32`, `CAP_NET_ADMIN`,
+    `unprivileged user namespace`, and `kernel.unprivileged_userns_clone=0`
+  - copied PoC/provenance markers such as `tc qdisc`, `tc filter`,
+    `tc action`, and `unshare -Urn` are review-only signals
 - Known Shai-Hulud / Here We Go Again persistence and payload paths:
   - `/tmp/transformers.pyz`
   - `gh-token-monitor.service`
@@ -1030,6 +1040,16 @@ the known indicators it checks.
   https://github.com/NixOS/nixpkgs/issues/532920
 - bikini/exploitarium libssh2 `CVE-2026-55200` public PoC tree:
   https://github.com/bikini/exploitarium/tree/main/libssh2-cve-2026-55200-poc
+- The Hacker News Pedit COW / `CVE-2026-46331` summary:
+  https://thehackernews.com/2026/06/new-linux-pedit-cow-exploit-enables.html
+- NVD `CVE-2026-46331` record:
+  https://nvd.nist.gov/vuln/detail/CVE-2026-46331
+- Red Hat Security Bulletin RHSB-2026-008:
+  https://access.redhat.com/security/vulnerabilities/RHSB-2026-008
+- Ubuntu `CVE-2026-46331` tracker:
+  https://ubuntu.com/security/CVE-2026-46331
+- Debian `CVE-2026-46331` tracker:
+  https://security-tracker.debian.org/tracker/CVE-2026-46331
 - Wordfence ShapedPlugin Pro supply-chain compromise PSA:
   https://www.wordfence.com/blog/2026/06/psa-supply-chain-compromise-targets-shapedplugin-backdoored-pro-plugins-distributed-via-official-channels/
 - The Hacker News ShapedPlugin Pro supply-chain compromise summary:
