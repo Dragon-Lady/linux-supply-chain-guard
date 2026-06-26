@@ -329,7 +329,8 @@ Exit codes:
   - `free-claude`
   - `free-anthropic-claude`
   - June 23 package-cluster names such as `search-from-search`,
-    `node-fetch-utils`, `calculate-helper`, `cursorai-agent`, and `vitest-cli`
+    `node-fetch-utils`, `node-core-libs`, `calculate-helper`,
+    `cursorai-agent`, and `vitest-cli`
 - AtomicArch / IronWorm AUR indicators:
   - AUR `PKGBUILD`, `.SRCINFO`, and `.install` metadata that references
     `atomic-lockfile`
