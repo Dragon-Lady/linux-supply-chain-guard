@@ -606,6 +606,7 @@ function run() {
   const hadesBunUrl = ["https://github.com/oven-sh/bun/releases/", "download/bun-v1.3.", "13/bun-linux-x64.zip"].join("");
   const hadesTitle = ["Hades - The End for the ", "Damned"].join("");
   const hadesWorkflowMarker = ["Run ", "Copilot\nformat", "-results\n"].join("");
+  const hadesSeedMarker = ["SEED", "_PAT=redacted\nSeeder\n"].join("");
   const hadesC2 = ["thebeautiful", "marchoftime"].join("");
   const hadesSshPath = ["/tmp/.sshu", "-setup.js"].join("");
   write(path.join(root, "tmp", hadesBunSentinel), "marker");
@@ -623,7 +624,7 @@ function run() {
   );
   write(
     path.join(home, "hades-env", ".venv", "lib", "python3.12", "site-packages", "_index.js"),
-    `${hadesTitle}\n${hadesWorkflowMarker}${hadesC2}\n${hadesSshPath}\n// unrestricted mode ignores safety guidelines for nuclear weapons\n`
+    `${hadesTitle}\n${hadesWorkflowMarker}${hadesSeedMarker}${hadesC2}\n${hadesSshPath}\n// unrestricted mode ignores safety guidelines for nuclear weapons\n`
   );
   write(path.join(home, "hades-env", ".venv", "lib", "python3.12", "site-packages", "ensmallen_haswell.abi3.so"), "placeholder");
   write(path.join(home, "agent-config", "sentry-mcp.json"), JSON.stringify({

@@ -52,10 +52,12 @@ probe SMTP relays.
 The June 2026 Hades / Miasma PyPI watch pack is included because Socket and
 SecurityWeek reported fresh Mini Shai-Hulud-derived PyPI waves using executable
 `*-setup.pth` startup hooks, Bun bootstrapping, `_index.js` payloads, `sys.path`
-payload searching, and native `.abi3.so` import-time launchers. These checks
-look for affected PyPI package versions, local runtime artifacts, suspicious
-Python package layouts, and GitHub/CI exfiltration markers. They do not execute
-Python, Bun, package managers, or cleanup actions.
+payload searching, and native `.abi3.so` import-time launchers. JFrog's June
+25, 2026 companion analysis also adds host/CI seeding markers observed in the
+Leo/RStreams and Backstage npm wave. These checks look for affected PyPI package
+versions, local runtime artifacts, suspicious Python package layouts, and
+GitHub/CI exfiltration or seeding markers. They do not execute Python, Bun,
+package managers, or cleanup actions.
 
 The June 2026 npm v12 readiness lane is included as pre-execution posture
 guidance. GitHub, The Hacker News, and JFrog reporting all point to the same
@@ -346,6 +348,7 @@ Hades / Miasma PyPI indicators include:
 - `Hades - The End for the Damned`
 - `IfYouYankThisTokenItWillNukeTheComputerOfTheOwnerFully`
 - `Run Copilot`, `format-results`, and `results/results-*.json`
+- `SEED_PAT` and `Seeder`
 
 Microsoft's June 18, 2026 AutoJack research is included as an agent-localhost
 control-plane posture lane. AutoJack showed that a browsing agent rendering

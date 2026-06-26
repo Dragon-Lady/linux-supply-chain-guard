@@ -29,7 +29,8 @@ mounted Linux hosts and cloud runners; they do not scan remote infrastructure.
 The June 2026 Hades / Miasma PyPI watch pack adds local checks for affected
 package versions, executable `*-setup.pth` startup hooks, Bun bootstrap and
 `_index.js` loader behavior, `.abi3.so` native-extension launcher layouts, and
-GitHub/CI exfiltration markers reported by Socket and SecurityWeek.
+GitHub/CI exfiltration and seeding markers reported by Socket, SecurityWeek,
+and JFrog.
 
 The June 2026 JFrog Solana FakeFix / CMS Windows loader watch pack adds checks
 for malicious Solana-themed npm/PyPI package names, CMS-themed npm loader names,
@@ -367,6 +368,7 @@ Exit codes:
   - native `.abi3.so` extension layouts paired with `_index.js`
   - GitHub/CI markers including `Run Copilot`, `format-results`, and
     `Hades - The End for the Damned`
+  - JFrog-reported seeding markers including `SEED_PAT` and `Seeder`
 - Agentjacking / Sentry MCP indicators:
   - Sentry DSN or ingest surfaces wired into MCP/agent context
   - Sentry-style fake `## Resolution` content that asks an agent to run `npx`
@@ -698,6 +700,8 @@ the known indicators it checks.
   https://socket.dev/blog/mini-shai-hulud-miasma-and-hades-worms-target-bioinformatics-and-mcp-developers-via-malicious
 - SecurityWeek Shai-Hulud Miasma/Hades summary:
   https://www.securityweek.com/over-100-npm-pypi-packages-hit-in-new-shai-hulud-supply-chain-attacks/
+- JFrog Shai-Hulud / Hades Leo/RStreams and Backstage npm analysis:
+  https://research.jfrog.com/post/shai-hulud-miasma-alright-lets-see-if-this-works/
 - BleepingComputer AtomicArch / AUR compromise summary:
   https://www.bleepingcomputer.com/news/security/over-400-arch-linux-packages-compromised-to-push-rootkit-infostealer/
 - Tenet Agentjacking Sentry/MCP writeup:
