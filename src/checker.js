@@ -1925,6 +1925,24 @@ const EVILTOKENS_DEVICE_CODE_TEXT_INDICATORS = [
   "fcd1b654a0b3e8f85ca7cfdafe494d4b",
 ];
 
+const BLUEKIT_BITM_TEXT_INDICATORS = [
+  "Bluekit",
+  "BlueKit",
+  "Bluekit phishing-as-a-service",
+  "Browser-in-the-Middle",
+  "browser-in-the-middle",
+  "BitM",
+  "rrweb",
+  "DOM stream",
+  "serialized structure of the page",
+  "WebSocket connection sending encrypted or binary data",
+  "CSS filter manipulation on top-level HTML element",
+  "WebRTC IP mismatch detection",
+  "custom CAPTCHA",
+  "browser fingerprint checks",
+  "Proxy API endpoint handling asset",
+];
+
 function scanHost(options = {}) {
   const targetRoot = path.resolve(options.targetRoot || "/");
   const homePath = options.homePath || process.env.HOME || "";
@@ -1979,6 +1997,7 @@ function scanHost(options = {}) {
   checkClickFixMacosDmgStealer(findings, targetRoot, homePath);
   checkMacosGaslight(findings, targetRoot, homePath);
   checkEvilTokensDeviceCodePhishing(findings, targetRoot, homePath);
+  checkBluekitBitmPhishing(findings, targetRoot, homePath);
   checkFfmpegPixelSmashExposure(findings, targetRoot, homePath);
   checkLibssh2Cve202655200Exposure(findings, targetRoot, homePath);
   checkShapedPluginSupplyChainCompromise(findings, targetRoot, homePath);
@@ -4094,6 +4113,64 @@ function checkEvilTokensDeviceCodePhishing(findings, targetRoot, homePath) {
 
     if (/\/api\/device\/gate\/[A-Za-z0-9_-]+[\s\S]{0,800}\/api\/device\/start[\s\S]{0,800}\/api\/device\/status\/\{?sessionId\}?|\/api\/device\/start[\s\S]{0,800}userCode[\s\S]{0,800}verification\s*URI/i.test(text)) {
       addFinding(findings, "critical", "eviltokens-device-code-flow-shape", "EvilTokens-style device-code flow endpoints and user-code display logic co-occur.", relative, "Treat as likely Microsoft OAuth device-code phishing material. Preserve the sample and review Entra sign-ins for device-code grants, suspicious successful MFA/device authorization, and follow-on mailbox or file access.");
+    }
+  }
+}
+
+function checkBluekitBitmPhishing(findings, targetRoot, homePath) {
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const roots = [
+    homeRelative,
+    "/home",
+    "/root",
+    "/tmp",
+    "/var/tmp",
+    "/opt",
+    "/srv",
+    "/var/www",
+    "/var/log",
+    "/mnt",
+    "/media",
+    "/ProgramData",
+    "/Users",
+  ].filter(Boolean);
+  const files = [];
+  for (const root of roots) {
+    files.push(...findWatchFiles(mapLinuxPath(targetRoot, root), 25000 - files.length));
+    if (files.length >= 25000) break;
+  }
+
+  for (const filePath of files) {
+    const text = readText(filePath);
+    if (!text) continue;
+    const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+
+    for (const indicator of BLUEKIT_BITM_TEXT_INDICATORS) {
+      if (text.includes(indicator)) {
+        addFinding(findings, "warning", "bluekit-bitm-text-indicator", "BlueKit or browser-in-the-middle phishing signal appears in scanned metadata.", `${relative}: ${indicator}`, "Treat this as an investigative signal, not proof by itself. Preserve the page/source and correlate browser, proxy, DNS, WebSocket, IdP, and session-token telemetry.");
+      }
+    }
+
+    if (/Bluekit|BlueKit|Browser-in-the-Middle|browser-in-the-middle|BitM/i.test(text)
+      && /rrweb|WebSocket|DOM stream|serialized structure|remote attacker-controlled browser|attacker'?s browser|session replay/i.test(text)) {
+      addFinding(findings, "critical", "bluekit-bitm-rrweb-delivery-shape", "BlueKit-style browser-in-the-middle DOM-streaming delivery terms co-occur.", relative, "Review for phishing-kit material or observed victim traffic. If users interacted, revoke active sessions, rotate affected credentials, and review IdP sign-ins/MFA prompts.");
+    }
+
+    if (/rrweb/i.test(text)
+      && /WebSocket/i.test(text)
+      && /encrypted|binary|DOM|serialize|serialized|replay|session replay/i.test(text)
+      && /login|credential|MFA|authentication|phishing/i.test(text)) {
+      addFinding(findings, "warning", "bluekit-rrweb-login-websocket-review", "rrweb appears near login-page WebSocket streaming terms.", relative, "rrweb is legitimate in analytics contexts. Investigate only if this is outside expected product analytics or appears on login/credential collection pages.");
+    }
+
+    if (/CSS filter manipulation|filter\s*:\s*(?:blur|brightness|contrast|grayscale|hue-rotate|invert|opacity|saturate|sepia)|WebRTC IP mismatch|custom CAPTCHA|headless browser|CPU cores|screen resolution|browser fingerprint/i.test(text)
+      && /Bluekit|BlueKit|phishing|login|credential|BitM|browser-in-the-middle/i.test(text)) {
+      addFinding(findings, "warning", "bluekit-anti-analysis-signal", "BlueKit-style anti-analysis or victim-qualification terms appear near phishing/login language.", relative, "Review landing-page scripts for crawler evasion, fake CAPTCHA, browser fingerprinting, WebRTC IP checks, and randomized visual filters.");
+    }
+
+    if (/proxy API endpoint handling asset|asset .*fetch|fetch(?:es|ing)? images|fetch(?:es|ing)? fonts|fetch(?:es|ing)? CSS|images, fonts, and CSS are fetched/i.test(text)
+      && /legitimate login page|target service|victim|phishing|Bluekit|BitM/i.test(text)) {
+      addFinding(findings, "warning", "bluekit-asset-proxy-signal", "BlueKit-style phishing asset proxying terms appear in scanned metadata.", relative, "Correlate web proxy logs for login-page assets fetched through phishing infrastructure rather than the legitimate target domain.");
     }
   }
 }

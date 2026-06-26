@@ -35,6 +35,7 @@
     "vscodeAutorunBlockchainNpm": "Checks local and mounted-root metadata for JFrog-reported hijacked html-to-gutenberg@4.2.11 and fetch-page-assets@1.2.9 npm versions, VS Code/Cursor folder-open tasks launching public/fonts/fa-solid-400.woff2, reported C2 and blockchain dead-drop strings, fake-font SHA-256 hashes, and Nextron's Go-package reuse lead as OSINT correlation.",
     "ffmpegPixelSmash8461": "Checks local and mounted-root metadata for JFrog/Malwarebytes-reported FFmpeg PixelSmash CVE-2026-8461 MagicYUV decoder exposure, FFmpeg/libavcodec package posture, media ingestion surfaces, and MagicYUV disablement notes.",
     "operationHighland": "Checks Sygnia Operation Highland / Velvet Ant indicators including published SHA-1 values, hidden credential-log paths, GS-Netcat/auditdb staging, Nginx/FastCGI bridge artifacts, C2/infrastructure strings, and process-masquerade markers.",
+    "bluekitBitmPhishing": "Checks local and mounted-root metadata for Netcraft/BleepingComputer-reported BlueKit browser-in-the-middle phishing signals, including rrweb DOM streaming over WebSocket, custom CAPTCHA, WebRTC IP mismatch detection, browser fingerprint checks, CSS filter randomization, and phishing asset proxying language. rrweb alone is treated as context, not a standalone IOC.",
     "autoJackAgentLocalhost": "Checks Microsoft AutoJack / AutoGen Studio local MCP control-plane posture terms including AutoGen Studio, StdioServerParams, server_params, /api/mcp/ws, localhost:8081, b047730, and reported autogenstudio pre-release versions. These are review prompts for agent-localhost trust-boundary risk."
   },
   "sources": [
@@ -55,6 +56,8 @@
     "https://research.jfrog.com/post/shai-hulud-miasma-alright-lets-see-if-this-works/",
     "https://www.sentinelone.com/labs/macos-gaslight-rust-backdoor-turns-prompt-injection-on-the-analyst-not-the-sandbox/",
     "https://thehackernews.com/2026/06/new-gaslight-macos-malware-uses-prompt.html",
+    "https://www.netcraft.com/blog/bluekit-phishing-as-a-service-threat",
+    "https://www.bleepingcomputer.com/news/security/bluekit-phishing-kit-adopts-browser-in-the-middle-for-login-theft/",
     "https://www.bleepingcomputer.com/news/security/over-400-arch-linux-packages-compromised-to-push-rootkit-infostealer/",
     "https://tenetsecurity.ai/blog/agentjacking-coding-agents-with-fake-sentry-errors/",
     "https://cybersecuritynews.com/agentjacking-attack-hijacks-ai-coding-agent/",
