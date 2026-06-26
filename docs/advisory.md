@@ -85,6 +85,16 @@ runtime artifact terms, and Nextron's Go-package reuse lead as OSINT
 correlation only. These checks do not fetch public PoCs or open third-party
 repositories.
 
+Island's June 2026 BadBlocker / Adblock for YouTube analysis is included as
+browser-extension inventory and source-review context. The guard flags the live
+extension ID `cmedhionkhpnakcndndgjdbohmhepckk`, related removed extension IDs,
+Adblock/Unistream infrastructure, and copied scriptlet terms such as
+`scripletsRules`, `trusted-create-element`, `chrome.scripting.executeScript`,
+MAIN-world execution, and weak full-URL `youtube.com` gate logic. Island and
+The Hacker News described this as a dormant capability with no observed
+malicious payload distribution, so findings are review leads rather than proof
+of compromise.
+
 Huntress' Heaven's Gate overview is included as weak-signal Windows evasion
 context. The guard looks for analysis-note references to WOW64 mode-switching
 or Heaven's Gate terms only when they co-occur with shellcode, injection, EDR

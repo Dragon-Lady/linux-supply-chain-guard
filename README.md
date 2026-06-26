@@ -96,6 +96,13 @@ commands, Outlook update lure terms, CloudFront websocket C2s, `AppKey`
 registry setup strings, and published SHA-256 indicators. These are local
 operator notifications only.
 
+The June 2026 Island / The Hacker News Adblock for YouTube watch pack adds
+local Chrome/Chromium/Edge extension inventory checks for
+`cmedhionkhpnakcndndgjdbohmhepckk`, related removed Adblock extension IDs,
+Adblock/Unistream infrastructure, and dormant server-controlled
+`trusted-create-element` / MAIN-world scriptlet injection terms. These are
+review signals, not proof that a malicious payload ran.
+
 The June 2026 Operation Highland / Velvet Ant watch pack adds Sygnia-reported
 Linux authentication-stack compromise checks for replaced PAM/OpenSSH
 components, hidden credential-log paths, GS-Netcat staging, Nginx/FastCGI bridge
@@ -593,6 +600,15 @@ Exit codes:
   - reported SHA-256 values, `dodod.lat`, Solana memo dead-drop wallet and
     program IDs, and loader code that combines WASM with `child_process`,
     `curl | bash`, PowerShell `irm | iex`, or `windowsHide`
+- Island / THN Adblock for YouTube browser-extension indicators:
+  - live extension ID `cmedhionkhpnakcndndgjdbohmhepckk`
+  - related removed extension IDs `onomjaelhagjjojbkcafidnepbfkpnee`,
+    `ogcaehilgakehloljjmajoempaflmdci`, and
+    `gekoepiplklhniacchbbgbhilidiojmb`
+  - `api.adblock-for-youtube.com`, `get.adblock-for-youtube.com`,
+    `api.extensionplay.com`, and Unistream infrastructure strings
+  - `scripletsRules`, `trusted-create-element`, MAIN-world script injection,
+    and weak full-URL `youtube.com` gate terms
 - Aikido / BleepingComputer JetBrains Marketplace AI-key stealer indicators:
   - exact reported JetBrains plugin IDs such as `org.sm.yms.toolkit` and
     `com.dp.git.ai.tool`
@@ -748,6 +764,10 @@ the known indicators it checks.
   https://thehackernews.com/2026/06/malicious-npm-packages-pose-as-postcss.html
 - Socket GlassWASM Open VSX extension report:
   https://socket.dev/blog/glasswasm-malware-open-vsx-extensions
+- Island BadBlocker / Adblock for YouTube extension analysis:
+  https://www.island.io/blog/badblocker-11-million-users-one-server-call-away-from-compromise
+- The Hacker News Adblock for YouTube extension summary:
+  https://thehackernews.com/2026/06/chrome-ad-blocker-with-10m-installs.html
 - OX Security easy-day-js / Mastra npm supply-chain report:
   https://www.ox.security/blog/easy-day-js-supply-chain-attack-hits-mastra-ai-in-npm/
 - Socket Mastra npm package compromise analysis:

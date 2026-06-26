@@ -24,6 +24,8 @@
 - GitHub Advisory Database, GHSA-6vr2-5hpq-589c / node-core-libs npm malware: https://github.com/advisories/GHSA-6vr2-5hpq-589c
 - Checkmarx ChainVeil / SuccessKey npm supply-chain report: https://checkmarx.com/zero-post/chainveil-a-malicious-npm-supply-chain-attack-by-successkey/
 - JFrog VS Code autorun / blockchain dead-drop npm hijack report: https://research.jfrog.com/post/hijacked-npm-vscode-tasks-blockchain/
+- Island BadBlocker / Adblock for YouTube extension analysis: https://www.island.io/blog/badblocker-11-million-users-one-server-call-away-from-compromise
+- The Hacker News Adblock for YouTube extension summary: https://thehackernews.com/2026/06/chrome-ad-blocker-with-10m-installs.html
 - Nextron Research X post on Go packages reusing the JFrog fake-font payload: https://x.com/nextronresearch
 - Socket Hades PyPI wave analysis: https://socket.dev/blog/shai-hulud-descends-to-hades-miasma-pypi-wave
 - Socket newer Miasma/Hades PyPI wave analysis: https://socket.dev/blog/mini-shai-hulud-miasma-and-hades-worms-target-bioinformatics-and-mcp-developers-via-malicious

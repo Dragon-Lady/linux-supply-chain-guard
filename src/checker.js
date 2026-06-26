@@ -997,6 +997,43 @@ const EDGECUTION_TEXT_INDICATORS = [
   "Updates Registration",
 ];
 
+const ADBLOCK_YOUTUBE_EXTENSION_IDS = [
+  "cmedhionkhpnakcndndgjdbohmhepckk",
+  "onomjaelhagjjojbkcafidnepbfkpnee",
+  "ogcaehilgakehloljjmajoempaflmdci",
+  "gekoepiplklhniacchbbgbhilidiojmb",
+];
+
+const ADBLOCK_YOUTUBE_NETWORK_INDICATORS = [
+  "api.adblock-for-youtube.com",
+  "get.adblock-for-youtube.com",
+  "api.extensionplay.com",
+  "extensionplay.com",
+  "unistream.io",
+  "cdn.unistream.io",
+  "api.unistream.io",
+  "api.ad-block-for-chrome.com",
+  "get.ad-block-for-chrome.com",
+];
+
+const ADBLOCK_YOUTUBE_TEXT_INDICATORS = [
+  "Adblock for YouTube",
+  "Adblock for Chrome",
+  "Adblock for You",
+  "AdBlock Suite",
+  "BadBlocker",
+  "Unistream SDK",
+  "scripletsRules",
+  "trusted-create-element",
+  "MAIN-world",
+  "remote-controlled injection path",
+  "chrome.scripting.executeScript",
+  "world: 'MAIN'",
+  "world:\"MAIN\"",
+  "/youtube\\.com/",
+  "youtube.com anywhere in the URL",
+];
+
 const GLOBALPROTECT_0257_IPS = [
   "23.128.228.6",
   "23.128.228[.]6",
@@ -1862,6 +1899,7 @@ function scanHost(options = {}) {
   checkPcpJackRelayArtifacts(findings, targetRoot, homePath);
   checkGentlemenRansomware(findings, targetRoot, homePath);
   checkEdgecutionPayoutsKing(findings, targetRoot, homePath);
+  checkAdblockForYoutubeExtension(findings, targetRoot, homePath);
   checkHeavensGateEvasion(findings, targetRoot, homePath);
   checkArgamalGameRat(findings, targetRoot, homePath);
   checkCryptoClipperUsbWorm(findings, targetRoot, homePath);
@@ -3154,6 +3192,72 @@ function checkEdgecutionPayoutsKing(findings, targetRoot, homePath) {
       if (text.includes(indicator) && /Edgecution|Payouts King|Microsoft\\Edge|Microsoft\/Edge|native_host|sendNativeMessage|cloudfront|Outlook Updates/i.test(text)) {
         addFinding(findings, "review", "edgecution-text-indicator", "Edgecution/Payouts King advisory term appears in scanned metadata.", `${relative}: ${indicator}`, "Use this as an inventory and triage lead for malicious Edge extension/native-host activity.");
       }
+    }
+  }
+}
+
+function checkAdblockForYoutubeExtension(findings, targetRoot, homePath) {
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const roots = [
+    homeRelative,
+    "/home",
+    "/root",
+    "/tmp",
+    "/var/tmp",
+    "/opt",
+    "/srv",
+    "/var/www",
+    "/etc",
+    "/mnt",
+    "/media",
+    "/ProgramData",
+    "/Users",
+  ].filter(Boolean);
+  const files = [];
+  for (const root of roots) {
+    files.push(...findWatchFiles(mapLinuxPath(targetRoot, root), 30000 - files.length));
+    if (files.length >= 30000) break;
+  }
+
+  for (const filePath of files) {
+    const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+    const normalizedRelative = relative.toLowerCase();
+    const size = fileSizeBytes(filePath);
+
+    for (const extensionId of ADBLOCK_YOUTUBE_EXTENSION_IDS) {
+      if (normalizedRelative.includes(extensionId)) {
+        addFinding(findings, "warning", "adblock-youtube-extension-id-path", "Island-reported Adblock-family Chrome extension ID appears in a local path.", `${relative}: ${extensionId}`, "Review installed Chrome/Chromium/Edge extension inventory, update provenance, and browser policy allowlists. Remove related extensions where policy requires.");
+      }
+    }
+
+    const text = size <= 1024 * 1024 ? readText(filePath) : "";
+    if (!text) continue;
+
+    for (const extensionId of ADBLOCK_YOUTUBE_EXTENSION_IDS) {
+      if (text.includes(extensionId)) {
+        addFinding(findings, "warning", "adblock-youtube-extension-id-reference", "Island-reported Adblock-family Chrome extension ID appears in scanned metadata.", `${relative}: ${extensionId}`, "Correlate with Chrome Web Store extension inventory and browser-extension telemetry. This is a review lead, not proof that a malicious payload ran.");
+      }
+    }
+
+    for (const indicator of ADBLOCK_YOUTUBE_NETWORK_INDICATORS) {
+      if (text.includes(indicator)) {
+        addFinding(findings, "warning", "adblock-youtube-network-indicator", "Adblock for YouTube / related extension infrastructure appears in scanned metadata.", `${relative}: ${indicator}`, "Correlate with browser DNS/proxy history, extension update history, and whether the extension is still installed or policy-allowed.");
+      }
+    }
+
+    const matched = ADBLOCK_YOUTUBE_TEXT_INDICATORS.filter((indicator) => text.includes(indicator));
+    if (matched.length > 0) {
+      addFinding(findings, "review", "adblock-youtube-text-indicator", "Adblock for YouTube script-injection or related-extension terms appear in scanned metadata.", `${relative}: ${matched.slice(0, 4).join(", ")}`, "Use this as a browser-extension inventory and source-review lead. Island and THN reported dormant capability, not confirmed payload delivery.");
+    }
+
+    if (/scripletsRules|trusted-create-element/i.test(text)
+      && /chrome\.scripting\.executeScript|world\s*:\s*['"]MAIN['"]|MAIN-world|createElement|scriptlet|server-side configuration|remote-controlled/i.test(text)) {
+      addFinding(findings, "warning", "adblock-youtube-remote-scriptlet-injection-shape", "Remote scriptlet selection with MAIN-world/script element injection terms appears in scanned metadata.", relative, "Review the extension bundle and server configuration path. Remove or disable the extension until the vendor-fixed Chrome Web Store update is confirmed.");
+    }
+
+    if (/\/youtube\\\.com\/|youtube\.com anywhere in the URL|current URL contains ["']?youtube\.com|includes\s*\(\s*['"]youtube\.com['"]\s*\)/i.test(text)
+      && /<all_urls>|\*:\/\/\*\/\*|host_permissions|chrome\.scripting|executeScript|trusted-create-element|scripletsRules/i.test(text)) {
+      addFinding(findings, "review", "adblock-youtube-url-gate-review", "Weak full-URL youtube.com gate appears near broad extension execution terms.", relative, "Confirm whether installed extension versions validate the hostname rather than matching youtube.com anywhere in the URL.");
     }
   }
 }
