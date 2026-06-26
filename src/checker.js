@@ -1964,6 +1964,23 @@ const BLUEKIT_BITM_TEXT_INDICATORS = [
   "Proxy API endpoint handling asset",
 ];
 
+const MISTIC_RAT_TEXT_INDICATORS = [
+  "Backdoor.Mistic",
+  "Mistic RAT",
+  "MLTBackdoor",
+  "Woodgnat",
+  "KongTuke",
+  "ModeloRAT",
+  "initial access broker",
+  "Qilin",
+  "Interlock",
+  "Rhysida",
+  "Akira",
+  "8Base",
+  "Black Basta",
+  "post-exploitation capabilities on demand",
+];
+
 function scanHost(options = {}) {
   const targetRoot = path.resolve(options.targetRoot || "/");
   const homePath = options.homePath || process.env.HOME || "";
@@ -2019,6 +2036,7 @@ function scanHost(options = {}) {
   checkMacosGaslight(findings, targetRoot, homePath);
   checkEvilTokensDeviceCodePhishing(findings, targetRoot, homePath);
   checkBluekitBitmPhishing(findings, targetRoot, homePath);
+  checkMisticRatInitialAccess(findings, targetRoot, homePath);
   checkFfmpegPixelSmashExposure(findings, targetRoot, homePath);
   checkLibssh2Cve202655200Exposure(findings, targetRoot, homePath);
   checkShapedPluginSupplyChainCompromise(findings, targetRoot, homePath);
@@ -4193,6 +4211,56 @@ function checkBluekitBitmPhishing(findings, targetRoot, homePath) {
     if (/proxy API endpoint handling asset|asset .*fetch|fetch(?:es|ing)? images|fetch(?:es|ing)? fonts|fetch(?:es|ing)? CSS|images, fonts, and CSS are fetched/i.test(text)
       && /legitimate login page|target service|victim|phishing|Bluekit|BitM/i.test(text)) {
       addFinding(findings, "warning", "bluekit-asset-proxy-signal", "BlueKit-style phishing asset proxying terms appear in scanned metadata.", relative, "Correlate web proxy logs for login-page assets fetched through phishing infrastructure rather than the legitimate target domain.");
+    }
+  }
+}
+
+function checkMisticRatInitialAccess(findings, targetRoot, homePath) {
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const roots = [
+    homeRelative,
+    "/home",
+    "/root",
+    "/tmp",
+    "/var/tmp",
+    "/opt",
+    "/srv",
+    "/var/log",
+    "/mnt",
+    "/media",
+    "/ProgramData",
+    "/Users",
+  ].filter(Boolean);
+  const files = [];
+  for (const root of roots) {
+    files.push(...findWatchFiles(mapLinuxPath(targetRoot, root), 25000 - files.length));
+    if (files.length >= 25000) break;
+  }
+
+  for (const filePath of files) {
+    const text = readText(filePath);
+    if (!text) continue;
+    const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+
+    for (const indicator of MISTIC_RAT_TEXT_INDICATORS) {
+      if (text.includes(indicator)) {
+        addFinding(findings, "review", "mistic-rat-text-indicator", "Mistic/MLTBackdoor or associated ransomware access-broker term appears in scanned metadata.", `${relative}: ${indicator}`, "Use this as an endpoint triage lead. Correlate EDR, process, persistence, remote-admin, Cobalt Strike/Impacket, and ransomware handoff telemetry before cleanup.");
+      }
+    }
+
+    if (/Backdoor\.Mistic|Mistic RAT|MLTBackdoor/i.test(text)
+      && /Woodgnat|KongTuke|ModeloRAT|initial access broker|Qilin|Interlock|Rhysida|Akira|8Base|Black Basta/i.test(text)) {
+      addFinding(findings, "critical", "mistic-rat-ransomware-access-broker-reference", "Mistic/MLTBackdoor appears with Woodgnat/ModeloRAT or ransomware-family handoff terms.", relative, "Treat this as a high-priority access-broker lead. Review for initial-access persistence, lateral movement, remote monitoring tools, credential theft, and ransomware staging.");
+    }
+
+    if (/Backdoor\.Mistic|Mistic RAT|MLTBackdoor|Woodgnat|KongTuke|ModeloRAT/i.test(text)
+      && /Cobalt Strike|Impacket|AnyDesk|Splashtop|ScreenConnect|remote monitoring|remote access|RMM/i.test(text)) {
+      addFinding(findings, "warning", "mistic-rat-tooling-cooccurrence", "Mistic/MLTBackdoor access-broker terms appear near post-exploitation or remote-admin tooling.", relative, "Remote-admin tools are legitimate in many environments. Correlate signer, parent process, install time, command line, network destination, and user authorization.");
+    }
+
+    if (/MLTBackdoor|Mistic RAT|Backdoor\.Mistic/i.test(text)
+      && /post-exploitation capabilities on demand|CreateRemoteThread|VirtualAllocEx|WriteProcessMemory|process injection|shell command|cmd\.exe|powershell\.exe|schtasks/i.test(text)) {
+      addFinding(findings, "warning", "mistic-rat-post-exploitation-shape", "Mistic/MLTBackdoor appears near post-exploitation, injection, or command-execution behavior terms.", relative, "Preserve the artifact or telemetry record. Review process injection targets, scheduled task/service creation, command execution, credential access, and follow-on payload downloads.");
     }
   }
 }

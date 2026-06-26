@@ -820,6 +820,13 @@ function run() {
     "Inventory export: Exchange Server SE RTM build 15.02.2562.040, fixed by KB5094139 build 15.02.2562.043.",
     "Patched systems enable ManifestUrlValidation and ManifestUrlCheck for officeclient.microsoft.com allowlisting.",
   ].join("\n"));
+  write(path.join(root, "var", "log", "mistic-rat-access-broker.txt"), [
+    "Backdoor.Mistic / Mistic RAT advisory notes from Broadcom Symantec and SecurityWeek.",
+    "MLTBackdoor was described by Zscaler as providing post-exploitation capabilities on demand.",
+    "Woodgnat aka KongTuke uses the ModeloRAT toolkit as an initial access broker for ransomware groups.",
+    "Ransomware handoff families referenced in the report include Qilin, Interlock, Rhysida, Akira, 8Base, and Black Basta.",
+    "Triage notes: review Cobalt Strike, Impacket, AnyDesk, Splashtop, ScreenConnect, remote monitoring, process injection, CreateRemoteThread, VirtualAllocEx, WriteProcessMemory, cmd.exe, powershell.exe, and schtasks telemetry.",
+  ].join("\n"));
 
   const report = scanHost({ targetRoot: root, homePath: home, architecture: "aarch64" });
   const ids = new Set(report.findings.map((finding) => finding.id));
@@ -1088,6 +1095,10 @@ function run() {
   assert(ids.has("cisco-sdwan-manager-management-plane-review"));
   assert(ids.has("cisco-sdwan-manager-fixed-release-reference"));
   assert(ids.has("cisco-sdwan-manager-rogue-peer-ip"));
+  assert(ids.has("mistic-rat-text-indicator"));
+  assert(ids.has("mistic-rat-ransomware-access-broker-reference"));
+  assert(ids.has("mistic-rat-tooling-cooccurrence"));
+  assert(ids.has("mistic-rat-post-exploitation-shape"));
   assert(ids.has("cisco-sdwan-manager-text-indicator"));
   assert(ids.has("exchange-cve-2026-45504-reference"));
   assert(ids.has("exchange-cve-2026-45504-ssrf-file-read-review"));

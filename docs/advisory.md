@@ -196,6 +196,18 @@ and theme sources, and Windows endpoint monitoring for suspicious `wscript.exe`,
 payloads. The PSA does not include stable IOCs, so no detector rule was added
 for this intake.
 
+Broadcom/Symantec's June 24, 2026 Backdoor.Mistic report is included as an
+endpoint and ransomware-access-broker triage lane. Broadcom links the backdoor
+to Woodgnat, also known as KongTuke, and the ModeloRAT toolkit, with reported
+handoff relevance to Qilin, Interlock, Rhysida, Akira, 8Base, and Black Basta.
+Zscaler's related MLTBackdoor analysis describes a malware family that provides
+post-exploitation capabilities on demand. The guard flags copied advisory notes
+and telemetry where Mistic/MLTBackdoor terms co-occur with ransomware-family,
+remote-admin, Cobalt Strike/Impacket, process-injection, or command-execution
+terms. Remote administration tools remain review signals only unless correlated
+with unauthorized install, suspicious parent process, network, or credential
+activity.
+
 Ars Technica's June 18, 2026 Microsoft Crypto Clipper report is included as a
 mounted-host and Windows artifact triage lane. Microsoft described a
 self-propagating USB worm that uses `.lnk` files, a portable Tor client,
