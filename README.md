@@ -573,6 +573,16 @@ Exit codes:
     headless-browser checks, and top-level CSS filter randomization
   - asset proxying language for images, fonts, and CSS fetched through
     phishing infrastructure
+- Mistic / MLTBackdoor ransomware access-broker indicators:
+  - `Backdoor.Mistic`, `Mistic RAT`, `MLTBackdoor`, `Woodgnat`, `KongTuke`,
+    and `ModeloRAT` advisory or telemetry terms
+  - co-occurrence with ransomware-family handoff terms including `Qilin`,
+    `Interlock`, `Rhysida`, `Akira`, `8Base`, and `Black Basta`
+  - nearby post-exploitation and remote-admin tooling terms such as
+    `Cobalt Strike`, `Impacket`, `AnyDesk`, `Splashtop`, and `ScreenConnect`
+  - process-injection and command-execution triage language such as
+    `CreateRemoteThread`, `VirtualAllocEx`, `WriteProcessMemory`, `cmd.exe`,
+    `powershell.exe`, and `schtasks`
 - FFmpeg PixelSmash indicators:
   - installed `ffmpeg` / `libavcodec*` Debian-family packages
   - upstream-looking versions before FFmpeg `8.1.2` flagged for vendor-backport
@@ -965,6 +975,12 @@ the known indicators it checks.
   https://www.netcraft.com/blog/bluekit-phishing-as-a-service-threat
 - BleepingComputer BlueKit BitM phishing summary:
   https://www.bleepingcomputer.com/news/security/bluekit-phishing-kit-adopts-browser-in-the-middle-for-login-theft/
+- Broadcom/Symantec Backdoor.Mistic / ModeloRAT access-broker analysis:
+  https://www.security.com/threat-intelligence/new-mistic-backdoor-modelorat
+- SecurityWeek Mistic RAT ransomware access-broker summary:
+  https://www.securityweek.com/new-mistic-rat-opens-door-to-several-ransomware-families/
+- Zscaler ThreatLabz MLTBackdoor technical analysis:
+  https://www.zscaler.com/blogs/security-research/technical-analysis-mltbackdoor
 - BleepingComputer macOS ClickFix / AMOS DMG campaign summary:
   https://www.bleepingcomputer.com/news/security/new-macos-clickfix-attack-silently-mounts-dmgs-to-push-infostealer/
 - SentinelOne macOS.Gaslight Rust backdoor analysis:

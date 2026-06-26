@@ -91,6 +91,9 @@
 - ANY.RUN EvilTokens Microsoft OAuth device-code phishing analysis: https://any.run/cybersecurity-blog/eviltokens-ghost-code-analysis/
 - Netcraft BlueKit Browser-in-the-Middle phishing analysis: https://www.netcraft.com/blog/bluekit-phishing-as-a-service-threat
 - BleepingComputer BlueKit BitM phishing summary: https://www.bleepingcomputer.com/news/security/bluekit-phishing-kit-adopts-browser-in-the-middle-for-login-theft/
+- Broadcom/Symantec Backdoor.Mistic / ModeloRAT access-broker analysis: https://www.security.com/threat-intelligence/new-mistic-backdoor-modelorat
+- SecurityWeek Mistic RAT ransomware access-broker summary: https://www.securityweek.com/new-mistic-rat-opens-door-to-several-ransomware-families/
+- Zscaler ThreatLabz MLTBackdoor technical analysis: https://www.zscaler.com/blogs/security-research/technical-analysis-mltbackdoor
 - BleepingComputer macOS ClickFix / AMOS DMG campaign summary: https://www.bleepingcomputer.com/news/security/new-macos-clickfix-attack-silently-mounts-dmgs-to-push-infostealer/
 - SentinelOne macOS.Gaslight Rust backdoor analysis: https://www.sentinelone.com/labs/macos-gaslight-rust-backdoor-turns-prompt-injection-on-the-analyst-not-the-sandbox/
 - The Hacker News macOS.Gaslight summary: https://thehackernews.com/2026/06/new-gaslight-macos-malware-uses-prompt.html
