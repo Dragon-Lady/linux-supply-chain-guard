@@ -1589,6 +1589,27 @@ const NEXTRON_DCAT_AUTH_GOOGLE_2FA_INDICATORS = [
   "EXT_WEBSHELL_PHP_OBFUSC_Encoded_Mixed_Dec_And_Hex",
 ];
 
+const LIVEWIRE_CVE_2025_54068_AFFECTED_MIN = "3.0.0";
+const LIVEWIRE_CVE_2025_54068_FIXED = "3.6.4";
+const LIVEWIRE_CVE_2025_54068_TEXT_INDICATORS = [
+  "CVE-2025-54068",
+  "livewire/livewire",
+  "Laravel Livewire",
+  "xantibot.pw",
+  "xantibot[.]pw",
+  "/database-sell/shoc.enz",
+  "shoc.enz",
+  "shoc.sh",
+  "548c3672fd3201dab56f714fdd5812bb024980815b3a2b6299f0126bdf16fb3e",
+  "47.129.100.149",
+  "api.telegram.org",
+  "upload.gofile.io",
+  "webhook.site/b156c0b1-3e2f-41b4-a9a3-f492e50a0595",
+  "webhook[.]site/b156c0b1-3e2f-41b4-a9a3-f492e50a0595",
+  "Asia/Jakarta",
+  "@ashtarotz",
+];
+
 const ARYSTINGER_IOC_PATHS = [
   "/tmp/bin/syswapd0",
   "/tmp/bin/syswapd0h",
@@ -2002,6 +2023,7 @@ function scanHost(options = {}) {
   checkLibssh2Cve202655200Exposure(findings, targetRoot, homePath);
   checkShapedPluginSupplyChainCompromise(findings, targetRoot, homePath);
   checkDcatAuthGoogle2faPackagistCompromise(findings, targetRoot, homePath);
+  checkLaravelLivewireCve202554068(findings, targetRoot, homePath);
   checkSquidbleedFtpProxyExposure(findings, targetRoot, homePath);
   checkHaproxyCve202655203Exposure(findings, targetRoot, homePath);
   checkNginxCritical2026Exposure(findings, targetRoot, homePath);
@@ -4427,6 +4449,76 @@ function checkDcatAuthGoogle2faPackagistCompromise(findings, targetRoot, homePat
   }
 }
 
+function checkLaravelLivewireCve202554068(findings, targetRoot, homePath) {
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const roots = [
+    homeRelative,
+    "/home",
+    "/root",
+    "/tmp",
+    "/var/tmp",
+    "/opt",
+    "/srv",
+    "/var/www",
+    "/var/log",
+    "/mnt",
+    "/media",
+    "/ProgramData",
+    "/Users",
+  ].filter(Boolean);
+  const files = [];
+  for (const root of roots) {
+    files.push(...findWatchFiles(mapLinuxPath(targetRoot, root), 25000 - files.length));
+    if (files.length >= 25000) break;
+  }
+
+  for (const filePath of files) {
+    const text = readText(filePath);
+    if (!text) continue;
+    const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+    const base = path.basename(filePath);
+
+    if (base === "composer.lock" || base === "composer.json") {
+      for (const version of composerPackageVersionsInText(text, "livewire/livewire")) {
+        if (compareDottedVersion(version, LIVEWIRE_CVE_2025_54068_AFFECTED_MIN) >= 0
+          && compareDottedVersion(version, LIVEWIRE_CVE_2025_54068_FIXED) < 0) {
+          addFinding(findings, "critical", "livewire-cve-2025-54068-vulnerable-version", "Composer metadata references a Laravel Livewire version affected by CVE-2025-54068.", `${relative}: livewire/livewire ${version}`, `Upgrade livewire/livewire to ${LIVEWIRE_CVE_2025_54068_FIXED} or newer and rotate Laravel APP_KEY plus exposed application credentials if compromise is possible.`);
+        }
+      }
+
+      if (/["']livewire\/livewire["']\s*:\s*["'][^"']*(?:\^|~|>=|>|3\.|v?3\b)/i.test(text)
+        && !/["']livewire\/livewire["']\s*:\s*["'][^"']*v?3\.6\.[4-9]/i.test(text)) {
+        addFinding(findings, "review", "livewire-cve-2025-54068-version-range-review", "Composer metadata contains a broad Laravel Livewire v3 constraint.", relative, `Verify the resolved lockfile is livewire/livewire ${LIVEWIRE_CVE_2025_54068_FIXED} or newer.`);
+      }
+    }
+
+    for (const indicator of LIVEWIRE_CVE_2025_54068_TEXT_INDICATORS) {
+      if (text.includes(indicator)) {
+        addFinding(findings, "warning", "livewire-cve-2025-54068-text-indicator", "Imperva Laravel Livewire CVE-2025-54068 campaign indicator appears in scanned metadata.", `${relative}: ${indicator}`, "Correlate web, process, DNS/proxy, FTP, Telegram, and GoFile telemetry. Treat Laravel .env and APP_KEY exposure as high impact.");
+      }
+    }
+
+    if (/curl\s+-skfsSL\s+h..ps:\/\/xantibot(?:\.|\[\.\])pw\/database-sell\/shoc\.enz[\s\S]{0,160}\|\s*tr\s+-d\s+['"]\\r['"][\s\S]{0,80}\|\s*bash/i.test(text)) {
+      addFinding(findings, "critical", "livewire-shoc-piped-curl-payload", "Imperva-reported Livewire campaign shoc.enz piped-curl payload appears in scanned metadata.", relative, "Preserve the artifact and treat the host as potentially compromised. Rotate database, APP_KEY, cloud/API/payment, SMTP, and admin credentials from a clean environment.");
+    }
+
+    if (/find\s+\/\s+[^;\n\r]{0,160}(?:-name\s+['"]?\.env['"]?|\.env)/i.test(text)
+      && /DB_HOST|DB_DATABASE|DB_USERNAME|DB_PASSWORD|APP_KEY/i.test(text)) {
+      addFinding(findings, "critical", "livewire-env-credential-harvest", "Laravel .env credential-harvesting behavior appears in scanned metadata.", relative, "Search for copied .env files and archives, rotate all Laravel/application secrets, and review database access after the suspected compromise window.");
+    }
+
+    if (/\/tmp\/xxxxx|shoc\.sh|zip\s+-|tar\s+[^;\n\r]*czf|tar\.gz/i.test(text)
+      && /\.env|DB_PASSWORD|APP_KEY|upload\.gofile\.io|api\.telegram\.org|47\.129\.100\.149/i.test(text)) {
+      addFinding(findings, "warning", "livewire-shoc-staging-and-archive", "shoc-style staging, archive, or process-control terms appear near Laravel credential/exfiltration indicators.", relative, "Review /tmp, shell history, process logs, archive creation, and outbound network activity for credential staging.");
+    }
+
+    if (/47\.129\.100\.149|api\.telegram\.org|upload\.gofile\.io|webhook(?:\.|\[\.\])site\/b156c0b1-3e2f-41b4-a9a3-f492e50a0595/i.test(text)
+      && /DB_HOST|DB_DATABASE|DB_USERNAME|DB_PASSWORD|APP_KEY|\.env|shoc|Livewire|Laravel/i.test(text)) {
+      addFinding(findings, "critical", "livewire-credential-exfil-channel", "Imperva-reported Livewire campaign exfiltration channel appears near Laravel credential context.", relative, "Block and investigate outbound FTP/Telegram/GoFile/webhook traffic from web servers. Rotate credentials and review database dumps if any contact occurred.");
+    }
+  }
+}
+
 function checkSquidbleedFtpProxyExposure(findings, targetRoot, homePath) {
   const packageStatus = readText(mapLinuxPath(targetRoot, "/var/lib/dpkg/status"));
   const squidDpkg = squidPackagesFromDpkgStatus(packageStatus);
@@ -5644,6 +5736,22 @@ function normalizeDottedVersion(version) {
   const parts = version.split(".");
   while (parts.length < 3) parts.push("0");
   return parts.slice(0, 3).join(".");
+}
+
+function composerPackageVersionsInText(text, packageName) {
+  const escapedPackage = escapeRegExp(packageName);
+  const versions = new Set();
+  const patterns = [
+    new RegExp(`["']name["']\\s*:\\s*["']${escapedPackage}["'][\\s\\S]{0,500}?["']version["']\\s*:\\s*["']v?([0-9]+\\.[0-9]+\\.[0-9]+(?:[-+][0-9A-Za-z.-]+)?)["']`, "gi"),
+    new RegExp(`["']${escapedPackage}["']\\s*:\\s*["'][^"']*?v?([0-9]+\\.[0-9]+\\.[0-9]+(?:[-+][0-9A-Za-z.-]+)?)`, "gi"),
+    new RegExp(`${escapedPackage}[\\s\\S]{0,200}?v?([0-9]+\\.[0-9]+\\.[0-9]+(?:[-+][0-9A-Za-z.-]+)?)`, "gi"),
+  ];
+  for (const pattern of patterns) {
+    for (const match of text.matchAll(pattern)) {
+      versions.add(normalizeDottedVersion(match[1]));
+    }
+  }
+  return Array.from(versions);
 }
 
 function hasRedcapSignal(text, relativePath) {
