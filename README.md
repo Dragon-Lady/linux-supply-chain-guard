@@ -133,6 +133,13 @@ deprecated `/api/v1/upload/{flow_id}` route exposure, absolute upload
 `file_path` leak artifacts, public-bind review, upload-size limit markers, and
 the `LOGSPACE-LangFlow` FOFA/product fingerprint context.
 
+The June 2026 Laravel Livewire watch pack adds local deployment checks for
+`CVE-2025-54068` vulnerable `livewire/livewire` Composer versions before
+`3.6.4`, broad v3 Composer constraints requiring lockfile verification, and
+Imperva-reported shoc.enz credential-theft campaign indicators including
+`xantibot[.]pw`, `.env` harvesting, `APP_KEY`/database credential extraction,
+FTP `47.129.100.149`, Telegram, GoFile, and webhook.site exfiltration paths.
+
 The June 2026 AryStinger watch pack adds router/NAS edge-device malware checks
 for `/tmp/bin` `syswapd0`/Dropbear artifacts, port `2332` Dropbear persistence,
 `ajb8`/`auq8`/`dataexplore`/`opi7` infrastructure, and legacy
@@ -856,6 +863,14 @@ the known indicators it checks.
   https://www.ibm.com/support/pages/node/7277243
 - SecurityOnline Langflow RCE summary:
   https://securityonline.info/langflow-rce-vulnerability/
+- Imperva Laravel Livewire CVE-2025-54068 credential-theft campaign report:
+  https://www.imperva.com/blog/cve-2025-54068-laravel-livewire-credential-theft-campaign-6000-applications-compromised/
+- Synacktiv Livewire RCE through unmarshaling technical disclosure:
+  https://www.synacktiv.com/en/publications/livewire-remote-command-execution-through-unmarshaling
+- NVD CVE-2025-54068:
+  https://nvd.nist.gov/vuln/detail/CVE-2025-54068
+- Helge Sverre Livewire honeypot first-60-hours writeup:
+  https://helgesver.re/articles/livewire-honeypot-first-60-hours
 - GitHub npm v12 breaking changes notice:
   https://github.blog/changelog/2026-06-09-upcoming-breaking-changes-for-npm-v12/
 - The Hacker News npm v12 install-script default change summary:
