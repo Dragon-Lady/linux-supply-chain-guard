@@ -339,6 +339,7 @@ Exit codes:
   - `ecto-flag-read`
   - `@validate-sdk/v2`
   - `google-cloud-secret-manager-config-poc`
+  - `signup-embedder`
   - `ts-grok`
 - Checkmarx ChainVeil / SuccessKey npm indicators:
   - typosquat package names including `tailwindcss-merge`, `sass-format`,
@@ -354,7 +355,7 @@ Exit codes:
   - `free-claude`
   - `free-anthropic-claude`
   - June 23 package-cluster names such as `search-from-search`,
-    `node-fetch-utils`, `node-core-libs`, `calculate-helper`,
+    `node-fetch-utils`, `signup-embedder`, `node-core-libs`, `calculate-helper`,
     `cursorai-agent`, and `vitest-cli`
 - AtomicArch / IronWorm AUR indicators:
   - AUR `PKGBUILD`, `.SRCINFO`, and `.install` metadata that references
@@ -784,6 +785,10 @@ the known indicators it checks.
   https://supplychainattack.org/incident/malware-in-ts-grok-jjsh0j
 - GitHub Advisory Database, GHSA-qp73-r9hh-6vq9 / ts-grok npm malware:
   https://github.com/advisories/GHSA-qp73-r9hh-6vq9
+- Supply Chain Attack incident catalog, signup-embedder npm malware:
+  https://supplychainattack.org/incident/malware-in-signup-embedder-1pgybu
+- GitHub Advisory Database, GHSA-8j4q-hx83-pfq9 / signup-embedder npm malware:
+  https://github.com/advisories/GHSA-8j4q-hx83-pfq9
 - Checkmarx ChainVeil / SuccessKey npm supply-chain report:
   https://checkmarx.com/zero-post/chainveil-a-malicious-npm-supply-chain-attack-by-successkey/
 - JFrog VS Code autorun / blockchain dead-drop npm hijack report:

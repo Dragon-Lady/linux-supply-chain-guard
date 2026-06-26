@@ -15,6 +15,8 @@
 - supplychainattack.org incident catalog, @validate-sdk/v2 npm malware: https://supplychainattack.org/incident/malware-in-validate-sdk-v2-12i0so
 - Supply Chain Attack incident catalog, ts-grok npm malware: https://supplychainattack.org/incident/malware-in-ts-grok-jjsh0j
 - GitHub Advisory Database, GHSA-qp73-r9hh-6vq9 / ts-grok npm malware: https://github.com/advisories/GHSA-qp73-r9hh-6vq9
+- Supply Chain Attack incident catalog, signup-embedder npm malware: https://supplychainattack.org/incident/malware-in-signup-embedder-1pgybu
+- GitHub Advisory Database, GHSA-8j4q-hx83-pfq9 / signup-embedder npm malware: https://github.com/advisories/GHSA-8j4q-hx83-pfq9
 - Supply Chain Attack incident catalog, latest npm malware batch: https://supplychainattack.org/
 - Supply Chain Attack incident catalog, free-claude npm malware: https://supplychainattack.org/incident/malware-in-free-claude-7fjbqi
 - GitHub Advisory Database, GHSA-fgqv-2jmm-2p39 / search-from-search npm malware: https://github.com/advisories/GHSA-fgqv-2jmm-2p39
