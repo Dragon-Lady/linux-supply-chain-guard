@@ -260,6 +260,17 @@ DirtyCBC / Linux RxGK checks include:
   `RXGK_SERVER_ENC_TOKEN`, `RXRPC_CHARGE_ACCEPT`, and
   `RXRPC_CLIENT_INITIATED`
 
+DirtyClone / `CVE-2026-43503` is tracked as a DirtyFrag-family page-cache
+poisoning variant rather than as package malware. JFrog's June 25, 2026
+analysis describes a Linux local privilege-escalation path through XFRM/IPsec
+and skb cloning where `__pskb_copy_fclone` can fail to preserve
+`SKBFL_SHARED_FRAG`. The guard flags copied advisory/provenance terms such as
+`DirtyClone`, `CVE-2026-43503`, `nf_dup_ipv4`, `ip xfrm`, `TEE --gateway`,
+`CAP_NET_ADMIN`, `unshare -Urn`, `kernel.unprivileged_userns_clone=0`,
+`48f6a5356a33`, and `v7.1-rc5`. These are review leads: confirm vendor
+backport status, patch and reboot, and do not compile or run PoC material on
+production or credential-bearing hosts.
+
 Known supply-chain persistence checks include:
 
 - `/tmp/transformers.pyz`

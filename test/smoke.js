@@ -587,6 +587,13 @@ function run() {
     "aa54b1d27fe0 SKBFL_SHARED_FRAG skb_has_shared_frag RXGK_SERVER_ENC_TOKEN rxrpc_s RXRPC_CHARGE_ACCEPT RXRPC_CLIENT_INITIATED",
     "PoC notes mention poc.c and poc.py for authorized defensive validation only"
   ].join("\n"));
+  write(path.join(root, "var", "log", "dirtyclone-triage.log"), [
+    "JFrog DirtyClone CVE-2026-43503 DirtyFrag family note for Linux LPE review.",
+    "Initial DirtyFrag CVE-2026-43284 and CVE-2026-43500 plus Fragnesia CVE-2026-46300 need the full patch chain.",
+    "__pskb_copy_fclone nf_dup_ipv4 skb_shift skb_segment skb_gro_receive skb_gro_receive_list tcp_clone_payload SKBFL_SHARED_FRAG.",
+    "XFRM/IPsec esp_input() path with CAP_NET_ADMIN via unshare -Urn, ip xfrm state add, ip xfrm policy add, iptables -t mangle, TEE --gateway, and kernel.unprivileged_userns_clone=0 mitigation.",
+    "Upstream markers include 48f6a5356a33, 9e171fc1d7d7, and v7.1-rc5; PoC notes target /usr/bin/su with cbc(aes)."
+  ].join("\n"));
   write(path.join(root, "usr", "share", "man9", "ph", ".ph.man"), "captured ssh credential log placeholder\n");
   write(path.join(root, "lib", "systemd", "system", "chrom.service"), [
     "[Service]",
@@ -929,6 +936,10 @@ function run() {
   assert(ids.has("dirtycbc-rxgk-advisory-terms"));
   assert(ids.has("dirtycbc-rxgk-poc-artifact"));
   assert(ids.has("dirtycbc-rxgk-text-indicator"));
+  assert(ids.has("dirtyclone-reference"));
+  assert(ids.has("dirtyclone-advisory-terms"));
+  assert(ids.has("dirtyclone-poc-artifact"));
+  assert(ids.has("dirtyclone-text-indicator"));
   assert(ids.has("operation-highland-ioc-path"));
   assert(ids.has("operation-highland-tool-filename"));
   assert(ids.has("operation-highland-network-indicator"));

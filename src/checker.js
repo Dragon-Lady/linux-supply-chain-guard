@@ -1452,6 +1452,35 @@ const DIRTYCBC_RXGK_TEXT_INDICATORS = [
   "decrypt-before-MAC",
 ];
 
+const DIRTYCLONE_TEXT_INDICATORS = [
+  "DirtyClone",
+  "CVE-2026-43503",
+  "DirtyFrag",
+  "CVE-2026-43284",
+  "CVE-2026-43500",
+  "CVE-2026-46300",
+  "__pskb_copy_fclone",
+  "nf_dup_ipv4",
+  "skb_shift",
+  "skb_segment",
+  "skb_gro_receive",
+  "skb_gro_receive_list",
+  "tcp_clone_payload",
+  "SKBFL_SHARED_FRAG",
+  "esp_input()",
+  "XFRM/IPsec",
+  "ip xfrm state add",
+  "ip xfrm policy add",
+  "iptables -t mangle",
+  "TEE --gateway",
+  "unshare -Urn",
+  "CAP_NET_ADMIN",
+  "kernel.unprivileged_userns_clone=0",
+  "v7.1-rc5",
+  "48f6a5356a33",
+  "9e171fc1d7d7",
+];
+
 const SHAPEDPLUGIN_KNOWN_HASHES = new Map([
   ["0e17c869d3e4586d4c160041042bd15123c2a37117a98a995fae885f0f4417fc", "ShapedPlugin LicenseLoader.php loader"],
 ]);
@@ -1810,6 +1839,7 @@ function scanHost(options = {}) {
   checkItScapeArm64Kvm(findings, targetRoot, kernelRelease, architecture);
   checkKernelModules(findings, targetRoot);
   checkDirtyCbcRxgk(findings, targetRoot, homePath);
+  checkDirtyClone(findings, targetRoot, homePath);
   checkPersistence(findings, targetRoot, homePath);
   checkCompromisedNpmPackages(findings, targetRoot, homePath);
   checkChainVeilNpmCampaign(findings, targetRoot, homePath);
@@ -2026,7 +2056,7 @@ function checkKernelModules(findings, targetRoot) {
   );
   const risky = ["esp4", "esp6", "rxrpc"].filter((name) => loaded.has(name));
   if (risky.length > 0) {
-    addFinding(findings, "warning", "fragnesia-risk-modules-loaded", "Fragnesia-related kernel modules are currently loaded.", risky.join(", "), "If these modules are not required for IPsec ESP or AFS/rxrpc workloads, apply vendor-approved mitigations and patch/reboot.");
+    addFinding(findings, "warning", "fragnesia-risk-modules-loaded", "DirtyFrag-family kernel modules are currently loaded.", risky.join(", "), "If these modules are not required for IPsec ESP or AFS/rxrpc workloads, apply vendor-approved mitigations and patch/reboot.");
   }
 
   const modprobeText = readDirectoryText(modprobeDir);
@@ -2035,7 +2065,7 @@ function checkKernelModules(findings, targetRoot) {
     return !pattern.test(modprobeText);
   });
   if (missing.length > 0) {
-    addFinding(findings, "review", "fragnesia-module-blacklist-not-confirmed", "Temporary Fragnesia module blacklist was not fully confirmed.", `missing install /bin/false entries: ${missing.join(", ")}`, "This is only a mitigation check. Prefer patched kernels and reboot when available.");
+    addFinding(findings, "review", "fragnesia-module-blacklist-not-confirmed", "Temporary DirtyFrag-family module blacklist was not fully confirmed.", `missing install /bin/false entries: ${missing.join(", ")}`, "This is only a mitigation check. Prefer patched kernels and reboot when available.");
   }
 }
 
@@ -2078,6 +2108,51 @@ function checkDirtyCbcRxgk(findings, targetRoot, homePath) {
     for (const indicator of DIRTYCBC_RXGK_TEXT_INDICATORS) {
       if (text.includes(indicator) && /DirtyCBC|RxGK|AF_RXRPC|rxrpc|MSG_SPLICE_PAGES|page-cache/i.test(haystack)) {
         addFinding(findings, "review", "dirtycbc-rxgk-text-indicator", "DirtyCBC/RxGK advisory term appears in scanned metadata.", `${relative}: ${indicator}`, "Correlate with kernel version, vendor backport status, loaded rxrpc/AFS usage, and whether any local PoC material is authorized.");
+      }
+    }
+  }
+}
+
+function checkDirtyClone(findings, targetRoot, homePath) {
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const roots = [
+    homeRelative,
+    "/etc",
+    "/opt",
+    "/srv",
+    "/var/log",
+    "/root",
+    "/mnt",
+    "/media",
+  ].filter(Boolean);
+  const files = [];
+  for (const root of roots) {
+    files.push(...findWatchFiles(mapLinuxPath(targetRoot, root), 25000 - files.length));
+    if (files.length >= 25000) break;
+  }
+
+  for (const filePath of files) {
+    const text = readText(filePath);
+    if (!text) continue;
+    const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+    const haystack = `${relative}\n${text}`;
+    const hasDirtyCloneContext = /DirtyClone|CVE-2026-43503|DirtyFrag|CVE-2026-43284|CVE-2026-43500|CVE-2026-46300/i.test(haystack);
+
+    if (/DirtyClone|CVE-2026-43503/i.test(haystack)) {
+      addFinding(findings, "review", "dirtyclone-reference", "DirtyClone / CVE-2026-43503 reference appears in scanned metadata.", relative, "Use this as a Linux kernel patch and research-artifact review lead. Confirm vendor-fixed kernel status and avoid running PoCs on production or credential-bearing hosts.");
+    }
+
+    if (hasDirtyCloneContext && /__pskb_copy_fclone|nf_dup_ipv4|skb_shift|skb_segment|skb_gro_receive|skb_gro_receive_list|tcp_clone_payload|SKBFL_SHARED_FRAG|esp_input\(\)|XFRM\/IPsec|ip xfrm|TEE --gateway|CAP_NET_ADMIN|unprivileged_userns_clone/i.test(haystack)) {
+      addFinding(findings, "warning", "dirtyclone-advisory-terms", "DirtyClone / DirtyFrag-family page-cache poisoning terms appear in scanned metadata.", relative, "Treat this as a host-kernel exposure review lead. Patch and reboot; do not rely on direct disk reads alone because the reported primitive mutates page-cache-backed executable memory.");
+    }
+
+    if (hasDirtyCloneContext && /(?:poc\.c|poc\.py|proof-of-concept|PoC|unshare -Urn|ip xfrm state add|ip xfrm policy add|iptables -t mangle|TEE --gateway|cbc\(aes\)|\/usr\/bin\/su)/i.test(haystack)) {
+      addFinding(findings, "review", "dirtyclone-poc-artifact", "DirtyClone exploit-construction or PoC marker appears in scanned metadata.", relative, "Verify this is authorized research material. Do not compile, execute, or open untrusted PoC trees in agents until the repo has been scanned and isolated.");
+    }
+
+    for (const indicator of DIRTYCLONE_TEXT_INDICATORS) {
+      if (text.includes(indicator) && hasDirtyCloneContext) {
+        addFinding(findings, "review", "dirtyclone-text-indicator", "DirtyClone advisory term appears in scanned metadata.", `${relative}: ${indicator}`, "Correlate with kernel version, vendor backport status, unprivileged user namespace policy, CAP_NET_ADMIN exposure, and loaded IPsec/RxRPC modules.");
       }
     }
   }

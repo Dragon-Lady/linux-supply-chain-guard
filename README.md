@@ -282,7 +282,7 @@ Exit codes:
   - AlmaLinux 8: `kernel-4.18.0-553.124.2.el8_10` and above
   - AlmaLinux 9: `kernel-5.14.0-611.54.4.el9_7` and above
   - AlmaLinux 10: `kernel-6.12.0-124.56.2.el10_1` and above
-- Fragnesia-related module state for `esp4`, `esp6`, and `rxrpc`.
+- DirtyFrag-family module state for `esp4`, `esp6`, and `rxrpc`.
 - Temporary module blacklist confirmation in `/etc/modprobe.d`.
 - ITScape / `CVE-2026-46316` ARM64 KVM posture:
   - ARM64/aarch64 architecture detection from scanner options, `/proc/cpuinfo`,
@@ -301,6 +301,15 @@ Exit codes:
   - public PoC/provenance markers such as `poc.c`, `poc.py`,
     `RXGK_SERVER_ENC_TOKEN`, `RXRPC_CHARGE_ACCEPT`, and
     `RXRPC_CLIENT_INITIATED`
+- DirtyClone / `CVE-2026-43503` review indicators:
+  - `DirtyClone`, `DirtyFrag`, `CVE-2026-43503`, `CVE-2026-43284`,
+    `CVE-2026-43500`, and `CVE-2026-46300` advisory terms
+  - clone-path markers such as `__pskb_copy_fclone`, `nf_dup_ipv4`,
+    `skb_shift`, `skb_segment`, `skb_gro_receive`, and `tcp_clone_payload`
+  - XFRM/IPsec, `CAP_NET_ADMIN`, `unshare -Urn`, `ip xfrm`, `TEE --gateway`,
+    `esp_input()`, and `kernel.unprivileged_userns_clone=0` terms
+  - upstream fix/release markers including `48f6a5356a33`, `9e171fc1d7d7`,
+    `v7.1-rc5`, and `SKBFL_SHARED_FRAG`
 - Known Shai-Hulud / Here We Go Again persistence and payload paths:
   - `/tmp/transformers.pyz`
   - `gh-token-monitor.service`
@@ -710,6 +719,8 @@ the known indicators it checks.
   https://nvd.nist.gov/vuln/detail/CVE-2026-46300
 - Delphos Labs DirtyCBC / Linux RxGK decrypt-before-MAC analysis:
   https://delphoslabs.com/blog/36142374-e1fe-80a9-9456-d3c64df81bd5/%20linux-rxgk-decrypt-mac
+- JFrog DirtyClone / CVE-2026-43503 analysis:
+  https://research.jfrog.com/post/dissecting-and-exploiting-linux-lpe-variant-dirtyclone-cve-2026-43503/
 - Cyber Security News on ITScape / CVE-2026-46316 ARM64 KVM guest-to-host
   escape PoC:
   https://cybersecuritynews.com/poc-exploit-released-linux-kernel-vulnerability/
