@@ -87,6 +87,8 @@
 - CISA Known Exploited Vulnerabilities entry for CVE-2025-49113: https://www.cisa.gov/known-exploited-vulnerabilities-catalog?field_cve=CVE-2025-49113
 - Hackers Arise Roundcube CVE-2025-49113 RCE walkthrough: https://hackers-arise.com/critical-remote-code-execution-rce-in-roundcube-cve-2025-49113-your-email-is-not-safe/
 - Hackread, Argamal malware hidden in working hentai games: https://hackread.com/hackers-hide-argamal-malware-hentai-games/
+- Malwarebytes PixelSmash / FFmpeg CVE-2026-8461 summary: https://www.malwarebytes.com/blog/news/2026/06/pixelsmash-flaw-turns-video-files-into-attack-tools
+- JFrog PixelSmash technical analysis: https://jfrog.com/blog/pixelsmash-critical-ffmpeg-vulnerability-turns-media-files-into-weapons/
 - SecurityOnline HAProxy `CVE-2026-55203` / `CVE-2026-55204` summary: https://securityonline.info/haproxy-vulnerabilities-cve-2026-55203/
 - HAProxy upstream FastCGI demux record-length fix: https://github.com/haproxy/haproxy/commit/5985276735777634d8c85f1d73bb7764aab0d6dd
 - HAProxy upstream HPACK dynamic-table NULL-check fix: https://github.com/haproxy/haproxy/commit/9a6d1fe3f00d86ab4ea6ea6ea0a5d48fc058a513

@@ -1,8 +1,8 @@
 {
   "incident": "Linux supply-chain host exposure guard",
-  "lastUpdated": "2026-06-25",
+  "lastUpdated": "2026-06-26",
   "scope": {
-    "postureChecks": "Read-only Linux host checks for vulnerable kernel posture, risky module state, ITScape ARM64 KVM exposure, DirtyCBC/RxGK page-cache poisoning research-artifact leads, known supply-chain persistence paths, selected compromised npm package references, AtomicArch/IronWorm AUR indicators, DPRK npm RAT dependency indicators, OtterCookie npm indicators, Hades PyPI/Miasma indicators, Agentjacking Sentry/MCP exposure indicators, Solana FakeFix/CMS loader indicators, GlassWASM/Open VSX extension indicators, VS Code folder-open npm autorun indicators, Heaven's Gate WOW64 evasion review indicators, Palo Alto GlobalProtect CVE-2026-0257 log-hunting indicators, Operation Highland / Velvet Ant auth-stack indicators, and TeamPCP/Dynatrace weak-signal exposure indicators.",
+    "postureChecks": "Read-only Linux host checks for vulnerable kernel posture, risky module state, ITScape ARM64 KVM exposure, DirtyCBC/RxGK page-cache poisoning research-artifact leads, known supply-chain persistence paths, selected compromised npm package references, AtomicArch/IronWorm AUR indicators, DPRK npm RAT dependency indicators, OtterCookie npm indicators, Hades PyPI/Miasma indicators, Agentjacking Sentry/MCP exposure indicators, Solana FakeFix/CMS loader indicators, GlassWASM/Open VSX extension indicators, VS Code folder-open npm autorun indicators, FFmpeg PixelSmash/MagicYUV media-processing exposure, Heaven's Gate WOW64 evasion review indicators, Palo Alto GlobalProtect CVE-2026-0257 log-hunting indicators, Operation Highland / Velvet Ant auth-stack indicators, and TeamPCP/Dynatrace weak-signal exposure indicators.",
     "notInScope": "No exploit testing, malware execution, automatic cleanup, token revocation, or claims that a host is clean.",
     "fragnesia": "CVE-2026-46300 affects supported AlmaLinux releases through esp4, esp6, and in some AlmaLinux 9/10 cases rxrpc. Built-in patched kernel thresholds follow AlmaLinux's May 13, 2026 disclosure.",
     "itscapeArm64Kvm": "CVE-2026-46316 / ITScape affects ARM64 KVM hosts through a vGIC-ITS race condition. The guard flags ARM64 KVM exposure and asks operators to verify vendor-fixed kernels or backports, with upstream 6.15.0 used as a review baseline.",
@@ -26,6 +26,7 @@
     "joomlaSpPageBuilder48908": "Checks local and mounted-root metadata for Censys-reported Joomla SP Page Builder CVE-2026-48908, affected versions 1.0.0 through 6.6.1, active exploitation notes, unauthenticated file-upload language, and potential RCE triage terms.",
     "dcatAuthGoogle2fa": "Checks local and mounted-root metadata for Nextron-reported malicious Packagist dcat-auth-google-2fa@1.0.2.0, r.keepex.xyz credential exfiltration, hardcoded 2FA bypass marker 979890, and obfuscated PHP co-occurrence.",
     "vscodeAutorunBlockchainNpm": "Checks local and mounted-root metadata for JFrog-reported hijacked html-to-gutenberg@4.2.11 and fetch-page-assets@1.2.9 npm versions, VS Code/Cursor folder-open tasks launching public/fonts/fa-solid-400.woff2, reported C2 and blockchain dead-drop strings, fake-font SHA-256 hashes, and Nextron's Go-package reuse lead as OSINT correlation.",
+    "ffmpegPixelSmash8461": "Checks local and mounted-root metadata for JFrog/Malwarebytes-reported FFmpeg PixelSmash CVE-2026-8461 MagicYUV decoder exposure, FFmpeg/libavcodec package posture, media ingestion surfaces, and MagicYUV disablement notes.",
     "operationHighland": "Checks Sygnia Operation Highland / Velvet Ant indicators including published SHA-1 values, hidden credential-log paths, GS-Netcat/auditdb staging, Nginx/FastCGI bridge artifacts, C2/infrastructure strings, and process-masquerade markers.",
     "autoJackAgentLocalhost": "Checks Microsoft AutoJack / AutoGen Studio local MCP control-plane posture terms including AutoGen Studio, StdioServerParams, server_params, /api/mcp/ws, localhost:8081, b047730, and reported autogenstudio pre-release versions. These are review prompts for agent-localhost trust-boundary risk."
   },
@@ -75,6 +76,8 @@
     "https://x.com/nextronresearch",
     "https://www.bleepingcomputer.com/news/security/amadey-stealc-malware-operations-disrupted-in-operation-endgame-action/",
     "https://www.proofpoint.com/us/blog/threat-insight/stealc-you-later-proofpoint-and-ibm-x-force-support-operation-endgame",
+    "https://www.malwarebytes.com/blog/news/2026/06/pixelsmash-flaw-turns-video-files-into-attack-tools",
+    "https://jfrog.com/blog/pixelsmash-critical-ffmpeg-vulnerability-turns-media-files-into-weapons/",
     "https://www.microsoft.com/en-us/security/blog/2026/06/18/autojack-single-page-rce-host-running-ai-agent/",
     "https://thehackernews.com/2026/06/autojack-attack-lets-one-web-page.html"
   ]

@@ -865,6 +865,8 @@ the known indicators it checks.
   https://thehackernews.com/2026/06/29-year-old-squid-proxy-bug-squidbleed.html
 - BleepingComputer PixelSmash / FFmpeg `CVE-2026-8461` summary:
   https://www.bleepingcomputer.com/news/security/ffmpeg-fixes-pixelsmash-flaw-in-widely-used-video-decoder/
+- Malwarebytes PixelSmash / FFmpeg `CVE-2026-8461` summary:
+  https://www.malwarebytes.com/blog/news/2026/06/pixelsmash-flaw-turns-video-files-into-attack-tools
 - JFrog PixelSmash technical analysis:
   https://jfrog.com/blog/pixelsmash-critical-ffmpeg-vulnerability-turns-media-files-into-weapons/
 - SecurityOnline HAProxy `CVE-2026-55203` / `CVE-2026-55204` summary:
