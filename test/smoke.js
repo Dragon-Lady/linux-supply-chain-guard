@@ -765,6 +765,17 @@ function run() {
     "WebDialer SSRF server-side request forgery can write files to the underlying operating system and elevate to root.",
     "Defused OSINT escalation: automated sweeps dropping webshells via Tor, full-chain exploitation observed.",
   ].join("\n"));
+  write(path.join(root, "var", "log", "cisco-sdwan-manager-2026.txt"), [
+    "Google Threat Intelligence Group Cisco Catalyst SD-WAN Manager vManage CVE-2026-20245 CVE-2026-20127 CVE-2026-20182.",
+    "Fixed releases include 20.9.9.2, 20.12.7.2, 20.15.4.5, 20.15.5.3, 20.18.3.1, and 26.1.1.2.",
+    "Rogue peer indicator 126.51.108[.]152 connected to Cisco SD-WAN Manager.",
+    "vmanage-admin default account used for SSH; admin password changed and reverted; edge device templates and running configurations exported.",
+    "Run request admin-tech and review /var/log/scripts.log and /var/log/auth.log.",
+    "Jan 01 08:01:05 vManage vScript: Tenant list upload per vsmart serial number: /usr/bin/vconfd_script_upload_tenant_list.sh -cli path /home/admin/evil_tenant.csv vpn 0",
+    "01-01 08:01:05 -- request tenant-upload tenant-list /home/admin/evil_tenant.csv vpn 0",
+    "Jan 01 08:03:00 vManage su[24289]: Successful su for troot by admin; /etc/passwd /etc/shadow UID 0 root privileges.",
+    "Rollback restored vbond_vsmart_tenant_list.",
+  ].join("\n"));
   write(path.join(root, "var", "log", "exchange-cve-2026-45504.txt"), [
     "Microsoft Exchange Server 2016 Cumulative Update 23 CVE-2026-45504 PT-2026-47976",
     "Server-side request forgery SSRF can allow an authorized attacker to elevate privileges over a network.",
@@ -1030,6 +1041,14 @@ function run() {
   assert(ids.has("cisco-cucm-webdialer-ssrf-review"));
   assert(ids.has("cisco-cucm-webdialer-webshell-exploitation-review"));
   assert(ids.has("cisco-cucm-webdialer-text-indicator"));
+  assert(ids.has("cisco-sdwan-manager-cve-2026-20245-reference"));
+  assert(ids.has("cisco-sdwan-manager-auth-bypass-cve-reference"));
+  assert(ids.has("cisco-sdwan-manager-tenant-upload-exploit-marker"));
+  assert(ids.has("cisco-sdwan-manager-root-account-artifact"));
+  assert(ids.has("cisco-sdwan-manager-management-plane-review"));
+  assert(ids.has("cisco-sdwan-manager-fixed-release-reference"));
+  assert(ids.has("cisco-sdwan-manager-rogue-peer-ip"));
+  assert(ids.has("cisco-sdwan-manager-text-indicator"));
   assert(ids.has("exchange-cve-2026-45504-reference"));
   assert(ids.has("exchange-cve-2026-45504-ssrf-file-read-review"));
   assert(ids.has("exchange-cve-2026-45504-poc-artifact"));

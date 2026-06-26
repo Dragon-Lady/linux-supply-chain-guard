@@ -148,6 +148,13 @@ SME, WebDialer SSRF, file-write-to-root escalation terms, Cisco advisory
 `cisco-sa-cucm-ssrf-cXPnHcW`, and OSINT-reported full-chain webshell/Tor
 exploitation language.
 
+The June 2026 Cisco Catalyst SD-WAN Manager watch pack adds local/mounted-root
+triage checks for GTIG-reported exploitation involving `CVE-2026-20245`,
+`CVE-2026-20127`, and `CVE-2026-20182`, rogue peer IP indicators,
+`evil_tenant.csv`, `vconfd_script_upload_tenant_list.sh`, tenant-list upload
+history, `troot` UID 0 artifacts, `vmanage-admin` default-account activity,
+`/var/log/scripts.log`, `/var/log/auth.log`, and fixed-release references.
+
 The June 2026 Microsoft Exchange watch pack adds local/mounted-root triage
 checks for `CVE-2026-45502` EWS `InstallApp` / `ManifestUrl` SSRF,
 `CVE-2026-45504` SSRF/file-read privilege-escalation language, Microsoft
@@ -451,6 +458,15 @@ Exit codes:
   - file-write and root-escalation language from the Cisco/NVD record
   - OSINT escalation terms for full-chain exploitation, webshell drops, Tor, or
     automated sweeps
+- Cisco Catalyst SD-WAN Manager zero-day log-hunting indicators:
+  - `CVE-2026-20245`, `CVE-2026-20127`, and `CVE-2026-20182`
+  - Rogue peer IP indicators from GTIG reporting
+  - `evil_tenant.csv`, `vconfd_script_upload_tenant_list.sh`, and
+    `request tenant-upload tenant-list`
+  - `troot`, `/etc/passwd`, `/etc/shadow`, `/var/log/scripts.log`, and
+    `/var/log/auth.log`
+  - Fixed-release references including `20.9.9.2`, `20.12.7.2`, `20.15.4.5`,
+    `20.15.5.3`, `20.18.3.1`, and `26.1.1.2`
 - REDCap exposure posture indicators:
   - REDCap version references older than `17.1.3`, the latest version cited by
     Censys/SecurityWeek on 2026-06-16
@@ -885,6 +901,10 @@ the known indicators it checks.
   https://nvd.nist.gov/vuln/detail/CVE-2026-20230
 - Cisco Unified Communications Manager WebDialer SSRF advisory:
   https://sec.cloudapps.cisco.com/security/center/content/CiscoSecurityAdvisory/cisco-sa-cucm-ssrf-cXPnHcW
+- Google Threat Intelligence Group, Cisco Catalyst SD-WAN Manager zero-day exploitation:
+  https://cloud.google.com/blog/topics/threat-intelligence/zero-day-exploitation-cisco-catalyst-sd-wan-manager/
+- Cyber Security News, Cisco Catalyst SD-WAN Manager 0-day summary:
+  https://cybersecuritynews.com/cisco-catalyst-sd-wan-manager-0-day/
 - Microsoft MSRC Update Guide for `CVE-2026-45504`:
   https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-45504
 - hawktrace public PoC repository for `CVE-2026-45504`:

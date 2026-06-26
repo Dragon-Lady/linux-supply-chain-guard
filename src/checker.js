@@ -1683,6 +1683,57 @@ const CISCO_CUCM_WEB_DIALER_TEXT_INDICATORS = [
   "Tor",
 ];
 
+const CISCO_SD_WAN_MANAGER_FIXED_RELEASES = [
+  "20.9.9.2",
+  "20.12.7.2",
+  "20.15.4.5",
+  "20.15.5.3",
+  "20.18.3.1",
+  "26.1.1.2",
+];
+
+const CISCO_SD_WAN_MANAGER_ROGUE_PEER_IPS = [
+  "126.51.108.152",
+  "126.51.108[.]152",
+  "76.92.245.217",
+  "76.92.245[.]217",
+  "207.190.37.94",
+  "207.190.37[.]94",
+  "23.245.7.178",
+  "23.245.7[.]178",
+  "153.186.231.233",
+  "153.186.231[.]233",
+  "167.179.79.189",
+  "167.179.79[.]189",
+  "45.32.38.160",
+  "45.32.38[.]160",
+  "209.137.225.101",
+  "209.137.225[.]101",
+];
+
+const CISCO_SD_WAN_MANAGER_TEXT_INDICATORS = [
+  "Cisco Catalyst SD-WAN Manager",
+  "Cisco Catalyst SD-WAN Controller",
+  "Cisco SD-WAN Manager",
+  "vManage",
+  "CVE-2026-20245",
+  "CVE-2026-20127",
+  "CVE-2026-20182",
+  "vmanage-admin",
+  "netadmin",
+  "evil_tenant.csv",
+  "troot",
+  "vbond_vsmart_tenant_list",
+  "request tenant-upload tenant-list",
+  "vconfd_script_upload_tenant_list.sh",
+  "/var/log/scripts.log",
+  "/var/log/auth.log",
+  "request admin-tech",
+  "Tenant list upload per vsmart serial number",
+  "Privileged Account Append to Passwd Database",
+  "Hidden Backup of Sensitive System Files",
+];
+
 const EXCHANGE_CVE202645502_TEXT_INDICATORS = [
   "CVE-2026-45502",
   "Microsoft Exchange Server EWS InstallApp",
@@ -1933,6 +1984,7 @@ function scanHost(options = {}) {
   checkOperationHighlandAuthStack(findings, targetRoot, homePath);
   checkAryStingerEdgeProxy(findings, targetRoot, homePath);
   checkCisaKevEdgeDeviceLatest(findings, targetRoot, homePath);
+  checkCiscoSdWanManager2026(findings, targetRoot, homePath);
   checkCiscoCucmWebDialer20230(findings, targetRoot, homePath);
   checkExchangeCve202645504(findings, targetRoot, homePath);
   checkTransformersPayload(findings, targetRoot);
@@ -5007,6 +5059,70 @@ function checkCiscoCucmWebDialer20230(findings, targetRoot, homePath) {
     for (const indicator of CISCO_CUCM_WEB_DIALER_TEXT_INDICATORS) {
       if (text.includes(indicator) && /CVE-2026-20230|Cisco|Unified Communications Manager|Unified CM|CUCM|WebDialer|Web Dialer/i.test(text)) {
         addFinding(findings, "review", "cisco-cucm-webdialer-text-indicator", "Cisco CUCM/WebDialer CVE-2026-20230 advisory term appears in scanned metadata.", `${relative}: ${indicator}`, "Use this as an inventory and triage lead for Cisco Unified CM / Unified CM SME WebDialer SSRF exposure.");
+      }
+    }
+  }
+}
+
+function checkCiscoSdWanManager2026(findings, targetRoot, homePath) {
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const roots = [
+    homeRelative,
+    "/etc",
+    "/opt",
+    "/srv",
+    "/var/log",
+    "/root",
+    "/mnt",
+    "/media",
+  ].filter(Boolean);
+  const files = [];
+  for (const root of roots) {
+    files.push(...findWatchFiles(mapLinuxPath(targetRoot, root), 25000 - files.length));
+    if (files.length >= 25000) break;
+  }
+
+  for (const filePath of files) {
+    const text = readText(filePath);
+    if (!text) continue;
+    const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+    const hasSdWanContext = /Cisco Catalyst SD-WAN|Cisco SD-WAN|vManage|viptela|vbond|vsmart|tenant-upload|vconfd_script_upload_tenant_list/i.test(text);
+
+    if (/CVE-2026-20245/i.test(text)) {
+      addFinding(findings, "critical", "cisco-sdwan-manager-cve-2026-20245-reference", "Cisco Catalyst SD-WAN Manager CVE-2026-20245 reference appears in scanned metadata.", `${relative}: CVE-2026-20245`, "Inventory Catalyst SD-WAN Manager/control-plane appliances, upgrade to Cisco fixed releases, collect request admin-tech output, and preserve scripts/auth logs before cleanup.");
+    }
+
+    if (/CVE-2026-20127|CVE-2026-20182/i.test(text)) {
+      addFinding(findings, "critical", "cisco-sdwan-manager-auth-bypass-cve-reference", "Cisco Catalyst SD-WAN controller authentication-bypass CVE reference appears in scanned metadata.", relative, "Treat this as a management-plane compromise lead. Review rogue device peering, vmanage-admin/default account activity, and unauthorized admin password changes.");
+    }
+
+    if (hasSdWanContext && /(?:evil_tenant\.csv|vconfd_script_upload_tenant_list\.sh|request tenant-upload tenant-list|Tenant list upload per vsmart serial number|\/var\/log\/scripts\.log)/i.test(text)) {
+      addFinding(findings, "critical", "cisco-sdwan-manager-tenant-upload-exploit-marker", "Cisco SD-WAN Manager tenant-upload exploitation marker appears in scanned metadata.", relative, "Review /var/log/scripts.log and Viptela CLI history for tenant-list uploads, preserve the uploaded CSV if present, and assume root-level compromise if unauthorized execution is confirmed.");
+    }
+
+    if (hasSdWanContext && /(?:troot|Successful su for troot by admin|\/etc\/passwd|\/etc\/shadow)[\s\S]{0,260}(?:UID 0|root privileges|su|admin)|(?:UID 0|root privileges|su|admin)[\s\S]{0,260}(?:troot|\/etc\/passwd|\/etc\/shadow)/i.test(text)) {
+      addFinding(findings, "critical", "cisco-sdwan-manager-root-account-artifact", "Cisco SD-WAN Manager root-account artifact appears in scanned metadata.", relative, "Preserve /etc/passwd, /etc/shadow, /var/log/auth.log, rollback files, and command history. Rebuild or follow Cisco TAC guidance before trusting the appliance.");
+    }
+
+    if (hasSdWanContext && /(?:vmanage-admin|default account|admin password|rogue peer|unauthorized peering|device templates|running configurations)/i.test(text)) {
+      addFinding(findings, "warning", "cisco-sdwan-manager-management-plane-review", "Cisco SD-WAN management-plane compromise terms appear in scanned metadata.", relative, "Review SSH/web logins, admin password changes, rogue peer connections, and configuration exports across SD-WAN Manager, vBond, vSmart, and edge devices.");
+    }
+
+    for (const version of CISCO_SD_WAN_MANAGER_FIXED_RELEASES) {
+      if (text.includes(version) && hasSdWanContext) {
+        addFinding(findings, "review", "cisco-sdwan-manager-fixed-release-reference", "Cisco SD-WAN Manager fixed-release marker appears in scanned metadata.", `${relative}: ${version}`, "Use this as patch-target evidence, not proof the appliance is currently fixed. Confirm running release directly on each control-plane component.");
+      }
+    }
+
+    for (const indicator of CISCO_SD_WAN_MANAGER_ROGUE_PEER_IPS) {
+      if (text.includes(indicator)) {
+        addFinding(findings, "critical", "cisco-sdwan-manager-rogue-peer-ip", "GTIG-reported Cisco SD-WAN rogue peer IP indicator appears in scanned metadata.", `${relative}: ${indicator}`, "Correlate SD-WAN Manager, vBond, firewall, VPN, SSH, and proxy logs for rogue peering and follow Cisco TAC/IR containment guidance.");
+      }
+    }
+
+    for (const indicator of CISCO_SD_WAN_MANAGER_TEXT_INDICATORS) {
+      if (text.includes(indicator) && (hasSdWanContext || /CVE-2026-20245|CVE-2026-20127|CVE-2026-20182/i.test(text))) {
+        addFinding(findings, "review", "cisco-sdwan-manager-text-indicator", "Cisco Catalyst SD-WAN Manager advisory term appears in scanned metadata.", `${relative}: ${indicator}`, "Use this as an inventory, patch-verification, and log-hunting lead for the GTIG-reported Catalyst SD-WAN Manager exploitation chain.");
       }
     }
   }
