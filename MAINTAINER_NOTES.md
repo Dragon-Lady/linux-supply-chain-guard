@@ -37,6 +37,8 @@ Windows scheduled canary task:
 - ITScape / `CVE-2026-46316` ARM64 KVM exposure posture.
 - DirtyClone / `CVE-2026-43503` DirtyFrag-family advisory and PoC-provenance
   metadata.
+- Adblock for YouTube / BadBlocker browser-extension inventory and scriptlet
+  injection review metadata.
 - Loaded `esp4`, `esp6`, and `rxrpc` module state.
 - Temporary module blacklist visibility.
 - Known Shai-Hulud / Here We Go Again Linux persistence paths.

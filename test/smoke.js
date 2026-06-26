@@ -490,6 +490,23 @@ function run() {
     "a08d8e63b0cd3638fb40b8e6da546e26da69439597565827f9cec87915f78568 3d1158884fb339b3328bd330fcc27598e1f1c94bcac39e75d1a272afa4deee1a",
     "Python backdoor can Collect and send system information, Run Python code, Retrieve a list of running processes, execute PowerShell commands, and write extension.log with request_id"
   ].join("\n"));
+  write(path.join(root, "home", "alice", ".config", "google-chrome", "Default", "Extensions", "cmedhionkhpnakcndndgjdbohmhepckk", "6.8.0", "manifest.json"), JSON.stringify({
+    manifest_version: 3,
+    name: "Adblock for YouTube",
+    version: "6.8.0",
+    permissions: ["scripting", "storage"],
+    host_permissions: ["<all_urls>"],
+    background: { service_worker: "background.js" }
+  }, null, 2));
+  write(path.join(root, "home", "alice", ".config", "google-chrome", "Default", "Extensions", "cmedhionkhpnakcndndgjdbohmhepckk", "6.8.0", "background.js"), [
+    "Island BadBlocker triage: cmedhionkhpnakcndndgjdbohmhepckk Adblock for YouTube.",
+    "Related removed IDs: onomjaelhagjjojbkcafidnepbfkpnee ogcaehilgakehloljjmajoempaflmdci gekoepiplklhniacchbbgbhilidiojmb.",
+    "Network: api.adblock-for-youtube.com get.adblock-for-youtube.com api.extensionplay.com cdn.unistream.io api.unistream.io.",
+    "const scripletsRules = [{ name: 'trusted-create-element', args: ['script'] }];",
+    "chrome.scripting.executeScript({ target: { tabId }, world: 'MAIN', func: () => document.createElement('script') });",
+    "if (/youtube\\.com/.test(location.href)) runRules(scripletsRules);",
+    "The report calls this a remote-controlled injection path and notes youtube.com anywhere in the URL."
+  ].join("\n"));
   write(path.join(root, "opt", "triage", "wow64-evasion-note.txt"), [
     "Heaven's Gate / Wow64Transition suspected.",
     "32-bit process launches 64-bit shellcode for EDR evasion after injection.",
@@ -894,6 +911,12 @@ function run() {
   assert(ids.has("edgecution-edge-appkey-registry"));
   assert(ids.has("edgecution-python-backdoor-behavior"));
   assert(ids.has("edgecution-text-indicator"));
+  assert(ids.has("adblock-youtube-extension-id-path"));
+  assert(ids.has("adblock-youtube-extension-id-reference"));
+  assert(ids.has("adblock-youtube-network-indicator"));
+  assert(ids.has("adblock-youtube-text-indicator"));
+  assert(ids.has("adblock-youtube-remote-scriptlet-injection-shape"));
+  assert(ids.has("adblock-youtube-url-gate-review"));
   assert(ids.has("heavens-gate-wow64-evasion-marker"));
   assert(ids.has("argamal-game-rat-file-name"));
   assert(ids.has("argamal-game-rat-network-indicator"));
