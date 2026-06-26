@@ -293,6 +293,18 @@ and skb cloning where `__pskb_copy_fclone` can fail to preserve
 backport status, patch and reboot, and do not compile or run PoC material on
 production or credential-bearing hosts.
 
+Pedit COW / `CVE-2026-46331` is tracked in the same Linux kernel exposure
+lane. Public reporting and distro trackers describe a local privilege
+escalation path in the traffic-control `act_pedit` code path under
+`net/sched/act_pedit.c`, with page-cache corruption impact and Dirty COW-style
+copy-on-write implications. The guard flags copied advisory/provenance terms
+such as `Pedit COW`, `CVE-2026-46331`, `tcf_pedit_act`, `tc pedit`,
+`TCA_PEDIT_KEY_EX`, `skb_ensure_writable`, `skb_linearize`, `cls_u32`,
+`CAP_NET_ADMIN`, `unprivileged user namespace`, and
+`kernel.unprivileged_userns_clone=0`. These are review leads: verify distro
+backport status, patch and reboot, review traffic-control module exposure, and
+do not compile or run PoC material on production or credential-bearing hosts.
+
 Known supply-chain persistence checks include:
 
 - `/tmp/transformers.pyz`

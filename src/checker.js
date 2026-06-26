@@ -1531,6 +1531,26 @@ const DIRTYCLONE_TEXT_INDICATORS = [
   "9e171fc1d7d7",
 ];
 
+const PEDIT_COW_TEXT_INDICATORS = [
+  "Pedit COW",
+  "CVE-2026-46331",
+  "act_pedit",
+  "net/sched/act_pedit.c",
+  "tcf_pedit_act",
+  "tc pedit",
+  "skb_ensure_writable",
+  "skb_linearize",
+  "TCA_PEDIT_KEY_EX",
+  "pedit ex",
+  "cls_u32",
+  "Dirty COW",
+  "copy-on-write",
+  "page-cache corruption",
+  "CAP_NET_ADMIN",
+  "unprivileged user namespace",
+  "kernel.unprivileged_userns_clone=0",
+];
+
 const SHAPEDPLUGIN_KNOWN_HASHES = new Map([
   ["0e17c869d3e4586d4c160041042bd15123c2a37117a98a995fae885f0f4417fc", "ShapedPlugin LicenseLoader.php loader"],
 ]);
@@ -2299,22 +2319,41 @@ function checkDirtyClone(findings, targetRoot, homePath) {
     const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
     const haystack = `${relative}\n${text}`;
     const hasDirtyCloneContext = /DirtyClone|CVE-2026-43503|DirtyFrag|CVE-2026-43284|CVE-2026-43500|CVE-2026-46300/i.test(haystack);
+    const hasPeditCowContext = /Pedit COW|CVE-2026-46331|act_pedit|tc pedit|net\/sched\/act_pedit\.c/i.test(haystack);
 
     if (/DirtyClone|CVE-2026-43503/i.test(haystack)) {
       addFinding(findings, "review", "dirtyclone-reference", "DirtyClone / CVE-2026-43503 reference appears in scanned metadata.", relative, "Use this as a Linux kernel patch and research-artifact review lead. Confirm vendor-fixed kernel status and avoid running PoCs on production or credential-bearing hosts.");
+    }
+
+    if (/Pedit COW|CVE-2026-46331/i.test(haystack)) {
+      addFinding(findings, "review", "pedit-cow-reference", "Pedit COW / CVE-2026-46331 reference appears in scanned metadata.", relative, "Use this as a Linux kernel patch and exposure-review lead. Confirm vendor-fixed kernel status, patch and reboot, and avoid running public PoCs on production or credential-bearing hosts.");
     }
 
     if (hasDirtyCloneContext && /__pskb_copy_fclone|nf_dup_ipv4|skb_shift|skb_segment|skb_gro_receive|skb_gro_receive_list|tcp_clone_payload|SKBFL_SHARED_FRAG|esp_input\(\)|XFRM\/IPsec|ip xfrm|TEE --gateway|CAP_NET_ADMIN|unprivileged_userns_clone/i.test(haystack)) {
       addFinding(findings, "warning", "dirtyclone-advisory-terms", "DirtyClone / DirtyFrag-family page-cache poisoning terms appear in scanned metadata.", relative, "Treat this as a host-kernel exposure review lead. Patch and reboot; do not rely on direct disk reads alone because the reported primitive mutates page-cache-backed executable memory.");
     }
 
+    if (hasPeditCowContext && /tcf_pedit_act|skb_ensure_writable|skb_linearize|TCA_PEDIT_KEY_EX|pedit ex|cls_u32|copy-on-write|page-cache corruption|Dirty COW|CAP_NET_ADMIN|unprivileged user namespace/i.test(haystack)) {
+      addFinding(findings, "warning", "pedit-cow-advisory-terms", "Pedit COW / CVE-2026-46331 Linux traffic-control page-cache corruption terms appear in scanned metadata.", relative, "Treat this as a host-kernel exposure review lead. Verify fixed kernel/backport status, loaded traffic-control modules such as cls_u32, user-namespace policy, and reboot status after patching.");
+    }
+
     if (hasDirtyCloneContext && /(?:poc\.c|poc\.py|proof-of-concept|PoC|unshare -Urn|ip xfrm state add|ip xfrm policy add|iptables -t mangle|TEE --gateway|cbc\(aes\)|\/usr\/bin\/su)/i.test(haystack)) {
       addFinding(findings, "review", "dirtyclone-poc-artifact", "DirtyClone exploit-construction or PoC marker appears in scanned metadata.", relative, "Verify this is authorized research material. Do not compile, execute, or open untrusted PoC trees in agents until the repo has been scanned and isolated.");
+    }
+
+    if (hasPeditCowContext && /(?:poc\.c|poc\.py|proof-of-concept|PoC|unshare -Urn|tc qdisc|tc filter|tc action|pedit ex|CAP_NET_ADMIN|\/usr\/bin\/su)/i.test(haystack)) {
+      addFinding(findings, "review", "pedit-cow-poc-artifact", "Pedit COW exploit-construction or PoC marker appears in scanned metadata.", relative, "Verify this is authorized research material. Do not compile, execute, or open untrusted PoC trees in agents until the repo has been scanned and isolated.");
     }
 
     for (const indicator of DIRTYCLONE_TEXT_INDICATORS) {
       if (text.includes(indicator) && hasDirtyCloneContext) {
         addFinding(findings, "review", "dirtyclone-text-indicator", "DirtyClone advisory term appears in scanned metadata.", `${relative}: ${indicator}`, "Correlate with kernel version, vendor backport status, unprivileged user namespace policy, CAP_NET_ADMIN exposure, and loaded IPsec/RxRPC modules.");
+      }
+    }
+
+    for (const indicator of PEDIT_COW_TEXT_INDICATORS) {
+      if (text.includes(indicator) && hasPeditCowContext) {
+        addFinding(findings, "review", "pedit-cow-text-indicator", "Pedit COW advisory term appears in scanned metadata.", `${relative}: ${indicator}`, "Correlate with kernel version, vendor backport status, traffic-control module exposure, unprivileged user namespace policy, and CAP_NET_ADMIN availability.");
       }
     }
   }

@@ -639,6 +639,12 @@ function run() {
     "XFRM/IPsec esp_input() path with CAP_NET_ADMIN via unshare -Urn, ip xfrm state add, ip xfrm policy add, iptables -t mangle, TEE --gateway, and kernel.unprivileged_userns_clone=0 mitigation.",
     "Upstream markers include 48f6a5356a33, 9e171fc1d7d7, and v7.1-rc5; PoC notes target /usr/bin/su with cbc(aes)."
   ].join("\n"));
+  write(path.join(root, "var", "log", "pedit-cow-triage.log"), [
+    "Pedit COW CVE-2026-46331 Linux kernel LPE review for net/sched/act_pedit.c and act_pedit traffic-control action.",
+    "The affected path includes tcf_pedit_act with tc pedit, TCA_PEDIT_KEY_EX, pedit ex, skb_ensure_writable, skb_linearize, copy-on-write, and page-cache corruption terms.",
+    "Exposure notes include cls_u32, CAP_NET_ADMIN in an unprivileged user namespace, unshare -Urn, tc qdisc, tc filter, tc action, kernel.unprivileged_userns_clone=0, and Dirty COW-style impact.",
+    "PoC notes are authorized defensive references only and must not be run on production hosts."
+  ].join("\n"));
   write(path.join(root, "usr", "share", "man9", "ph", ".ph.man"), "captured ssh credential log placeholder\n");
   write(path.join(root, "lib", "systemd", "system", "chrom.service"), [
     "[Service]",
@@ -1018,6 +1024,10 @@ function run() {
   assert(ids.has("dirtyclone-reference"));
   assert(ids.has("dirtyclone-advisory-terms"));
   assert(ids.has("dirtyclone-poc-artifact"));
+  assert(ids.has("pedit-cow-reference"));
+  assert(ids.has("pedit-cow-advisory-terms"));
+  assert(ids.has("pedit-cow-poc-artifact"));
+  assert(ids.has("pedit-cow-text-indicator"));
   assert(ids.has("dirtyclone-text-indicator"));
   assert(ids.has("operation-highland-ioc-path"));
   assert(ids.has("operation-highland-tool-filename"));

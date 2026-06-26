@@ -121,6 +121,11 @@
 - libssh2 upstream PR #2052, additional packet-length boundary checks: https://github.com/libssh2/libssh2/pull/2052
 - NixOS security tracker issue for libssh2 CVE-2026-55199 and CVE-2026-55200: https://github.com/NixOS/nixpkgs/issues/532920
 - bikini/exploitarium libssh2 CVE-2026-55200 public PoC tree: https://github.com/bikini/exploitarium/tree/main/libssh2-cve-2026-55200-poc
+- The Hacker News Pedit COW / CVE-2026-46331 summary: https://thehackernews.com/2026/06/new-linux-pedit-cow-exploit-enables.html
+- NVD CVE-2026-46331 record: https://nvd.nist.gov/vuln/detail/CVE-2026-46331
+- Red Hat Security Bulletin RHSB-2026-008: https://access.redhat.com/security/vulnerabilities/RHSB-2026-008
+- Ubuntu CVE-2026-46331 tracker: https://ubuntu.com/security/CVE-2026-46331
+- Debian CVE-2026-46331 tracker: https://security-tracker.debian.org/tracker/CVE-2026-46331
 
 These links are retained for defensive host posture and incident-response
 context. This project intentionally avoids exploit reproduction steps or malware
