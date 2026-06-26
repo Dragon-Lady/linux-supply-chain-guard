@@ -577,6 +577,14 @@ function run() {
     "fetch('/api/device/gate/PAGE123') then POST /api/device/start returns userCode sessionId verification URI.",
     "poll /api/device/status/{sessionId} until completed and redirect to OneDrive."
   ].join("\n"));
+  write(path.join(root, "Users", "alice", "Downloads", "bluekit-bitm-triage.txt"), [
+    "Netcraft Bluekit phishing-as-a-service note for Browser-in-the-Middle BitM.",
+    "BlueKit streams a legitimate login page using rrweb and a WebSocket connection sending encrypted or binary data.",
+    "The DOM stream uses serialized structure of the page and a remote attacker-controlled browser for authentication.",
+    "Custom CAPTCHA, WebRTC IP mismatch detection, browser fingerprint checks, CPU cores, screen resolution, and headless browser detection are used for victim qualification.",
+    "CSS filter manipulation on top-level HTML element with randomized values defeats screenshot hashes.",
+    "Proxy API endpoint handling asset fetching means images, fonts, and CSS are fetched through phishing infrastructure."
+  ].join("\n"));
   write(path.join(root, "var", "log", "pixelsmash-triage.log"), [
     "PixelSmash CVE-2026-8461 FFmpeg MagicYUV magicyuv VFS..D magicyuv",
     "Jellyfin ffprobe scans AVI MKV MOV media libraries with libavcodec",
@@ -961,6 +969,11 @@ function run() {
   assert(ids.has("eviltokens-device-code-network-indicator"));
   assert(ids.has("eviltokens-device-code-text-indicator"));
   assert(ids.has("eviltokens-device-code-flow-shape"));
+  assert(ids.has("bluekit-bitm-text-indicator"));
+  assert(ids.has("bluekit-bitm-rrweb-delivery-shape"));
+  assert(ids.has("bluekit-rrweb-login-websocket-review"));
+  assert(ids.has("bluekit-anti-analysis-signal"));
+  assert(ids.has("bluekit-asset-proxy-signal"));
   assert(ids.has("ffmpeg-pixelsmash-package-review"));
   assert(ids.has("ffmpeg-pixelsmash-upstream-version-review"));
   assert(ids.has("ffmpeg-pixelsmash-text-indicator"));

@@ -200,6 +200,12 @@ decryption notes, `/api/device/start`, `/api/device/gate/`,
 `/api/device/status/`, `emp01825.workers.dev`, and the reported MD5. Shared
 Cloudflare IPs from the analysis are intentionally not treated as stable IOCs.
 
+The June 2026 BlueKit watch pack adds browser-in-the-middle phishing review
+signals for Netcraft-reported `rrweb` DOM streaming over WebSocket, custom
+CAPTCHA, WebRTC IP mismatch detection, browser fingerprint checks, top-level
+CSS filter randomization, and phishing-infrastructure asset proxying. `rrweb`
+alone is intentionally treated as context, not an IOC.
+
 The June 2026 PixelSmash watch pack adds FFmpeg/libavcodec posture checks for
 `CVE-2026-8461`, MagicYUV decoder exposure terms, older upstream-looking
 FFmpeg versions before `8.1.2`, and high-risk media ingestion surfaces such as
@@ -553,6 +559,13 @@ Exit codes:
     `emp01825.workers.dev`, and MD5 `fcd1b654a0b3e8f85ca7cfdafe494d4b`
   - device-code flow co-occurrence checks for `userCode`, `sessionId`, and
     verification URI handling
+- BlueKit browser-in-the-middle phishing indicators:
+  - `Bluekit`, `Browser-in-the-Middle`, `BitM`, and `rrweb` near login-page
+    DOM streaming or WebSocket terms
+  - custom CAPTCHA, WebRTC IP mismatch detection, browser fingerprint checks,
+    headless-browser checks, and top-level CSS filter randomization
+  - asset proxying language for images, fonts, and CSS fetched through
+    phishing infrastructure
 - FFmpeg PixelSmash indicators:
   - installed `ffmpeg` / `libavcodec*` Debian-family packages
   - upstream-looking versions before FFmpeg `8.1.2` flagged for vendor-backport
@@ -933,6 +946,10 @@ the known indicators it checks.
   https://arstechnica.com/security/2026/06/microsoft-spots-new-self-propagating-malware-for-stealing-cryptocurrency/
 - ANY.RUN EvilTokens Microsoft OAuth device-code phishing analysis:
   https://any.run/cybersecurity-blog/eviltokens-ghost-code-analysis/
+- Netcraft BlueKit Browser-in-the-Middle phishing analysis:
+  https://www.netcraft.com/blog/bluekit-phishing-as-a-service-threat
+- BleepingComputer BlueKit BitM phishing summary:
+  https://www.bleepingcomputer.com/news/security/bluekit-phishing-kit-adopts-browser-in-the-middle-for-login-theft/
 - BleepingComputer macOS ClickFix / AMOS DMG campaign summary:
   https://www.bleepingcomputer.com/news/security/new-macos-clickfix-attack-silently-mounts-dmgs-to-push-infostealer/
 - SentinelOne macOS.Gaslight Rust backdoor analysis:
