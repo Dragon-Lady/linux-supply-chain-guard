@@ -530,6 +530,24 @@ function run() {
     "Ledger Live and Trezor Suite replacement attempt observed.",
     "C2 observed at 196.251.107.171"
   ].join("\n"));
+  write(path.join(root, "Users", "alice", "Library", "LaunchAgents", "com.apple.system.services.activity.plist"), [
+    "<?xml version=\"1.0\" encoding=\"UTF-8\"?>",
+    "<plist><dict>",
+    "<key>Label</key><string>com.apple.system.services.activity</string>",
+    "<key>ProgramArguments</key><array><string>/Users/alice/Library/Application Support/system/activity</string></array>",
+    "</dict></plist>"
+  ].join("\n"));
+  write(path.join(root, "Users", "alice", "Library", "Logs", "gaslight-triage.txt"), [
+    "SentinelOne macOS.Gaslight triage note for a Rust macOS implant.",
+    "macOS.Gaslight Mach-O sample sha256=6328567511d88fdc2ae0939c5ef17b7a63d2a833881900de018a4f12f4982525",
+    "Python payload script baabf249c77bc54c54ab0e66e15af798bd28aa5b4683554456a8b73ab8741239 and bash installer b3c56d689414343589f38394d19ba2fe9a518133281200faa0556ba4e4136394.",
+    "Ad hoc signing identifier endpoint-macos-aarch64-5555494492fc075f441637fb9d894913dde3a2ea.",
+    "Telegram Bot API getUpdates uses attach:// upload, tg_room_id, BotBlocked, InvalidToken, and Conflict.",
+    "Installer uses astral-sh/python-build-standalone cpython-3.10.18 PY_VERSION=3.10.18 BUILD_DATE=20250708 for arm64 and x86_64 from base64.",
+    "Collector targets login.keychain-db, temp/collected_data.zip, system_profiler, ps aux, Chrome, Brave, Firefox, Safari, Terminal command histories, and Telegram upload.",
+    "The prompt-injection scaffold has 38 fabricated system messages, LLM-assisted triage warnings, token expiry, out-of-memory kills, disk exhaustion, static-analysis flags, and asks the triage agent to abort or refuse analysis.",
+    "IOPMAssertionCreateWithName keeps the host awake."
+  ].join("\n"));
   write(path.join(root, "Users", "alice", "Downloads", "eviltokens-browser-data.txt"), [
     "ANY.RUN EvilTokens triage note",
     "Microsoft OAuth device-code phishing has been detected threatName: eviltokens oauth-ms-phish",
@@ -880,6 +898,13 @@ function run() {
   assert(ids.has("clickfix-macos-network-indicator"));
   assert(ids.has("clickfix-macos-text-indicator"));
   assert(ids.has("clickfix-macos-hidden-dmg-execution"));
+  assert(ids.has("gaslight-launchagent-label"));
+  assert(ids.has("gaslight-known-sha256-reference"));
+  assert(ids.has("gaslight-text-indicator"));
+  assert(ids.has("gaslight-telegram-c2-shape"));
+  assert(ids.has("gaslight-standalone-cpython-stager"));
+  assert(ids.has("gaslight-python-collector-shape"));
+  assert(ids.has("gaslight-llm-triage-prompt-injection"));
   assert(ids.has("eviltokens-device-code-network-indicator"));
   assert(ids.has("eviltokens-device-code-text-indicator"));
   assert(ids.has("eviltokens-device-code-flow-shape"));
