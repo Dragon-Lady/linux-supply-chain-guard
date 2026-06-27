@@ -59,6 +59,13 @@ versions, local runtime artifacts, suspicious Python package layouts, and
 GitHub/CI exfiltration or seeding markers. They do not execute Python, Bun,
 package managers, or cleanup actions.
 
+The June 2026 nf_tables / `CVE-2026-23111` lane is included as Linux
+local-privilege-escalation posture and research-artifact triage. The guard
+checks for affected public kernel trains, `nf_tables` module/config presence,
+`kernel.unprivileged_userns_clone=1`, kernel.org fix markers, advisory terms
+around `nft_map_catchall_activate()` and the inverted genmask check, and public
+PoC/checker provenance markers. It does not clone, build, or run exploit code.
+
 SentinelOne's June 2026 macOS.Gaslight analysis is included as mounted-root and
 developer-workstation triage context. The guard checks copied host metadata and
 analysis notes for the reported Gaslight SHA-256 values, the
@@ -129,6 +136,25 @@ TCP `11443` management-interface exposure notes, auth-bypass/update-path triage
 terms, `ucs-update` child-process language, and unexpected-sudo review terms.
 Operators should patch, restrict management reachability, rotate secrets, and
 treat exposed pre-patch UniFi OS consoles as possible root-level compromise.
+
+CISA's June 25, 2026 KEV update for PTC Windchill and FlexPLM
+`CVE-2026-12569` is included as an enterprise application RCE and webshell
+triage lane. CISA lists PTC advisory `CS473270`, a June 28, 2026 due date, and
+forensics-triage requirements under BOD `26-04`. The guard looks for copied KEV
+notes, Windchill/FlexPLM deployment or log metadata, `X-windchill-req` request
+header references, and JSP web shell path shapes such as
+`/Windchill/login/<16 hex>.jsp`. Operators should apply PTC mitigations,
+restrict external reachability, and preserve webroot/request/JVM evidence
+before cleanup.
+
+The June 2026 python.org release-management API disclosure is included as a
+release-integrity and build-automation review lane. The report describes an
+authentication-bypass issue that could have allowed forged admin-level API
+requests and malicious release-file URL changes before the February 24, 2026
+patch, with no reported exploitation. The guard flags copied incident notes,
+Python release URL automation, non-official Python release-looking URLs, and
+Sigstore/PGP/PEP 761 provenance terms so operators can verify mirrors, pinned
+hashes, and signatures before trusting cached Python artifacts.
 
 Cyber Security News' Splunk Enterprise / `CVE-2026-20253` coverage is included
 as a local posture and log-triage lane. The guard looks for Splunk Enterprise
@@ -286,12 +312,14 @@ DirtyClone / `CVE-2026-43503` is tracked as a DirtyFrag-family page-cache
 poisoning variant rather than as package malware. JFrog's June 25, 2026
 analysis describes a Linux local privilege-escalation path through XFRM/IPsec
 and skb cloning where `__pskb_copy_fclone` can fail to preserve
-`SKBFL_SHARED_FRAG`. The guard flags copied advisory/provenance terms such as
-`DirtyClone`, `CVE-2026-43503`, `nf_dup_ipv4`, `ip xfrm`, `TEE --gateway`,
-`CAP_NET_ADMIN`, `unshare -Urn`, `kernel.unprivileged_userns_clone=0`,
-`48f6a5356a33`, and `v7.1-rc5`. These are review leads: confirm vendor
-backport status, patch and reboot, and do not compile or run PoC material on
-production or credential-bearing hosts.
+`SKBFL_SHARED_FRAG`. The Hacker News summary adds the related Copy Fail
+`CVE-2026-31431`, `skb_shinfo()->flags` fix context, and multi-tenant
+container/CI exposure framing. The guard flags copied advisory/provenance terms
+such as `DirtyClone`, `Copy Fail`, `CVE-2026-43503`, `CVE-2026-31431`,
+`nf_dup_ipv4`, `ip xfrm`, `TEE --gateway`, `CAP_NET_ADMIN`, `unshare -Urn`,
+`kernel.unprivileged_userns_clone=0`, `48f6a5356a33`, and `v7.1-rc5`. These
+are review leads: confirm vendor backport status, patch and reboot, and do not
+compile or run PoC material on production or credential-bearing hosts.
 
 Pedit COW / `CVE-2026-46331` is tracked in the same Linux kernel exposure
 lane. Public reporting and distro trackers describe a local privilege
@@ -416,6 +444,15 @@ contained the vulnerable MCP WebSocket handler, while the stable PyPI build
 the reported pre-release versions as review prompts. The broader lesson applies
 to other agent frameworks: localhost is not a trust boundary when agents can
 render untrusted pages and also reach privileged local services.
+
+The June 2026 Gogs lane tracks self-hosted Git exposure-review context from a
+FOFA `app="Gogs"` product query and a public Jorian Woltjer PoC reference. The
+guard flags local deployment artifacts such as Gogs app config or repository
+storage paths, copied FOFA/Gist references, and notes that combine Gogs with
+path-traversal or Git-hook RCE triage language. Findings are inventory and
+authorized-research provenance leads only: confirm patch level, public
+registration policy, repository storage paths, custom Git hook settings, and
+recent repository-create/push/admin activity from a clean posture.
 
 This project intentionally avoids exploit reproduction steps, cleanup
 automation, and secret disclosure. It cannot prove a host is clean.

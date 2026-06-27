@@ -25,6 +25,16 @@ const JOOMLA_SP_PAGE_BUILDER_FIXED = "6.6.2";
 const ITSCAPE_UPSTREAM_FIXED_KERNEL = "6.15.0";
 const SPLUNK_20253_REVIEW_MIN = "10.0.0";
 const REDCAP_REVIEW_LATEST = "17.1.3";
+const NFTABLES_CVE_2026_23111_FIXED_KERNELS = [
+  ["6.19.0-rc1", "6.19.0-rc9"],
+  ["6.18.0", "6.18.10"],
+  ["6.13.0", "6.18.10"],
+  ["6.12.0", "6.12.70"],
+  ["6.7.0", "6.12.70"],
+  ["6.6.0", "6.6.124"],
+  ["6.1.36", "6.1.163"],
+  ["5.15.121", "5.15.200"],
+];
 
 const KNOWN_DPRK_NPM_PACKAGES = [
   "terminal-logger-utils",
@@ -1035,6 +1045,20 @@ const ADBLOCK_YOUTUBE_TEXT_INDICATORS = [
   "youtube.com anywhere in the URL",
 ];
 
+const GOGS_PATH_TRAVERSAL_RCE_TERMS = [
+  "Gogs",
+  "app=\"Gogs\"",
+  "YXBwPSJHb2dzIg==",
+  "JorianWoltjer/4b72063338b27140f4439c524d98f2b9",
+  "4b72063338b27140f4439c524d98f2b9",
+  "gogs path traversal",
+  "gogs rce",
+  "custom git hook",
+  "hooks/post-receive",
+  "hooks/pre-receive",
+  "hooks/update",
+];
+
 const GLOBALPROTECT_0257_IPS = [
   "23.128.228.6",
   "23.128.228[.]6",
@@ -1259,6 +1283,7 @@ const WATCH_FILE_NAMES = new Set([
   "Dockerfile",
   "docker-compose.yml",
   "docker-compose.yaml",
+  "app.ini",
   ".npmrc",
   ".bashrc",
   ".zshrc",
@@ -1505,12 +1530,16 @@ const DIRTYCBC_RXGK_TEXT_INDICATORS = [
 const DIRTYCLONE_TEXT_INDICATORS = [
   "DirtyClone",
   "CVE-2026-43503",
+  "Copy Fail",
+  "CVE-2026-31431",
   "DirtyFrag",
   "CVE-2026-43284",
   "CVE-2026-43500",
   "CVE-2026-46300",
   "__pskb_copy_fclone",
   "nf_dup_ipv4",
+  "skb_shinfo",
+  "skb_shinfo(skb)->flags",
   "skb_shift",
   "skb_segment",
   "skb_gro_receive",
@@ -1549,6 +1578,32 @@ const PEDIT_COW_TEXT_INDICATORS = [
   "CAP_NET_ADMIN",
   "unprivileged user namespace",
   "kernel.unprivileged_userns_clone=0",
+];
+
+const NFTABLES_CVE_2026_23111_TEXT_INDICATORS = [
+  "CVE-2026-23111",
+  "nf_tables",
+  "nftables",
+  "nft_map_catchall_activate",
+  "nft_mapelem_activate",
+  "nft_set_elem_active",
+  "nft_setelem_data_activate",
+  "nft_data_hold",
+  "NFT_GOTO",
+  "DELSET",
+  "DELCHAIN",
+  "pipapo",
+  "catchall element",
+  "inverted genmask",
+  "chain->use",
+  "8c760ba4e36c750379d13569f23f5a6e185333f5",
+  "f41c5d151078c5348271ffaf8e7410d96f2d82f8",
+  "1444ff890b4653add12f734ffeffc173d42862dd",
+  "42c574c1504aa089a0a142e4c13859327570473d",
+  "Baba01hacker666/CVE-2026-23111",
+  "CVE-2026-23111-checker.py",
+  "exploit_full.b64",
+  "exploit_full.c",
 ];
 
 const SHAPEDPLUGIN_KNOWN_HASHES = new Map([
@@ -1713,6 +1768,49 @@ const CISA_KEV_EDGE_DEVICE_TEXT_INDICATORS = [
   "ucs/update/latest_package",
   "ucs-update",
   "package-update",
+];
+
+const PTC_WINDCHILL_CVE202612569_TEXT_INDICATORS = [
+  "CVE-2026-12569",
+  "PTC Windchill",
+  "Windchill",
+  "FlexPLM",
+  "CS473270",
+  "catalogVersion 2026.06.25",
+  "PTC Windchill and FlexPLM Improper Input Validation Vulnerability",
+  "improper input validation",
+  "CWE-20",
+  "CWE-502",
+  "X-windchill-req",
+  "/Windchill/login/",
+  "JSP web shell",
+  "JSP webshell",
+  "web shell",
+  "Known Exploited Vulnerabilities",
+  "Forensics Triage Requirements",
+  "BOD 26-04",
+];
+
+const PYTHON_ORG_RELEASE_API_TEXT_INDICATORS = [
+  "python.org release management API",
+  "python.org vulnerability",
+  "Critical python.org Vulnerability",
+  "release management API",
+  "downloads.nyc1.psf.io",
+  "www.python.org/ftp/python",
+  "www.python.org/downloads/release",
+  "admin-level API requests",
+  "authentication bypass",
+  "forged admin",
+  "release file URL",
+  "release-file metadata",
+  "malicious download URLs",
+  "Sigstore",
+  "PGP signature",
+  "PEP 761",
+  "Trail of Bits",
+  "February 24, 2026",
+  "2026-02-24",
 ];
 
 const CISCO_CUCM_WEB_DIALER_TEXT_INDICATORS = [
@@ -2017,6 +2115,7 @@ function scanHost(options = {}) {
   checkKernelModules(findings, targetRoot);
   checkDirtyCbcRxgk(findings, targetRoot, homePath);
   checkDirtyClone(findings, targetRoot, homePath);
+  checkNfTablesCve202623111(findings, targetRoot, homePath, kernelRelease);
   checkPersistence(findings, targetRoot, homePath);
   checkCompromisedNpmPackages(findings, targetRoot, homePath);
   checkChainVeilNpmCampaign(findings, targetRoot, homePath);
@@ -2068,6 +2167,7 @@ function scanHost(options = {}) {
   checkLiteLlmGatewayExposure(findings, targetRoot, homePath);
   checkDifyTapExposure(findings, targetRoot, homePath);
   checkLangflowUploadExposure(findings, targetRoot, homePath);
+  checkGogsPathTraversalRceExposure(findings, targetRoot, homePath);
   checkOpenClawAgentExposure(findings, targetRoot, homePath);
   checkAgentjackingSentryMcpExposure(findings, targetRoot, homePath);
   checkAutoJackAgentLocalhostExposure(findings, targetRoot, homePath);
@@ -2075,6 +2175,8 @@ function scanHost(options = {}) {
   checkOperationHighlandAuthStack(findings, targetRoot, homePath);
   checkAryStingerEdgeProxy(findings, targetRoot, homePath);
   checkCisaKevEdgeDeviceLatest(findings, targetRoot, homePath);
+  checkPtcWindchillCve202612569(findings, targetRoot, homePath);
+  checkPythonOrgReleaseApiTrust(findings, targetRoot, homePath);
   checkCiscoSdWanManager2026(findings, targetRoot, homePath);
   checkCiscoCucmWebDialer20230(findings, targetRoot, homePath);
   checkExchangeCve202645504(findings, targetRoot, homePath);
@@ -2318,10 +2420,10 @@ function checkDirtyClone(findings, targetRoot, homePath) {
     if (!text) continue;
     const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
     const haystack = `${relative}\n${text}`;
-    const hasDirtyCloneContext = /DirtyClone|CVE-2026-43503|DirtyFrag|CVE-2026-43284|CVE-2026-43500|CVE-2026-46300/i.test(haystack);
+    const hasDirtyCloneContext = /DirtyClone|CVE-2026-43503|Copy Fail|CVE-2026-31431|DirtyFrag|CVE-2026-43284|CVE-2026-43500|CVE-2026-46300/i.test(haystack);
     const hasPeditCowContext = /Pedit COW|CVE-2026-46331|act_pedit|tc pedit|net\/sched\/act_pedit\.c/i.test(haystack);
 
-    if (/DirtyClone|CVE-2026-43503/i.test(haystack)) {
+    if (/DirtyClone|CVE-2026-43503|Copy Fail|CVE-2026-31431/i.test(haystack)) {
       addFinding(findings, "review", "dirtyclone-reference", "DirtyClone / CVE-2026-43503 reference appears in scanned metadata.", relative, "Use this as a Linux kernel patch and research-artifact review lead. Confirm vendor-fixed kernel status and avoid running PoCs on production or credential-bearing hosts.");
     }
 
@@ -2329,7 +2431,7 @@ function checkDirtyClone(findings, targetRoot, homePath) {
       addFinding(findings, "review", "pedit-cow-reference", "Pedit COW / CVE-2026-46331 reference appears in scanned metadata.", relative, "Use this as a Linux kernel patch and exposure-review lead. Confirm vendor-fixed kernel status, patch and reboot, and avoid running public PoCs on production or credential-bearing hosts.");
     }
 
-    if (hasDirtyCloneContext && /__pskb_copy_fclone|nf_dup_ipv4|skb_shift|skb_segment|skb_gro_receive|skb_gro_receive_list|tcp_clone_payload|SKBFL_SHARED_FRAG|esp_input\(\)|XFRM\/IPsec|ip xfrm|TEE --gateway|CAP_NET_ADMIN|unprivileged_userns_clone/i.test(haystack)) {
+    if (hasDirtyCloneContext && /__pskb_copy_fclone|nf_dup_ipv4|skb_shinfo|skb->nohdr|SKBFL_SHARED_FRAG|skb_shift|skb_segment|skb_gro_receive|skb_gro_receive_list|tcp_clone_payload|esp_input\(\)|XFRM\/IPsec|ip xfrm|TEE --gateway|CAP_NET_ADMIN|unprivileged_userns_clone|multi-tenant|container|CI runner/i.test(haystack)) {
       addFinding(findings, "warning", "dirtyclone-advisory-terms", "DirtyClone / DirtyFrag-family page-cache poisoning terms appear in scanned metadata.", relative, "Treat this as a host-kernel exposure review lead. Patch and reboot; do not rely on direct disk reads alone because the reported primitive mutates page-cache-backed executable memory.");
     }
 
@@ -2354,6 +2456,73 @@ function checkDirtyClone(findings, targetRoot, homePath) {
     for (const indicator of PEDIT_COW_TEXT_INDICATORS) {
       if (text.includes(indicator) && hasPeditCowContext) {
         addFinding(findings, "review", "pedit-cow-text-indicator", "Pedit COW advisory term appears in scanned metadata.", `${relative}: ${indicator}`, "Correlate with kernel version, vendor backport status, traffic-control module exposure, unprivileged user namespace policy, and CAP_NET_ADMIN availability.");
+      }
+    }
+  }
+}
+
+function checkNfTablesCve202623111(findings, targetRoot, homePath, kernelRelease) {
+  const modulesText = readText(mapLinuxPath(targetRoot, "/proc/modules"));
+  const kernelConfig = readKernelConfig(targetRoot, kernelRelease);
+  const sysctl = readText(mapLinuxPath(targetRoot, "/proc/sys/kernel/unprivileged_userns_clone")).trim();
+  const nfTablesLoaded = /^nf_tables\s/m.test(modulesText);
+  const nfTablesConfigured = /CONFIG_NF_TABLES=(?:y|m)/.test(kernelConfig);
+  const unprivilegedUserNsEnabled = sysctl === "1";
+  const kernelAssessment = nfTablesCve202623111KernelAssessment(kernelRelease);
+
+  if (kernelAssessment.status === "affected") {
+    addFinding(findings, "warning", "nftables-cve-2026-23111-kernel-review", "Running kernel is in a CVE-2026-23111 affected nf_tables range.", `${kernelRelease}: fixed at ${kernelAssessment.fixed}`, "Verify the distro backport or upgrade to the fixed kernel for this train, then reboot before clearing the finding.");
+  } else if (kernelAssessment.status === "fixed") {
+    addFinding(findings, "info", "nftables-cve-2026-23111-kernel-fixed-baseline", "Running kernel is at or above the CVE-2026-23111 fixed baseline for a tracked train.", `${kernelRelease} >= ${kernelAssessment.fixed}`, "Still verify vendor backport notes for distro kernels and confirm the running kernel after reboot.");
+  } else if (kernelAssessment.status === "eol") {
+    addFinding(findings, "review", "nftables-cve-2026-23111-eol-kernel-review", "Running kernel is in an EOL range called out by CVE-2026-23111 public reporting.", kernelRelease, "Move to a vendor-supported fixed kernel. Do not rely on EOL upstream trains for this nf_tables local privilege-escalation class.");
+  }
+
+  if ((nfTablesLoaded || nfTablesConfigured) && unprivilegedUserNsEnabled) {
+    addFinding(findings, "warning", "nftables-cve-2026-23111-userns-exposure", "nf_tables and unprivileged user namespaces are both present, matching CVE-2026-23111 exposure preconditions.", `nf_tables=${nfTablesLoaded ? "loaded" : "configured"}; kernel.unprivileged_userns_clone=1`, "Patch and reboot. As a temporary mitigation where workloads allow it, disable unprivileged user namespaces and restrict untrusted local shell access.");
+  } else if (nfTablesLoaded || nfTablesConfigured) {
+    addFinding(findings, "review", "nftables-cve-2026-23111-nftables-present", "nf_tables is present on this host; review CVE-2026-23111 kernel fix status.", nfTablesLoaded ? "nf_tables module loaded" : "CONFIG_NF_TABLES enabled", "Correlate with running kernel version, distro backport status, and user-namespace policy.");
+  }
+
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const roots = [
+    homeRelative,
+    "/etc",
+    "/opt",
+    "/srv",
+    "/var/log",
+    "/root",
+    "/mnt",
+    "/media",
+  ].filter(Boolean);
+  const files = [];
+  for (const root of roots) {
+    files.push(...findWatchFiles(mapLinuxPath(targetRoot, root), 25000 - files.length));
+    if (files.length >= 25000) break;
+  }
+
+  for (const filePath of files) {
+    const text = readText(filePath);
+    if (!text) continue;
+    const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+    const haystack = `${relative}\n${text}`;
+    const hasContext = /CVE-2026-23111|nft_map_catchall_activate|Baba01hacker666\/CVE-2026-23111|nf_tables[\s\S]{0,180}(?:DELSET|DELCHAIN|catchall|genmask|NFT_GOTO)|(?:DELSET|DELCHAIN|catchall|genmask|NFT_GOTO)[\s\S]{0,180}nf_tables/i.test(haystack);
+
+    if (/CVE-2026-23111|nft_map_catchall_activate/i.test(haystack)) {
+      addFinding(findings, "review", "nftables-cve-2026-23111-reference", "CVE-2026-23111 / nf_tables reference appears in scanned metadata.", relative, "Use this as a Linux kernel patch and authorized-research provenance lead. Do not compile or execute public exploit material on production or credential-bearing hosts.");
+    }
+
+    if (hasContext && /inverted genmask|nft_set_elem_active|nft_setelem_data_activate|nft_data_hold|NFT_GOTO|DELSET|DELCHAIN|chain->use|pipapo|catchall element/i.test(haystack)) {
+      addFinding(findings, "warning", "nftables-cve-2026-23111-advisory-terms", "CVE-2026-23111 nf_tables UAF advisory terms appear in scanned metadata.", relative, "Correlate with running kernel, vendor backport status, nf_tables availability, and unprivileged user namespace policy.");
+    }
+
+    if (hasContext && /(?:Baba01hacker666\/CVE-2026-23111|CVE-2026-23111-checker\.py|exploit_full\.b64|exploit_full\.c|exploit\.c|make run-full|libnftnl|libmnl|\/proc\/kcore|commit_creds|init_cred|ROP chain)/i.test(haystack)) {
+      addFinding(findings, "review", "nftables-cve-2026-23111-poc-artifact", "CVE-2026-23111 PoC or exploit-construction marker appears in scanned metadata.", relative, "Verify this is authorized research material. Keep PoC code out of production, shared runners, and developer credential contexts; scan third-party repos before opening them in agents.");
+    }
+
+    for (const indicator of NFTABLES_CVE_2026_23111_TEXT_INDICATORS) {
+      if (text.includes(indicator) && hasContext) {
+        addFinding(findings, "review", "nftables-cve-2026-23111-text-indicator", "CVE-2026-23111 nf_tables advisory term appears in scanned metadata.", `${relative}: ${indicator}`, "Use this as an inventory and patch-verification lead for nf_tables local privilege-escalation exposure.");
       }
     }
   }
@@ -4953,6 +5122,54 @@ function checkLangflowUploadExposure(findings, targetRoot, homePath) {
   }
 }
 
+function checkGogsPathTraversalRceExposure(findings, targetRoot, homePath) {
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const roots = [
+    homeRelative,
+    "/opt",
+    "/srv",
+    "/var/www",
+    "/etc",
+    "/root",
+  ].filter(Boolean);
+  const files = [];
+  for (const root of roots) {
+    files.push(...findWatchFiles(mapLinuxPath(targetRoot, root), 25000 - files.length));
+    if (files.length >= 25000) break;
+  }
+
+  for (const filePath of files) {
+    const text = readText(filePath);
+    if (!text) continue;
+    const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+    const hasGogs = /(?:^|\b)Gogs(?:\b|$)|app=["']Gogs["']|YXBwPSJHb2dzIg==|gogs-repositories|\/data\/gogs|\/var\/lib\/gogs|RUN_USER\s*=\s*gogs/i.test(text)
+      || /\/(?:opt|srv|var\/lib|data)\/gogs\b/i.test(relative);
+    if (!hasGogs) continue;
+
+    if (/FOFA\s+Query|app=["']Gogs["']|YXBwPSJHb2dzIg==/i.test(text)) {
+      addFinding(findings, "review", "gogs-fofa-exposure-fingerprint", "Gogs FOFA/product fingerprint terms appear in scanned host metadata.", relative, "If this system is internet-facing, verify intended exposure, patch level, registration policy, and authentication posture.");
+    }
+
+    if (/JorianWoltjer\/4b72063338b27140f4439c524d98f2b9|4b72063338b27140f4439c524d98f2b9|gist\.github\.com\/JorianWoltjer/i.test(text)) {
+      addFinding(findings, "review", "gogs-public-poc-reference", "Public Gogs RCE PoC reference appears in scanned host metadata.", relative, "Verify this is authorized research material. Do not run PoC code on production or credential-bearing hosts.");
+    }
+
+    if (/(?:Gogs|gogs)[\s\S]{0,360}(?:path traversal|directory traversal|repo(?:sitory)? path|custom git hook|post-receive|pre-receive|hooks\/update|hooks\/post-receive)|(?:path traversal|directory traversal|repo(?:sitory)? path|custom git hook|post-receive|pre-receive|hooks\/update|hooks\/post-receive)[\s\S]{0,360}(?:Gogs|gogs)/i.test(text)) {
+      addFinding(findings, "warning", "gogs-path-traversal-rce-review", "Gogs path-traversal or Git-hook RCE triage terms appear in scanned host metadata.", relative, "Review Gogs version, repository storage paths, custom Git hook permissions, public registration, and recent repository-create/push/admin activity before clearing exposure.");
+    }
+
+    if (/\/(?:var\/lib|data|opt|srv)\/gogs|gogs-repositories|custom\/conf\/app\.ini|APP_NAME\s*=\s*Gogs|RUN_USER\s*=\s*gogs|ROOT_PATH\s*=|REPO_ROOT_PATH\s*=/i.test(text)) {
+      addFinding(findings, "review", "gogs-deployment-artifact", "Gogs deployment or repository storage artifact appears in scanned host metadata.", relative, "Use this as an inventory lead. Confirm whether the deployment is patched, isolated, and not unintentionally reachable from the internet.");
+    }
+
+    for (const indicator of GOGS_PATH_TRAVERSAL_RCE_TERMS) {
+      if (text.includes(indicator)) {
+        addFinding(findings, "review", "gogs-text-indicator", "Gogs exposure or public-PoC advisory term appears in scanned metadata.", `${relative}: ${indicator}`, "Correlate with Gogs version, internet exposure, Git hook settings, repository path configuration, and authorized research provenance.");
+      }
+    }
+  }
+}
+
 function checkOpenClawAgentExposure(findings, targetRoot, homePath) {
   const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
   const roots = [
@@ -5318,6 +5535,109 @@ function checkCisaKevEdgeDeviceLatest(findings, targetRoot, homePath) {
     for (const indicator of CISA_KEV_EDGE_DEVICE_TEXT_INDICATORS) {
       if (text.includes(indicator) && /CVE-2025-67038|CVE-2026-3490[89]|CVE-2026-34910|Lantronix|EDS5000|Ubiquiti|UniFi/i.test(text)) {
         addFinding(findings, "review", "cisa-kev-edge-device-text-indicator", "CISA KEV edge-device advisory term appears in scanned metadata.", `${relative}: ${indicator}`, "Use this as an inventory and triage lead for the June 23, 2026 KEV additions covering Lantronix EDS5000 and Ubiquiti UniFi OS.");
+      }
+    }
+  }
+}
+
+function checkPtcWindchillCve202612569(findings, targetRoot, homePath) {
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const roots = [
+    homeRelative,
+    "/etc",
+    "/opt",
+    "/srv",
+    "/var/log",
+    "/var/www",
+    "/usr/local",
+    "/root",
+    "/mnt",
+    "/media",
+  ].filter(Boolean);
+  const files = [];
+  for (const root of roots) {
+    files.push(...findWatchFiles(mapLinuxPath(targetRoot, root), 25000 - files.length));
+    if (files.length >= 25000) break;
+  }
+
+  for (const filePath of files) {
+    const text = readText(filePath);
+    const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+    const haystack = `${relative}\n${text}`;
+    const hasWindchillContext = /CVE-2026-12569|PTC Windchill|Windchill|FlexPLM|CS473270/i.test(haystack);
+
+    if (/CVE-2026-12569/i.test(haystack)) {
+      addFinding(findings, "critical", "ptc-windchill-cve-2026-12569-kev-reference", "PTC Windchill/FlexPLM CVE-2026-12569 KEV reference appears in scanned metadata.", `${relative}: CVE-2026-12569`, "Prioritize internet-exposed Windchill and FlexPLM assets under CISA BOD 26-04 timelines. Apply PTC mitigations, preserve forensics evidence, and treat pre-mitigation exposure as active-compromise risk.");
+    }
+
+    if (/(?:PTC|Windchill|FlexPLM)[\s\S]{0,260}(?:improper input validation|unauthenticated|remote attacker|execute arbitrary code|RCE|CS473270|Known Exploited Vulnerabilities|BOD 26-04)|(?:improper input validation|unauthenticated|remote attacker|execute arbitrary code|RCE|CS473270|Known Exploited Vulnerabilities|BOD 26-04)[\s\S]{0,260}(?:PTC|Windchill|FlexPLM)/i.test(haystack)) {
+      addFinding(findings, "warning", "ptc-windchill-cve-2026-12569-exposure-review", "PTC Windchill/FlexPLM CVE-2026-12569 exposure terms appear in scanned metadata.", relative, "Inventory Windchill/FlexPLM deployments, verify PTC advisory CS473270 mitigation status, restrict external reachability, and preserve access logs before cleanup.");
+    }
+
+    if (/\/Windchill\/login\/[0-9a-f]{16}\.jsp/i.test(haystack) || /Windchill[\s\S]{0,220}(?:JSP web shell|JSP webshell|web shell|webshell)|(?:JSP web shell|JSP webshell|web shell|webshell)[\s\S]{0,220}Windchill/i.test(haystack)) {
+      addFinding(findings, "critical", "ptc-windchill-cve-2026-12569-jsp-webshell", "Windchill JSP web shell path or webshell language appears in scanned metadata.", relative, "Treat as potential active compromise. Preserve the webroot, request logs, reverse-proxy logs, JVM/Tomcat logs, timestamps, and suspicious JSP files before remediation.");
+    }
+
+    if (/X-windchill-req/i.test(haystack)) {
+      addFinding(findings, "warning", "ptc-windchill-cve-2026-12569-header-indicator", "Windchill exploit-triage header indicator appears in scanned metadata.", `${relative}: X-windchill-req`, "Review request logs around this header for unauthorized Windchill/FlexPLM access, JSP writes, child process activity, and suspicious authenticated sessions.");
+    }
+
+    for (const indicator of PTC_WINDCHILL_CVE202612569_TEXT_INDICATORS) {
+      if (text.includes(indicator) && hasWindchillContext) {
+        addFinding(findings, "review", "ptc-windchill-cve-2026-12569-text-indicator", "PTC Windchill/FlexPLM CVE-2026-12569 advisory term appears in scanned metadata.", `${relative}: ${indicator}`, "Use this as an inventory, mitigation-verification, and webshell-hunting lead for Windchill and FlexPLM.");
+      }
+    }
+  }
+}
+
+function checkPythonOrgReleaseApiTrust(findings, targetRoot, homePath) {
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const roots = [
+    homeRelative,
+    "/etc",
+    "/opt",
+    "/srv",
+    "/var/log",
+    "/var/www",
+    "/usr/local",
+    "/root",
+    "/mnt",
+    "/media",
+  ].filter(Boolean);
+  const files = [];
+  for (const root of roots) {
+    files.push(...findWatchFiles(mapLinuxPath(targetRoot, root), 25000 - files.length));
+    if (files.length >= 25000) break;
+  }
+
+  for (const filePath of files) {
+    const text = readText(filePath);
+    if (!text) continue;
+    const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+    const haystack = `${relative}\n${text}`;
+    const hasPythonReleaseContext = /python\.org|Python.org|CPython|Python release|release management API|downloads\.nyc1\.psf\.io|www\.python\.org\/ftp\/python/i.test(haystack);
+
+    if (/python\.org release management API|Critical python\.org Vulnerability|admin-level API requests|forged admin|release-file metadata|malicious download URLs/i.test(haystack)) {
+      addFinding(findings, "review", "python-org-release-api-reference", "python.org release-management API vulnerability reference appears in scanned metadata.", relative, "Use this as a Python release-integrity review lead. Validate release downloads against trusted python.org/PSF hosts, hashes, and signatures before using cached artifacts in builds.");
+    }
+
+    if (hasPythonReleaseContext && /download URL|release file URL|redirect|malicious download|impersonate administrators|authentication bypass|patched February 24|2026-02-24/i.test(haystack)) {
+      addFinding(findings, "review", "python-org-release-api-url-review", "Python release URL tampering or API-auth bypass terms appear in scanned metadata.", relative, "Review automation that consumes Python release metadata. Prefer pinned versions, pinned hashes, official mirrors, and signature verification.");
+    }
+
+    if (hasPythonReleaseContext && /Sigstore|PGP signature|GPG signature|PEP 761|attestation|trusted publishing|provenance/i.test(haystack)) {
+      addFinding(findings, "review", "python-org-release-api-signature-context", "Python release signature/provenance terms appear with python.org release-integrity context.", relative, "Verify whether build scripts check Sigstore/PGP/hash material instead of trusting mutable release metadata alone.");
+    }
+
+    for (const url of pythonReleaseUrlsInText(text)) {
+      if (!isOfficialPythonReleaseHost(url)) {
+        addFinding(findings, "warning", "python-org-release-api-unofficial-download-url", "Python release-looking download URL points outside official python.org/PSF hosts.", `${relative}: ${url}`, "Confirm this mirror is intentional and authenticated. For high-trust builds, prefer official python.org/PSF hosts plus pinned hashes and signatures.");
+      }
+    }
+
+    for (const indicator of PYTHON_ORG_RELEASE_API_TEXT_INDICATORS) {
+      if (text.includes(indicator) && hasPythonReleaseContext) {
+        addFinding(findings, "review", "python-org-release-api-text-indicator", "Python release-integrity advisory term appears in scanned metadata.", `${relative}: ${indicator}`, "Use this as a release-metadata trust and local-build automation review lead.");
       }
     }
   }
@@ -6271,6 +6591,35 @@ function compareKernelRelease(a, b) {
   return 0;
 }
 
+function nfTablesCve202623111KernelAssessment(kernelRelease) {
+  const normalized = String(kernelRelease || "").trim();
+  if (!normalized) return { status: "unknown" };
+  for (const [start, fixed] of NFTABLES_CVE_2026_23111_FIXED_KERNELS) {
+    if (compareKernelRelease(normalized, start) >= 0 && compareKernelRelease(normalized, fixed) < 0) {
+      return { status: "affected", fixed };
+    }
+    if (sameKernelTrain(normalized, fixed) && compareKernelRelease(normalized, fixed) >= 0) {
+      return { status: "fixed", fixed };
+    }
+  }
+  if (isNfTablesCve202623111EolKernel(normalized)) {
+    return { status: "eol" };
+  }
+  return { status: "unknown" };
+}
+
+function isNfTablesCve202623111EolKernel(kernelRelease) {
+  return (compareKernelRelease(kernelRelease, "6.4.1") >= 0 && compareKernelRelease(kernelRelease, "6.6.0") < 0)
+    || (compareKernelRelease(kernelRelease, "6.3.10") >= 0 && compareKernelRelease(kernelRelease, "6.4.0") < 0)
+    || /^6\.(?:0|2)\./.test(kernelRelease);
+}
+
+function sameKernelTrain(version, baseline) {
+  const left = String(version).match(/^(\d+)\.(\d+)/);
+  const right = String(baseline).match(/^(\d+)\.(\d+)/);
+  return Boolean(left && right && left[1] === right[1] && left[2] === right[2]);
+}
+
 function tokenizeKernel(value) {
   return String(value)
     .split(/[^A-Za-z0-9]+/)
@@ -6378,6 +6727,29 @@ function exchangeBuildsBelowCve202645504Fixed(text) {
     }
   }
   return Array.from(builds);
+}
+
+function pythonReleaseUrlsInText(text) {
+  const urls = new Set();
+  for (const match of String(text).matchAll(/https?:\/\/[^\s"'<>]+/gi)) {
+    const url = match[0].replace(/[),.;\]]+$/, "");
+    if (/python[\s\S]{0,60}(?:\.tgz|\.tar\.xz|\.zip|\.exe|\.pkg|\.asc|\.sig|\.crt|\.pem)|(?:\.tgz|\.tar\.xz|\.zip|\.exe|\.pkg|\.asc|\.sig)[\s\S]{0,60}python/i.test(url)) {
+      urls.add(url);
+    }
+  }
+  return Array.from(urls);
+}
+
+function isOfficialPythonReleaseHost(url) {
+  try {
+    const parsed = new URL(url);
+    return parsed.hostname === "www.python.org"
+      || parsed.hostname === "python.org"
+      || parsed.hostname === "downloads.nyc1.psf.io"
+      || parsed.hostname.endsWith(".python.org");
+  } catch (_error) {
+    return false;
+  }
 }
 
 function npmVersionsInText(text) {
