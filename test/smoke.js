@@ -24,11 +24,13 @@ function run() {
   const home = path.join(root, "home", "alice");
   write(path.join(root, "etc", "os-release"), 'ID="almalinux"\nVERSION_ID="9.7"\n');
   write(path.join(root, "proc", "sys", "kernel", "osrelease"), "5.14.0-611.54.3.el9_7\n");
-  write(path.join(root, "proc", "modules"), "esp4 16384 0 - Live 0x0\nrxrpc 204800 0 - Live 0x0\nkvm 1048576 0 - Live 0x0\n");
+  write(path.join(root, "proc", "modules"), "esp4 16384 0 - Live 0x0\nrxrpc 204800 0 - Live 0x0\nnf_tables 380928 0 - Live 0x0\nkvm 1048576 0 - Live 0x0\n");
+  write(path.join(root, "proc", "sys", "kernel", "unprivileged_userns_clone"), "1\n");
   write(path.join(root, "boot", "config-5.14.0-611.54.3.el9_7"), [
     "CONFIG_KVM=m",
     "CONFIG_KVM_ARM_HOST=y",
     "CONFIG_ARM_GIC_V3_ITS=y",
+    "CONFIG_NF_TABLES=m",
   ].join("\n"));
   write(path.join(root, "tmp", "transformers.pyz"), "payload");
   write(path.join(home, ".config", "systemd", "user", "gh-token-monitor.service"), "[Service]\n");
@@ -633,10 +635,10 @@ function run() {
     "PoC notes mention poc.c and poc.py for authorized defensive validation only"
   ].join("\n"));
   write(path.join(root, "var", "log", "dirtyclone-triage.log"), [
-    "JFrog DirtyClone CVE-2026-43503 DirtyFrag family note for Linux LPE review.",
+    "JFrog DirtyClone CVE-2026-43503 and Copy Fail CVE-2026-31431 DirtyFrag family note for Linux LPE review.",
     "Initial DirtyFrag CVE-2026-43284 and CVE-2026-43500 plus Fragnesia CVE-2026-46300 need the full patch chain.",
-    "__pskb_copy_fclone nf_dup_ipv4 skb_shift skb_segment skb_gro_receive skb_gro_receive_list tcp_clone_payload SKBFL_SHARED_FRAG.",
-    "XFRM/IPsec esp_input() path with CAP_NET_ADMIN via unshare -Urn, ip xfrm state add, ip xfrm policy add, iptables -t mangle, TEE --gateway, and kernel.unprivileged_userns_clone=0 mitigation.",
+    "__pskb_copy_fclone nf_dup_ipv4 skb_shinfo(skb)->flags skb_shift skb_segment skb_gro_receive skb_gro_receive_list tcp_clone_payload SKBFL_SHARED_FRAG.",
+    "XFRM/IPsec esp_input() path with CAP_NET_ADMIN via unshare -Urn, ip xfrm state add, ip xfrm policy add, iptables -t mangle, TEE --gateway, and kernel.unprivileged_userns_clone=0 mitigation for multi-tenant container and CI runner hosts.",
     "Upstream markers include 48f6a5356a33, 9e171fc1d7d7, and v7.1-rc5; PoC notes target /usr/bin/su with cbc(aes)."
   ].join("\n"));
   write(path.join(root, "var", "log", "pedit-cow-triage.log"), [
@@ -644,6 +646,12 @@ function run() {
     "The affected path includes tcf_pedit_act with tc pedit, TCA_PEDIT_KEY_EX, pedit ex, skb_ensure_writable, skb_linearize, copy-on-write, and page-cache corruption terms.",
     "Exposure notes include cls_u32, CAP_NET_ADMIN in an unprivileged user namespace, unshare -Urn, tc qdisc, tc filter, tc action, kernel.unprivileged_userns_clone=0, and Dirty COW-style impact.",
     "PoC notes are authorized defensive references only and must not be run on production hosts."
+  ].join("\n"));
+  write(path.join(root, "var", "log", "nftables-cve-2026-23111-triage.log"), [
+    "CVE-2026-23111 nf_tables UAF review for net/netfilter/nf_tables_api.c and nft_map_catchall_activate.",
+    "Kernel fix marker 8c760ba4e36c750379d13569f23f5a6e185333f5 removes the inverted genmask check around nft_set_elem_active.",
+    "Advisory terms include DELSET, DELCHAIN, NFT_GOTO, pipapo, catchall element, chain->use, nft_setelem_data_activate, and nft_data_hold.",
+    "Public PoC provenance: Baba01hacker666/CVE-2026-23111, CVE-2026-23111-checker.py, exploit_full.c, and exploit_full.b64 are authorized-research review markers only."
   ].join("\n"));
   write(path.join(root, "usr", "share", "man9", "ph", ".ph.man"), "captured ssh credential log placeholder\n");
   write(path.join(root, "lib", "systemd", "system", "chrom.service"), [
@@ -777,6 +785,15 @@ function run() {
   ].join("\n"));
   write(path.join(home, "langflow", "requirements.txt"), "langflow==1.9.0\n");
   write(path.join(home, "langflow", "legacy.txt"), "langflow==1.8.4 /api/v1/webhook/{flow_id} WEBHOOK_AUTH_ENABLE=False get_user_by_flow_id_or_endpoint_name\n");
+  write(path.join(home, "gogs", "custom", "conf", "app.ini"), [
+    "APP_NAME = Gogs",
+    "RUN_USER = gogs",
+    "ROOT_PATH = /var/lib/gogs",
+    "REPO_ROOT_PATH = /var/lib/gogs/gogs-repositories",
+    "review note: FOFA Query app=\"Gogs\" YXBwPSJHb2dzIg==",
+    "Public PoC reference: JorianWoltjer/4b72063338b27140f4439c524d98f2b9",
+    "Gogs path traversal RCE review around custom git hook hooks/post-receive and hooks/update"
+  ].join("\n"));
   write(path.join(root, "tmp", "bin", "syswapd0"), "placeholder");
   write(path.join(root, "tmp", "bin", "dropbear"), "placeholder");
   write(path.join(root, "var", "log", "arystinger.log"), [
@@ -796,6 +813,19 @@ function run() {
     "Bishop Fox validated unauthenticated RCE chain on UniFi OS Server 5.0.6 / unifi-core 5.0.126; fixed in UniFi OS Server 5.0.8 / unifi-core 5.0.153.",
     "UniFi OS management interface TCP 11443 exposed on 0.0.0.0:11443.",
     "UniFi OS triage notes: /api/auth/validate-sso/ ucs/update/latest_package package-update ucs-update unexpected sudo commands child processes",
+  ].join("\n"));
+  write(path.join(root, "var", "log", "ptc-windchill-cve-2026-12569.txt"), [
+    "CISA Known Exploited Vulnerabilities catalogVersion 2026.06.25 BOD 26-04 Forensics Triage Requirements",
+    "PTC Windchill and FlexPLM Improper Input Validation Vulnerability CVE-2026-12569 CS473270 CWE-20 CWE-502",
+    "An unauthenticated remote attacker can execute arbitrary code by sending a malicious request to the network.",
+    "THN triage: JSP web shell attacks continue; inspect X-windchill-req request headers and /Windchill/login/0123456789abcdef.jsp paths."
+  ].join("\n"));
+  write(path.join(root, "opt", "Windchill", "codebase", "login", "0123456789abcdef.jsp"), "<%-- suspicious Windchill JSP web shell placeholder --%>\n");
+  write(path.join(root, "var", "log", "python-org-release-api-triage.txt"), [
+    "Critical python.org Vulnerability allowed attackers to forge admin-level API requests in the python.org release management API.",
+    "The issue could have changed release-file metadata and redirected users to malicious download URLs before the February 24, 2026 patch.",
+    "Review release file URL automation: official https://www.python.org/ftp/python/3.13.5/Python-3.13.5.tgz and suspicious https://mirror.example.invalid/python/Python-3.13.5.tgz.",
+    "Validate Sigstore and PGP signature material under PEP 761; Trail of Bits reported no evidence of exploitation."
   ].join("\n"));
   write(path.join(root, "var", "log", "cisco-cucm-webdialer-20230.txt"), [
     "Cisco Unified Communications Manager Unified CM SME CVE-2026-20230 cisco-sa-cucm-ssrf-cXPnHcW",
@@ -841,6 +871,11 @@ function run() {
   assert(ids.has("itscape-arm64-kvm-exposure"));
   assert(ids.has("itscape-arm64-kvm-kernel-review"));
   assert(ids.has("fragnesia-risk-modules-loaded"));
+  assert(ids.has("nftables-cve-2026-23111-userns-exposure"));
+  assert(ids.has("nftables-cve-2026-23111-reference"));
+  assert(ids.has("nftables-cve-2026-23111-advisory-terms"));
+  assert(ids.has("nftables-cve-2026-23111-poc-artifact"));
+  assert(ids.has("nftables-cve-2026-23111-text-indicator"));
   assert(ids.has("known-supply-chain-persistence-path"));
   assert(ids.has("transformers-pyz-present"));
   assert(ids.has("developer-secret-surfaces-present"));
@@ -1052,6 +1087,11 @@ function run() {
   assert(ids.has("autojack-agent-localhost-indicator"));
   assert(ids.has("autojack-local-mcp-control-plane-review"));
   assert(ids.has("autojack-autogenstudio-prerelease-review"));
+  assert(ids.has("gogs-fofa-exposure-fingerprint"));
+  assert(ids.has("gogs-public-poc-reference"));
+  assert(ids.has("gogs-path-traversal-rce-review"));
+  assert(ids.has("gogs-deployment-artifact"));
+  assert(ids.has("gogs-text-indicator"));
   assert(ids.has("pcpjack-relay-file-name"));
   assert(ids.has("pcpjack-relay-text-indicator"));
   assert(ids.has("hades-runtime-artifact-path"));
@@ -1094,6 +1134,16 @@ function run() {
   assert(ids.has("cisa-kev-unifi-os-management-exposure"));
   assert(ids.has("cisa-kev-unifi-os-rce-chain-triage-marker"));
   assert(ids.has("cisa-kev-edge-device-text-indicator"));
+  assert(ids.has("ptc-windchill-cve-2026-12569-kev-reference"));
+  assert(ids.has("ptc-windchill-cve-2026-12569-exposure-review"));
+  assert(ids.has("ptc-windchill-cve-2026-12569-jsp-webshell"));
+  assert(ids.has("ptc-windchill-cve-2026-12569-header-indicator"));
+  assert(ids.has("ptc-windchill-cve-2026-12569-text-indicator"));
+  assert(ids.has("python-org-release-api-reference"));
+  assert(ids.has("python-org-release-api-url-review"));
+  assert(ids.has("python-org-release-api-signature-context"));
+  assert(ids.has("python-org-release-api-unofficial-download-url"));
+  assert(ids.has("python-org-release-api-text-indicator"));
   assert(ids.has("cisco-cucm-webdialer-cve-2026-20230-reference"));
   assert(ids.has("cisco-cucm-webdialer-ssrf-review"));
   assert(ids.has("cisco-cucm-webdialer-webshell-exploitation-review"));

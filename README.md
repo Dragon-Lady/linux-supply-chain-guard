@@ -133,6 +133,12 @@ deprecated `/api/v1/upload/{flow_id}` route exposure, absolute upload
 `file_path` leak artifacts, public-bind review, upload-size limit markers, and
 the `LOGSPACE-LangFlow` FOFA/product fingerprint context.
 
+The June 2026 Gogs exposure-review lane adds local/mounted-root checks for Gogs
+deployment artifacts, `app="Gogs"` FOFA fingerprint notes, public PoC
+provenance references, and path-traversal or Git-hook RCE triage terms. These
+are review signals for exposed self-hosted Git services; the guard does not
+include or run exploit steps.
+
 The June 2026 Laravel Livewire watch pack adds local deployment checks for
 `CVE-2025-54068` vulnerable `livewire/livewire` Composer versions before
 `3.6.4`, broad v3 Composer constraints requiring lockfile verification, and
@@ -331,10 +337,12 @@ Exit codes:
     `RXGK_SERVER_ENC_TOKEN`, `RXRPC_CHARGE_ACCEPT`, and
     `RXRPC_CLIENT_INITIATED`
 - DirtyClone / `CVE-2026-43503` review indicators:
-  - `DirtyClone`, `DirtyFrag`, `CVE-2026-43503`, `CVE-2026-43284`,
-    `CVE-2026-43500`, and `CVE-2026-46300` advisory terms
+  - `DirtyClone`, `Copy Fail`, `DirtyFrag`, `CVE-2026-43503`,
+    `CVE-2026-31431`, `CVE-2026-43284`, `CVE-2026-43500`, and
+    `CVE-2026-46300` advisory terms
   - clone-path markers such as `__pskb_copy_fclone`, `nf_dup_ipv4`,
-    `skb_shift`, `skb_segment`, `skb_gro_receive`, and `tcp_clone_payload`
+    `skb_shinfo`, `skb_shift`, `skb_segment`, `skb_gro_receive`, and
+    `tcp_clone_payload`
   - XFRM/IPsec, `CAP_NET_ADMIN`, `unshare -Urn`, `ip xfrm`, `TEE --gateway`,
     `esp_input()`, and `kernel.unprivileged_userns_clone=0` terms
   - upstream fix/release markers including `48f6a5356a33`, `9e171fc1d7d7`,
@@ -349,6 +357,20 @@ Exit codes:
     `unprivileged user namespace`, and `kernel.unprivileged_userns_clone=0`
   - copied PoC/provenance markers such as `tc qdisc`, `tc filter`,
     `tc action`, and `unshare -Urn` are review-only signals
+- nf_tables / `CVE-2026-23111` review indicators:
+  - affected upstream kernel trains from the public checker notes, including
+    `6.18 < 6.18.10`, `6.12 < 6.12.70`, `6.6 < 6.6.124`,
+    `6.1.36 < 6.1.163`, and `5.15.121 < 5.15.200`
+  - `nf_tables` module/config presence paired with
+    `kernel.unprivileged_userns_clone=1`
+  - `nft_map_catchall_activate`, `nft_set_elem_active`,
+    `nft_setelem_data_activate`, `nft_data_hold`, `NFT_GOTO`, `DELSET`,
+    `DELCHAIN`, `pipapo`, `catchall element`, and `chain->use` advisory terms
+  - kernel fix markers including `8c760ba4e36c750379d13569f23f5a6e185333f5`
+    and upstream `f41c5d151078c5348271ffaf8e7410d96f2d82f8`
+  - public PoC/provenance markers such as
+    `Baba01hacker666/CVE-2026-23111`, `CVE-2026-23111-checker.py`,
+    `exploit_full.c`, and `exploit_full.b64` are review-only signals
 - Known Shai-Hulud / Here We Go Again persistence and payload paths:
   - `/tmp/transformers.pyz`
   - `gh-token-monitor.service`
@@ -476,6 +498,22 @@ Exit codes:
     and unexpected-sudo review terms
   - CISA KEV, BOD `26-04`, and forensics-triage notes for exported appliance
     inventories or incident-response files
+- PTC Windchill/FlexPLM / `CVE-2026-12569` indicators:
+  - CISA KEV catalog version `2026.06.25`, PTC advisory `CS473270`, and
+    `CVE-2026-12569` copied notes
+  - Windchill/FlexPLM references paired with improper input validation,
+    unauthenticated remote code execution, `CWE-20`, `CWE-502`, or BOD `26-04`
+  - JSP web shell triage terms, including `/Windchill/login/<16 hex>.jsp`
+  - `X-windchill-req` request-header review terms for access-log hunting
+- python.org release-management API trust indicators:
+  - copied notes about forged admin-level API requests, release-file metadata,
+    authentication bypass, or malicious Python release download URLs
+  - official host context such as `www.python.org/ftp/python`,
+    `www.python.org/downloads/release`, and `downloads.nyc1.psf.io`
+  - release provenance terms such as `Sigstore`, `PGP signature`, `PEP 761`,
+    and `Trail of Bits`
+  - Python release-looking download URLs outside official python.org/PSF hosts
+    are warning-level mirror/provenance review leads
 - Cisco CUCM WebDialer / `CVE-2026-20230` indicators:
   - Cisco Unified Communications Manager / Unified CM / Unified CM SME
     references paired with WebDialer, SSRF, or Cisco advisory
@@ -796,6 +834,8 @@ the known indicators it checks.
   https://delphoslabs.com/blog/36142374-e1fe-80a9-9456-d3c64df81bd5/%20linux-rxgk-decrypt-mac
 - JFrog DirtyClone / CVE-2026-43503 analysis:
   https://research.jfrog.com/post/dissecting-and-exploiting-linux-lpe-variant-dirtyclone-cve-2026-43503/
+- The Hacker News DirtyClone / Copy Fail summary:
+  https://thehackernews.com/2026/06/new-dirtyclone-linux-kernel-flaw-lets.html
 - Cyber Security News on ITScape / CVE-2026-46316 ARM64 KVM guest-to-host
   escape PoC:
   https://cybersecuritynews.com/poc-exploit-released-linux-kernel-vulnerability/
@@ -951,6 +991,14 @@ the known indicators it checks.
   https://www.bleepingcomputer.com/news/security/cisa-warns-of-max-severity-ubiquiti-flaws-exploited-in-attacks/
 - Bishop Fox UniFi OS unauthenticated RCE chain detection and analysis:
   https://bishopfox.com/blog/popping-root-on-unifi-os-server-unauthenticated-rce-chain-detection-analysis
+- The Hacker News PTC Windchill/FlexPLM `CVE-2026-12569` KEV/web shell summary:
+  https://thehackernews.com/2026/06/cisa-adds-exploited-ptc-windchill-rce.html
+- PTC advisory `CS473270`:
+  https://www.ptc.com/en/support/article/CS473270
+- NVD `CVE-2026-12569` record:
+  https://nvd.nist.gov/vuln/detail/CVE-2026-12569
+- Cyber Security News python.org release-management API vulnerability summary:
+  https://cybersecuritynews.com/critical-python-org-vulnerability/
 - Lantronix EDS5000 latest firmware page:
   https://ltrxdev.atlassian.net/wiki/spaces/LTRXTS/pages/2538438657/Latest%2BFirmware%2Bfor%2Bthe%2BEDS5000%2Bseries%2BEDS5008%2BEDS5016%2BEDS5032
 - NVD CVE-2026-20230 record:
@@ -961,6 +1009,8 @@ the known indicators it checks.
   https://cloud.google.com/blog/topics/threat-intelligence/zero-day-exploitation-cisco-catalyst-sd-wan-manager/
 - Cyber Security News, Cisco Catalyst SD-WAN Manager 0-day summary:
   https://cybersecuritynews.com/cisco-catalyst-sd-wan-manager-0-day/
+- SecurityOnline Cisco SD-WAN zero-day summary:
+  https://securityonline.info/cisco-sd-wan-zero-day/
 - Microsoft MSRC Update Guide for `CVE-2026-45504`:
   https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-45504
 - hawktrace public PoC repository for `CVE-2026-45504`:
@@ -1050,6 +1100,16 @@ the known indicators it checks.
   https://ubuntu.com/security/CVE-2026-46331
 - Debian `CVE-2026-46331` tracker:
   https://security-tracker.debian.org/tracker/CVE-2026-46331
+- Positive Technologies DBugs `CVE-2026-23111` record:
+  https://dbugs.ptsecurity.com/vulnerability/CVE-2026-23111
+- Linux stable `CVE-2026-23111` nf_tables fix commit:
+  https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/commit/?id=8c760ba4e36c750379d13569f23f5a6e185333f5
+- Baba01hacker666 public `CVE-2026-23111` PoC/checker repository:
+  https://github.com/Baba01hacker666/CVE-2026-23111
+- FOFA Gogs product fingerprint query:
+  https://en.fofa.info/result?qbase64=YXBwPSJHb2dzIg==
+- Jorian Woltjer public Gogs RCE PoC reference:
+  https://gist.github.com/JorianWoltjer/4b72063338b27140f4439c524d98f2b9
 - Wordfence ShapedPlugin Pro supply-chain compromise PSA:
   https://www.wordfence.com/blog/2026/06/psa-supply-chain-compromise-targets-shapedplugin-backdoored-pro-plugins-distributed-via-official-channels/
 - The Hacker News ShapedPlugin Pro supply-chain compromise summary:

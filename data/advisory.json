@@ -1,13 +1,13 @@
 {
   "incident": "Linux supply-chain host exposure guard",
-  "lastUpdated": "2026-06-26",
+  "lastUpdated": "2026-06-27",
   "scope": {
-    "postureChecks": "Read-only Linux host checks for vulnerable kernel posture, risky module state, ITScape ARM64 KVM exposure, DirtyCBC/RxGK and DirtyClone page-cache poisoning research-artifact leads, known supply-chain persistence paths, selected compromised npm package references, AtomicArch/IronWorm AUR indicators, DPRK npm RAT dependency indicators, OtterCookie npm indicators, Hades PyPI/Miasma indicators, macOS.Gaslight mounted-root indicators, Agentjacking Sentry/MCP exposure indicators, Solana FakeFix/CMS loader indicators, GlassWASM/Open VSX extension indicators, Adblock for YouTube browser-extension review indicators, VS Code folder-open npm autorun indicators, FFmpeg PixelSmash/MagicYUV media-processing exposure, Heaven's Gate WOW64 evasion review indicators, Palo Alto GlobalProtect CVE-2026-0257 log-hunting indicators, Cisco Catalyst SD-WAN Manager 2026 zero-day log-hunting indicators, Operation Highland / Velvet Ant auth-stack indicators, and TeamPCP/Dynatrace weak-signal exposure indicators.",
+    "postureChecks": "Read-only Linux host checks for vulnerable kernel posture, risky module state, ITScape ARM64 KVM exposure, DirtyCBC/RxGK and DirtyClone page-cache poisoning research-artifact leads, known supply-chain persistence paths, selected compromised npm package references, AtomicArch/IronWorm AUR indicators, DPRK npm RAT dependency indicators, OtterCookie npm indicators, Hades PyPI/Miasma indicators, macOS.Gaslight mounted-root indicators, Agentjacking Sentry/MCP exposure indicators, Solana FakeFix/CMS loader indicators, GlassWASM/Open VSX extension indicators, Adblock for YouTube browser-extension review indicators, VS Code folder-open npm autorun indicators, FFmpeg PixelSmash/MagicYUV media-processing exposure, Heaven's Gate WOW64 evasion review indicators, nf_tables CVE-2026-23111 local-privilege-escalation posture and PoC-provenance indicators, Palo Alto GlobalProtect CVE-2026-0257 log-hunting indicators, Cisco Catalyst SD-WAN Manager 2026 zero-day log-hunting indicators, Operation Highland / Velvet Ant auth-stack indicators, and TeamPCP/Dynatrace weak-signal exposure indicators.",
     "notInScope": "No exploit testing, malware execution, automatic cleanup, token revocation, or claims that a host is clean.",
     "fragnesia": "CVE-2026-46300 affects supported AlmaLinux releases through esp4, esp6, and in some AlmaLinux 9/10 cases rxrpc. Built-in patched kernel thresholds follow AlmaLinux's May 13, 2026 disclosure.",
     "itscapeArm64Kvm": "CVE-2026-46316 / ITScape affects ARM64 KVM hosts through a vGIC-ITS race condition. The guard flags ARM64 KVM exposure and asks operators to verify vendor-fixed kernels or backports, with upstream 6.15.0 used as a review baseline.",
     "dirtyCbcRxgk": "Checks local and mounted-root metadata for Delphos DirtyCBC / Linux RxGK decrypt-before-MAC page-cache poisoning notes, AF_RXRPC/YFS-RxGK RESPONSE code-path markers, MSG_SPLICE_PAGES, upstream fix marker aa54b1d27fe0, and public PoC provenance terms.",
-    "dirtyClone": "Checks local and mounted-root metadata for JFrog DirtyClone / CVE-2026-43503 DirtyFrag-family notes, __pskb_copy_fclone and nf_dup_ipv4 clone-path markers, XFRM/IPsec and CAP_NET_ADMIN/user-namespace exposure terms, upstream fix markers, and public PoC provenance terms.",
+    "dirtyClone": "Checks local and mounted-root metadata for JFrog DirtyClone / CVE-2026-43503 and Copy Fail / CVE-2026-31431 DirtyFrag-family notes, __pskb_copy_fclone, nf_dup_ipv4, skb_shinfo, SKBFL_SHARED_FRAG, XFRM/IPsec and CAP_NET_ADMIN/user-namespace exposure terms, upstream fix markers, multi-tenant container/CI exposure language, and public PoC provenance terms.",
     "dynatraceTeamPcp": "Weak-signal checks flag Dynatrace token-shaped values and TeamPCP/Dynatrace screenshot repo/service strings in scanned metadata. These findings are correlation leads and do not prove compromise by themselves.",
     "hadesPyPi": "Checks for affected PyPI package versions, executable .pth startup hooks, Bun/_index.js loader behavior, native .abi3.so launcher layouts, and Hades GitHub/CI exfiltration or seeding markers from June 2026 Socket/SecurityWeek/JFrog reporting.",
     "macosGaslight": "Checks local and mounted-root metadata for SentinelOne-reported macOS.Gaslight SHA-256 values, LaunchAgent label, Telegram Bot API polling/exfiltration terms, standalone CPython staging constants, Keychain/browser collection terms, and LLM-triage prompt-injection bait.",
@@ -37,13 +37,18 @@
     "ffmpegPixelSmash8461": "Checks local and mounted-root metadata for JFrog/Malwarebytes-reported FFmpeg PixelSmash CVE-2026-8461 MagicYUV decoder exposure, FFmpeg/libavcodec package posture, media ingestion surfaces, and MagicYUV disablement notes.",
     "operationHighland": "Checks Sygnia Operation Highland / Velvet Ant indicators including published SHA-1 values, hidden credential-log paths, GS-Netcat/auditdb staging, Nginx/FastCGI bridge artifacts, C2/infrastructure strings, and process-masquerade markers.",
     "bluekitBitmPhishing": "Checks local and mounted-root metadata for Netcraft/BleepingComputer-reported BlueKit browser-in-the-middle phishing signals, including rrweb DOM streaming over WebSocket, custom CAPTCHA, WebRTC IP mismatch detection, browser fingerprint checks, CSS filter randomization, and phishing asset proxying language. rrweb alone is treated as context, not a standalone IOC.",
-    "autoJackAgentLocalhost": "Checks Microsoft AutoJack / AutoGen Studio local MCP control-plane posture terms including AutoGen Studio, StdioServerParams, server_params, /api/mcp/ws, localhost:8081, b047730, and reported autogenstudio pre-release versions. These are review prompts for agent-localhost trust-boundary risk."
+    "autoJackAgentLocalhost": "Checks Microsoft AutoJack / AutoGen Studio local MCP control-plane posture terms including AutoGen Studio, StdioServerParams, server_params, /api/mcp/ws, localhost:8081, b047730, and reported autogenstudio pre-release versions. These are review prompts for agent-localhost trust-boundary risk.",
+    "gogsPathTraversalRce": "Checks local and mounted-root metadata for Gogs deployment artifacts, app=\"Gogs\" FOFA fingerprint notes, public Jorian Woltjer PoC references, and Gogs path-traversal or Git-hook RCE triage terms. These are exposure-review and authorized-research provenance prompts only.",
+    "nfTablesCve202623111": "Checks running-kernel range posture, nf_tables module/config presence, kernel.unprivileged_userns_clone exposure, kernel.org fix markers, nft_map_catchall_activate/inverted-genmask advisory terms, and public Baba01hacker666 PoC/checker artifact markers for CVE-2026-23111.",
+    "ptcWindchillCve202612569": "Checks local and mounted-root metadata for CISA KEV catalog version 2026.06.25 PTC Windchill and FlexPLM CVE-2026-12569, PTC advisory CS473270, improper-input-validation/RCE language, X-windchill-req request header notes, and JSP web shell paths such as /Windchill/login/<16 hex>.jsp.",
+    "pythonOrgReleaseApiTrust": "Checks local and mounted-root metadata for the June 2026 python.org release-management API authentication-bypass disclosure, February 24 2026 patch context, mutable release-file URL notes, downloads.nyc1.psf.io / www.python.org/ftp/python references, Sigstore/PGP/PEP 761 provenance terms, and Python release-looking download URLs outside official python.org/PSF hosts."
   },
   "sources": [
     "https://almalinux.org/blog/2026-05-13-fragnesia-cve-2026-46300/",
     "https://nvd.nist.gov/vuln/detail/CVE-2026-46300",
     "https://delphoslabs.com/blog/36142374-e1fe-80a9-9456-d3c64df81bd5/%20linux-rxgk-decrypt-mac",
     "https://research.jfrog.com/post/dissecting-and-exploiting-linux-lpe-variant-dirtyclone-cve-2026-43503/",
+    "https://thehackernews.com/2026/06/new-dirtyclone-linux-kernel-flaw-lets.html",
     "https://cybersecuritynews.com/poc-exploit-released-linux-kernel-vulnerability/",
     "https://research.jfrog.com/post/shai-hulud-here-we-go-again/",
     "https://www.resultsense.com/news/2026-05-13-mistral-ai-pypi-supply-chain-malware-shai-hulud/",
@@ -111,6 +116,16 @@
     "https://www.malwarebytes.com/blog/news/2026/06/pixelsmash-flaw-turns-video-files-into-attack-tools",
     "https://jfrog.com/blog/pixelsmash-critical-ffmpeg-vulnerability-turns-media-files-into-weapons/",
     "https://www.microsoft.com/en-us/security/blog/2026/06/18/autojack-single-page-rce-host-running-ai-agent/",
-    "https://thehackernews.com/2026/06/autojack-attack-lets-one-web-page.html"
+    "https://thehackernews.com/2026/06/autojack-attack-lets-one-web-page.html",
+    "https://en.fofa.info/result?qbase64=YXBwPSJHb2dzIg==",
+    "https://gist.github.com/JorianWoltjer/4b72063338b27140f4439c524d98f2b9",
+    "https://dbugs.ptsecurity.com/vulnerability/CVE-2026-23111",
+    "https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/commit/?id=8c760ba4e36c750379d13569f23f5a6e185333f5",
+    "https://github.com/Baba01hacker666/CVE-2026-23111",
+    "https://thehackernews.com/2026/06/cisa-adds-exploited-ptc-windchill-rce.html",
+    "https://www.ptc.com/en/support/article/CS473270",
+    "https://nvd.nist.gov/vuln/detail/CVE-2026-12569",
+    "https://cybersecuritynews.com/critical-python-org-vulnerability/",
+    "https://cybersecuritynews.com/critical-python-org-vulnerability/amp/"
   ]
 }
