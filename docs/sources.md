@@ -106,6 +106,7 @@
 - BleepingComputer macOS ClickFix / AMOS DMG campaign summary: https://www.bleepingcomputer.com/news/security/new-macos-clickfix-attack-silently-mounts-dmgs-to-push-infostealer/
 - SentinelOne macOS.Gaslight Rust backdoor analysis: https://www.sentinelone.com/labs/macos-gaslight-rust-backdoor-turns-prompt-injection-on-the-analyst-not-the-sandbox/
 - The Hacker News macOS.Gaslight summary: https://thehackernews.com/2026/06/new-gaslight-macos-malware-uses-prompt.html
+- SecurityAffairs macOS.Gaslight summary: https://securityaffairs.com/194256/malware/macos-gaslight-north-korea-linked-malware-that-tries-to-gaslight-the-analyst.html
 - Nextron Research X post on malicious Packagist dcat-auth-google-2fa@1.0.2.0: https://x.com/nextronresearch
 - The Hacker News, NGINX CVE-2026-42945 exploited in the wild: https://thehackernews.com/2026/05/nginx-cve-2026-42945-exploited-in-wild.html
 - The Register, NGINX Rift exploitation activity: https://www.theregister.com/security/2026/05/18/nginx-rift-attackers-waste-no-time-targeting-exposed-servers/
