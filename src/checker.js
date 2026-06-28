@@ -1964,6 +1964,16 @@ const EXCHANGE_CVE202645504_TEXT_INDICATORS = [
   "CVE-2026-45504.py",
   "Exchange File Read",
   "--target-file",
+  "GetWopiTargetPropertiesByUrl",
+  "WebApplicationUrl",
+  "ReferenceAttachment",
+  "ProviderEndpointUrl",
+  "FileWebRequest",
+  "GetWacAttachmentInfo",
+  "GetWacUrl",
+  "OneDriveProUtilities",
+  "exchange.asmx",
+  "file:///C:/windows/win.ini",
   "server-side request forgery",
   "SSRF",
   "elevate privileges over a network",
@@ -5880,6 +5890,14 @@ function checkExchangeCve202645504(findings, targetRoot, homePath) {
 
     if (/(?:Microsoft Exchange|Exchange Server|OWA|ECP|EWS|ActiveSync)[\s\S]{0,320}(?:CVE-2026-45504|PT-2026-47976|SSRF|server-side request forgery|file read|Exchange File Read|elevate privileges)|(?:CVE-2026-45504|PT-2026-47976|SSRF|server-side request forgery|file read|Exchange File Read|elevate privileges)[\s\S]{0,320}(?:Microsoft Exchange|Exchange Server|OWA|ECP|EWS|ActiveSync)/i.test(text)) {
       addFinding(findings, "warning", "exchange-cve-2026-45504-ssrf-file-read-review", "Exchange CVE-2026-45504 SSRF/file-read or privilege-escalation terms appear in scanned metadata.", relative, "Treat this as an Exchange inventory and log-review lead. Review authenticated mailbox activity, cross-mailbox access, IIS logs, and Exchange service logs from a clean administrative host.");
+    }
+
+    if (/(?:GetWopiTargetPropertiesByUrl|WebApplicationUrl|FileWebRequest|GetWacAttachmentInfo|GetWacUrl|OneDriveProUtilities|ReferenceAttachment|ProviderEndpointUrl|exchange\.asmx)[\s\S]{0,360}(?:file:\/\/|CVE-2026-45504|Exchange File Read|WOPI|SSRF)|(?:file:\/\/|CVE-2026-45504|Exchange File Read|WOPI|SSRF)[\s\S]{0,360}(?:GetWopiTargetPropertiesByUrl|WebApplicationUrl|FileWebRequest|GetWacAttachmentInfo|GetWacUrl|OneDriveProUtilities|ReferenceAttachment|ProviderEndpointUrl|exchange\.asmx)/i.test(text)) {
+      addFinding(findings, "warning", "exchange-cve-2026-45504-wopi-file-read-chain", "Exchange CVE-2026-45504 WOPI/EWS file-read chain terms appear in scanned metadata.", relative, "Review authenticated EWS ReferenceAttachment activity, WOPI target-property requests, attacker-controlled ProviderEndpointUrl values, file:// WebApplicationUrl responses, and Exchange outbound requests before remediation.");
+    }
+
+    if (/WebApplicationUrl[\s\S]{0,180}file:\/\/[^ \n\r\t<>"']*#|file:\/\/[^ \n\r\t<>"']*#[\s\S]{0,180}(?:WebApplicationUrl|access_token|WOPI|Exchange)/i.test(text)) {
+      addFinding(findings, "critical", "exchange-cve-2026-45504-fragment-obfuscated-file-url", "Exchange CVE-2026-45504 fragment-obfuscated file:// URL marker appears in scanned metadata.", relative, "Treat this as a high-confidence file-read exploit-chain lead. Preserve WOPI XML, EWS/IIS logs, attacker infrastructure responses, and mailbox context.");
     }
 
     if (/hawktrace\/CVE-2026-45504|CVE-2026-45504\.py|--target-file|Exchange File Read|PT-2026-47976/i.test(text) || relative.includes("/CVE-2026-45504/") || path.basename(filePath) === "CVE-2026-45504.py") {
