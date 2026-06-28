@@ -97,6 +97,8 @@
 - ANY.RUN EvilTokens Microsoft OAuth device-code phishing analysis: https://any.run/cybersecurity-blog/eviltokens-ghost-code-analysis/
 - Netcraft BlueKit Browser-in-the-Middle phishing analysis: https://www.netcraft.com/blog/bluekit-phishing-as-a-service-threat
 - BleepingComputer BlueKit BitM phishing summary: https://www.bleepingcomputer.com/news/security/bluekit-phishing-kit-adopts-browser-in-the-middle-for-login-theft/
+- The Hacker News TonRAT Photo ZIP hospitality phishing summary: https://thehackernews.com/2026/06/microsoft-warns-of-photo-zip-phishing.html
+- SOC Prime technical analysis of suspicious emails targeting the hotel industry: https://socprime.com/active-threats/technical-analysis-of-suspicious-emails-targeting-the-hotel-industry/
 - Broadcom/Symantec Backdoor.Mistic / ModeloRAT access-broker analysis: https://www.security.com/threat-intelligence/new-mistic-backdoor-modelorat
 - SecurityWeek Mistic RAT ransomware access-broker summary: https://www.securityweek.com/new-mistic-rat-opens-door-to-several-ransomware-families/
 - Zscaler ThreatLabz MLTBackdoor technical analysis: https://www.zscaler.com/blogs/security-research/technical-analysis-mltbackdoor

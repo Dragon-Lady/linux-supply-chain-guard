@@ -219,6 +219,13 @@ CAPTCHA, WebRTC IP mismatch detection, browser fingerprint checks, top-level
 CSS filter randomization, and phishing-infrastructure asset proxying. `rrweb`
 alone is intentionally treated as context, not an IOC.
 
+The June 2026 TonRAT Photo ZIP watch pack adds local/mounted-root triage checks
+for hospitality phishing notes involving Booking Manager/Calendly and Google
+redirect lures, `photo-*.zip` archives, image-looking `.png.lnk` shortcuts,
+PowerShell stagers, user-space Node.js `v24.13.0` under `AppData\Local\Nodejs`,
+TON blockchain API C2 discovery, encrypted WebSocket C2, and Run/RunOnce
+persistence notes.
+
 The June 2026 PixelSmash watch pack adds FFmpeg/libavcodec posture checks for
 `CVE-2026-8461`, MagicYUV decoder exposure terms, older upstream-looking
 FFmpeg versions before `8.1.2`, and high-risk media ingestion surfaces such as
@@ -621,6 +628,16 @@ Exit codes:
     headless-browser checks, and top-level CSS filter randomization
   - asset proxying language for images, fonts, and CSS fetched through
     phishing infrastructure
+- TonRAT Photo ZIP phishing indicators:
+  - hospitality lure context such as Booking Manager, Calendly, hotel-industry,
+    or reservation-photo language paired with Google redirect/share links,
+    Cloudflare Turnstile, or `.cfd` staging domains
+  - attachment names such as `photo-<digits>.zip` and image-looking shortcut
+    names such as `IMG-*.png.lnk` or `PHOTO-*.png.lnk`
+  - PowerShell/LNK stager terms paired with user-space Node.js `v24.13.0`,
+    `AppData\Local\Nodejs`, or `node-v24.13.0`
+  - TonRAT, TON blockchain API / `tonapi.io`, encrypted WebSocket C2, and
+    Run/RunOnce persistence review terms
 - Mistic / MLTBackdoor ransomware access-broker indicators:
   - `Backdoor.Mistic`, `Mistic RAT`, `MLTBackdoor`, `Woodgnat`, `KongTuke`,
     and `ModeloRAT` advisory or telemetry terms
@@ -1035,6 +1052,10 @@ the known indicators it checks.
   https://www.netcraft.com/blog/bluekit-phishing-as-a-service-threat
 - BleepingComputer BlueKit BitM phishing summary:
   https://www.bleepingcomputer.com/news/security/bluekit-phishing-kit-adopts-browser-in-the-middle-for-login-theft/
+- The Hacker News TonRAT Photo ZIP hospitality phishing summary:
+  https://thehackernews.com/2026/06/microsoft-warns-of-photo-zip-phishing.html
+- SOC Prime technical analysis of suspicious emails targeting the hotel industry:
+  https://socprime.com/active-threats/technical-analysis-of-suspicious-emails-targeting-the-hotel-industry/
 - Broadcom/Symantec Backdoor.Mistic / ModeloRAT access-broker analysis:
   https://www.security.com/threat-intelligence/new-mistic-backdoor-modelorat
 - SecurityWeek Mistic RAT ransomware access-broker summary:

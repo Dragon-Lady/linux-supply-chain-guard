@@ -75,6 +75,15 @@ polling/exfiltration terms, standalone CPython staging through
 LLM-triage prompt-injection bait. These checks do not execute Mach-O files,
 Python, shell installers, or payload text.
 
+THN and SOC Prime's June 2026 TonRAT Photo ZIP reporting is included as
+mounted-root and copied-log triage for Windows hospitality-phishing evidence.
+The guard looks for Booking Manager/Calendly and Google redirect lures,
+`photo-*.zip` archives, image-looking `.png.lnk` shortcuts, PowerShell stagers,
+user-space Node.js `v24.13.0` under `AppData\Local\Nodejs`, TON blockchain API
+C2 discovery, encrypted WebSocket C2, and Run/RunOnce persistence terms. These
+checks are lead generators for Windows/client incident notes and do not execute
+shortcuts, scripts, or JavaScript implants.
+
 The June 2026 npm v12 readiness lane is included as pre-execution posture
 guidance. GitHub, The Hacker News, and JFrog reporting all point to the same
 shift: npm is moving high-risk install behavior from implicit trust to explicit

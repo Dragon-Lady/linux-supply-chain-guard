@@ -832,6 +832,13 @@ function run() {
     "WebDialer SSRF server-side request forgery can write files to the underlying operating system and elevate to root.",
     "Defused OSINT escalation: automated sweeps dropping webshells via Tor, full-chain exploitation observed.",
   ].join("\n"));
+  write(path.join(root, "var", "log", "tonrat-photo-zip-phishing.txt"), [
+    "Microsoft and SOC Prime hotel-industry phishing note: Booking Manager (via Calendly) sent a share.google redirect through Cloudflare Turnstile on a .cfd staging domain.",
+    "Attachment observed as photo-842193.zip containing IMG-842193.png.lnk and PHOTO-842193.png.lnk.",
+    "The LNK launches powershell.exe to decode a URL, download a .ps1 stager, and install Node.js v24.13.0 from node-v24.13.0 under AppData\\Local\\Nodejs.",
+    "TonRAT uses TON blockchain API lookups via tonapi.io for C2 discovery, encrypted WebSocket traffic over wss:, and ip-api.com geolocation.",
+    "Persistence notes mention CurrentVersion\\Run, RunOnce under ProgramData, headless --no-sandbox browser activity, and shutdown -s -t 0 host-control behavior.",
+  ].join("\n"));
   write(path.join(root, "var", "log", "cisco-sdwan-manager-2026.txt"), [
     "Google Threat Intelligence Group Cisco Catalyst SD-WAN Manager vManage CVE-2026-20245 CVE-2026-20127 CVE-2026-20182.",
     "Fixed releases include 20.9.9.2, 20.12.7.2, 20.15.4.5, 20.15.5.3, 20.18.3.1, and 26.1.1.2.",
@@ -1148,6 +1155,12 @@ function run() {
   assert(ids.has("cisco-cucm-webdialer-ssrf-review"));
   assert(ids.has("cisco-cucm-webdialer-webshell-exploitation-review"));
   assert(ids.has("cisco-cucm-webdialer-text-indicator"));
+  assert(ids.has("tonrat-photo-zip-malware-reference"));
+  assert(ids.has("tonrat-photo-zip-hospitality-lure"));
+  assert(ids.has("tonrat-photo-zip-lnk-attachment"));
+  assert(ids.has("tonrat-photo-zip-nodejs-stager"));
+  assert(ids.has("tonrat-photo-zip-c2-persistence-review"));
+  assert(ids.has("tonrat-photo-zip-text-indicator"));
   assert(ids.has("cisco-sdwan-manager-cve-2026-20245-reference"));
   assert(ids.has("cisco-sdwan-manager-auth-bypass-cve-reference"));
   assert(ids.has("cisco-sdwan-manager-tenant-upload-exploit-marker"));
