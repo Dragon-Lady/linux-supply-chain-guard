@@ -362,6 +362,15 @@ transitions, `LKM DOWN`, and event-storm or telemetry-drop terms such as
 `TELEMETRY_EVENT_DROPPED_COUNT`. These checks do not reproduce the event storm
 or unload modules; they only surface possible monitoring-gap evidence.
 
+The System Register Hijacking / `ret2entry` lane tracks kernel exploitation
+research artifacts and copied notes, not active compromise. It flags references
+to `swapgs Stack Pivoting`, `KERNEL_GSBASE_MSR`, `MSR_GSBASE`,
+`entry_SYSCALL_64`, `entry_SYSCALL_compat`, `FineIBT`, `KERNEL_IBT`, `kCFI`,
+`CR-Pinning`, `native_write_cr4`, `SPSR_EL1`, `ELR_EL1`, `VBAR_EL1`, and
+KernelCTF-style exploit-porting context. Findings are provenance and mitigation
+review leads only; do not build or run kernel modules, PoCs, or exploit
+harnesses on normal workstations.
+
 Known DPRK npm RAT dependency indicators include:
 
 - `terminal-logger-utils`

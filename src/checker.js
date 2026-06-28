@@ -1611,6 +1611,39 @@ const TREND_MICRO_HOOK_RELOAD_TEXT_INDICATORS = [
   "starting patching transition",
 ];
 
+const SYSTEM_REGISTER_HIJACKING_TEXT_INDICATORS = [
+  "System Register Hijacking",
+  "ret2entry",
+  "ret2entry.pdf",
+  "swapgs Stack Pivoting",
+  "swapgs stack pivoting",
+  "KERNEL_GSBASE_MSR",
+  "MSR_GSBASE",
+  "MSR_FSBASE",
+  "entry_SYSCALL_64",
+  "entry_SYSCALL_compat",
+  "FineIBT",
+  "KERNEL_IBT",
+  "kCFI",
+  "CR-Pinning",
+  "native_write_cr4",
+  "native_write_cr0",
+  "wrgsbase",
+  "wrfsbase",
+  "GSBase",
+  "FSBase",
+  "pivot2usr",
+  "ret2usr",
+  "ret2dir",
+  "retspill",
+  "SPSR_EL1",
+  "ELR_EL1",
+  "VBAR_EL1",
+  "PAN MSR",
+  "KPTI",
+  "KernelCTF",
+];
+
 const NFTABLES_CVE_2026_23111_TEXT_INDICATORS = [
   "CVE-2026-23111",
   "nf_tables",
@@ -2189,6 +2222,7 @@ function scanHost(options = {}) {
   checkItScapeArm64Kvm(findings, targetRoot, kernelRelease, architecture);
   checkKernelModules(findings, targetRoot);
   checkTrendMicroHookReloadBypass(findings, targetRoot, homePath);
+  checkSystemRegisterHijackingResearch(findings, targetRoot, homePath);
   checkDirtyCbcRxgk(findings, targetRoot, homePath);
   checkDirtyClone(findings, targetRoot, homePath);
   checkNfTablesCve202623111(findings, targetRoot, homePath, kernelRelease);
@@ -2474,6 +2508,55 @@ function checkTrendMicroHookReloadBypass(findings, targetRoot, homePath) {
     for (const indicator of TREND_MICRO_HOOK_RELOAD_TEXT_INDICATORS) {
       if (text.includes(indicator) && hasTrendMicroContext) {
         addFinding(findings, "review", "trendmicro-hook-reload-text-indicator", "Trend Micro hook reload advisory term appears in scanned metadata.", `${relative}: ${indicator}`, "Use this as a Trend Micro Deep Security Agent hook-reload and telemetry-gap review lead.");
+      }
+    }
+  }
+}
+
+function checkSystemRegisterHijackingResearch(findings, targetRoot, homePath) {
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const roots = [
+    homeRelative,
+    "/etc",
+    "/opt",
+    "/srv",
+    "/var/log",
+    "/root",
+    "/mnt",
+    "/media",
+  ].filter(Boolean);
+  const files = [];
+  for (const root of roots) {
+    files.push(...findWatchFiles(mapLinuxPath(targetRoot, root), 25000 - files.length));
+    if (files.length >= 25000) break;
+  }
+
+  for (const filePath of files) {
+    const text = readText(filePath);
+    if (!text) continue;
+    const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+    const haystack = `${relative}\n${text}`;
+    const hasSrhContext = /System Register Hijacking|ret2entry|KERNEL_GSBASE_MSR|swapgs Stack Pivoting|FineIBT|entry_SYSCALL_compat|MSR_GSBASE|SPSR_EL1|VBAR_EL1/i.test(haystack);
+
+    if (/System Register Hijacking|ret2entry(?:\.pdf)?/i.test(haystack)) {
+      addFinding(findings, "review", "system-register-hijacking-reference", "System Register Hijacking / ret2entry research reference appears in scanned metadata.", relative, "Use this as a Linux kernel exploitation-research provenance lead. Confirm whether the material is authorized research and keep PoCs off production or credential-bearing hosts.");
+    }
+
+    if (hasSrhContext && /(?:swapgs|KERNEL_GSBASE_MSR|MSR_GSBASE|GSBase|entry_SYSCALL_64|entry_SYSCALL_compat)[\s\S]{0,320}(?:FineIBT|KERNEL_IBT|kCFI|stack pivot|bypass|KernelCTF)|(?:FineIBT|KERNEL_IBT|kCFI|stack pivot|bypass|KernelCTF)[\s\S]{0,320}(?:swapgs|KERNEL_GSBASE_MSR|MSR_GSBASE|GSBase|entry_SYSCALL_64|entry_SYSCALL_compat)/i.test(haystack)) {
+      addFinding(findings, "review", "system-register-hijacking-swapgs-fineibt-review", "swapgs/KERNEL_GSBASE System Register Hijacking terms appear with FineIBT or CFI bypass context.", relative, "Treat as kernel exploit-technique research material. Review kernel version, FineIBT/kCFI posture, FSGSBASE exposure, and whether local code or notes are authorized.");
+    }
+
+    if (hasSrhContext && /(?:native_write_cr4|native_write_cr0|CR-Pinning|wrgsbase|wrfsbase|MSR_FSBASE|SPSR_EL1|ELR_EL1|VBAR_EL1|PAN MSR|popf)[\s\S]{0,280}(?:mitigation|bypass|System Register|privilege escalation|kernel exploit)|(?:mitigation|bypass|System Register|privilege escalation|kernel exploit)[\s\S]{0,280}(?:native_write_cr4|native_write_cr0|CR-Pinning|wrgsbase|wrfsbase|MSR_FSBASE|SPSR_EL1|ELR_EL1|VBAR_EL1|PAN MSR|popf)/i.test(haystack)) {
+      addFinding(findings, "review", "system-register-hijacking-register-technique-review", "System Register Hijacking register-technique terms appear in scanned metadata.", relative, "Review as research context, not proof of compromise. Avoid running kernel modules or exploit harnesses unless isolated and explicitly authorized.");
+    }
+
+    if (hasSrhContext && /(?:poc|proof[- ]of[- ]concept|vulnerable kernel module|KernelCTF|exploit|CVE-2024-41009|CVE-2024-26925)[\s\S]{0,320}(?:swapgs|KERNEL_GSBASE|FineIBT|System Register Hijacking|ret2entry)|(?:swapgs|KERNEL_GSBASE|FineIBT|System Register Hijacking|ret2entry)[\s\S]{0,320}(?:poc|proof[- ]of[- ]concept|vulnerable kernel module|KernelCTF|exploit|CVE-2024-41009|CVE-2024-26925)/i.test(haystack)) {
+      addFinding(findings, "review", "system-register-hijacking-poc-provenance", "System Register Hijacking PoC or exploit-porting terms appear in scanned metadata.", relative, "Verify authorization and isolate any kernel modules, exploit harnesses, or modified KernelCTF material. Do not build or run on normal workstations.");
+    }
+
+    for (const indicator of SYSTEM_REGISTER_HIJACKING_TEXT_INDICATORS) {
+      if (text.includes(indicator) && hasSrhContext) {
+        addFinding(findings, "review", "system-register-hijacking-text-indicator", "System Register Hijacking research term appears in scanned metadata.", `${relative}: ${indicator}`, "Use this as a Linux kernel exploit-technique research and mitigation-review lead.");
       }
     }
   }
