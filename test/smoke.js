@@ -642,6 +642,12 @@ function run() {
     "Telemetry notes include TELEMETRY_EVENT_DROPPED_COUNT event.dropped bmhook_throttle_check bmhook_scan_enqueue tmbpf_send_event.",
     "Loop prevention config mentions enable_loop_prevention thresholdBLP enableBLP."
   ].join("\n"));
+  write(path.join(root, "var", "log", "system-register-hijacking-ret2entry.txt"), [
+    "System Register Hijacking ret2entry.pdf copied research note.",
+    "swapgs Stack Pivoting with KERNEL_GSBASE_MSR, MSR_GSBASE, GSBase, entry_SYSCALL_64, and entry_SYSCALL_compat bypasses FineIBT KERNEL_IBT in the paper.",
+    "Related register techniques mention native_write_cr4, native_write_cr0, CR-Pinning, wrgsbase, wrfsbase, MSR_FSBASE, SPSR_EL1, ELR_EL1, VBAR_EL1, PAN MSR, and popf mitigation context.",
+    "PoC provenance references vulnerable kernel module, KernelCTF, CVE-2024-41009, CVE-2024-26925, kCFI, pivot2usr, ret2usr, ret2dir, retspill, and KPTI."
+  ].join("\n"));
   write(path.join(root, "var", "log", "dirtyclone-triage.log"), [
     "JFrog DirtyClone CVE-2026-43503 and Copy Fail CVE-2026-31431 DirtyFrag family note for Linux LPE review.",
     "Initial DirtyFrag CVE-2026-43284 and CVE-2026-43500 plus Fragnesia CVE-2026-46300 need the full patch chain.",
@@ -894,6 +900,11 @@ function run() {
   assert(ids.has("trendmicro-hook-livepatch-reload-window"));
   assert(ids.has("trendmicro-hook-event-storm-suppression"));
   assert(ids.has("trendmicro-hook-reload-text-indicator"));
+  assert(ids.has("system-register-hijacking-reference"));
+  assert(ids.has("system-register-hijacking-swapgs-fineibt-review"));
+  assert(ids.has("system-register-hijacking-register-technique-review"));
+  assert(ids.has("system-register-hijacking-poc-provenance"));
+  assert(ids.has("system-register-hijacking-text-indicator"));
   assert(ids.has("nftables-cve-2026-23111-userns-exposure"));
   assert(ids.has("nftables-cve-2026-23111-reference"));
   assert(ids.has("nftables-cve-2026-23111-advisory-terms"));

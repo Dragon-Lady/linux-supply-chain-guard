@@ -338,6 +338,15 @@ Exit codes:
     `TELEMETRY_EVENT_DROPPED_COUNT`, `event.dropped`,
     `bmhook_throttle_check`, `bmhook_scan_enqueue`, `tmbpf_send_event`,
     `enable_loop_prevention`, `thresholdBLP`, and `enableBLP`
+- System Register Hijacking / `ret2entry` research indicators:
+  - `System Register Hijacking`, `ret2entry`, `swapgs Stack Pivoting`,
+    `KERNEL_GSBASE_MSR`, `MSR_GSBASE`, `entry_SYSCALL_64`,
+    `entry_SYSCALL_compat`, `FineIBT`, `KERNEL_IBT`, and `kCFI`
+  - adjacent register-technique terms including `native_write_cr4`,
+    `native_write_cr0`, `CR-Pinning`, `wrgsbase`, `wrfsbase`, `MSR_FSBASE`,
+    `SPSR_EL1`, `ELR_EL1`, `VBAR_EL1`, and `PAN MSR`
+  - PoC/provenance terms such as `KernelCTF`, vulnerable kernel module notes,
+    and exploit-porting references; these are research leads only
 - ITScape / `CVE-2026-46316` ARM64 KVM posture:
   - ARM64/aarch64 architecture detection from scanner options, `/proc/cpuinfo`,
     or kernel metadata
@@ -868,6 +877,8 @@ the known indicators it checks.
   https://thehackernews.com/2026/06/new-dirtyclone-linux-kernel-flaw-lets.html
 - MatheuZ Security Trend Micro BMHook/TMHook reload bypass analysis:
   https://matheuzsecurity.github.io/hacking/trendmicro-bmhook-tmhook-reload-bypass/
+- System Register Hijacking / ret2entry paper:
+  https://kylebot.net/papers/ret2entry.pdf
 - Cyber Security News on ITScape / CVE-2026-46316 ARM64 KVM guest-to-host
   escape PoC:
   https://cybersecuritynews.com/poc-exploit-released-linux-kernel-vulnerability/
