@@ -581,6 +581,7 @@ function run() {
   ].join("\n"));
   write(path.join(root, "Users", "alice", "Library", "Logs", "gaslight-triage.txt"), [
     "SentinelOne macOS.Gaslight triage note for a Rust macOS implant.",
+    "Apple XProtect names noted by SecurityAffairs include MACOS_BONZAI_COBUCH and AIRPIPE.",
     "macOS.Gaslight Mach-O sample sha256=6328567511d88fdc2ae0939c5ef17b7a63d2a833881900de018a4f12f4982525",
     "Python payload script baabf249c77bc54c54ab0e66e15af798bd28aa5b4683554456a8b73ab8741239 and bash installer b3c56d689414343589f38394d19ba2fe9a518133281200faa0556ba4e4136394.",
     "Ad hoc signing identifier endpoint-macos-aarch64-5555494492fc075f441637fb9d894913dde3a2ea.",

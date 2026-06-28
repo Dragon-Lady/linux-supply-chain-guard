@@ -2057,6 +2057,8 @@ const GASLIGHT_KNOWN_HASHES = new Map([
 
 const GASLIGHT_TEXT_INDICATORS = [
   "macOS.Gaslight",
+  "MACOS_BONZAI_COBUCH",
+  "AIRPIPE",
   "endpoint-macos-aarch64-5555494492fc075f441637fb9d894913dde3a2ea",
   "com.apple.system.services.activity",
   "tg_room_id",

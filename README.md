@@ -607,6 +607,7 @@ Exit codes:
 - macOS.Gaslight indicators:
   - SentinelOne-reported Mach-O, sibling BONZAI, Python payload, and bash
     installer SHA-256 values
+  - Apple XProtect labels `MACOS_BONZAI_COBUCH` and `AIRPIPE`
   - `com.apple.system.services.activity` LaunchAgent label and
     `endpoint-macos-aarch64-5555494492fc075f441637fb9d894913dde3a2ea`
   - Telegram Bot API `getUpdates`, `attach://`, `tg_room_id`, and error-code
@@ -1073,6 +1074,8 @@ the known indicators it checks.
   https://www.sentinelone.com/labs/macos-gaslight-rust-backdoor-turns-prompt-injection-on-the-analyst-not-the-sandbox/
 - The Hacker News macOS.Gaslight summary:
   https://thehackernews.com/2026/06/new-gaslight-macos-malware-uses-prompt.html
+- SecurityAffairs macOS.Gaslight summary:
+  https://securityaffairs.com/194256/malware/macos-gaslight-north-korea-linked-malware-that-tries-to-gaslight-the-analyst.html
 - The Hacker News on NGINX CVE-2026-42945 active exploitation:
   https://thehackernews.com/2026/05/nginx-cve-2026-42945-exploited-in-wild.html
 - The Register on NGINX Rift exploitation:
