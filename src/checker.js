@@ -1834,6 +1834,38 @@ const CISCO_CUCM_WEB_DIALER_TEXT_INDICATORS = [
   "Tor",
 ];
 
+const TONRAT_PHOTO_ZIP_TEXT_INDICATORS = [
+  "TonRAT",
+  "TON blockchain",
+  "TON Blockchain",
+  "tonapi.io",
+  "encrypted WebSocket",
+  "encrypted websocket",
+  "Booking Manager",
+  "Booking Manager (via Calendly)",
+  "Calendly",
+  "photo-",
+  "photo archive",
+  "Photo ZIP",
+  "photo ZIP",
+  ".png.lnk",
+  "IMG-",
+  "PHOTO-",
+  "Cloudflare Turnstile",
+  "Turnstile",
+  "share.google",
+  "PowerShell stager",
+  "Node.js v24.13.0",
+  "node-v24.13.0",
+  "AppData\\Local\\Nodejs",
+  "AppData/Local/Nodejs",
+  "RunOnce",
+  "ip-api.com",
+  "headless",
+  "--no-sandbox",
+  "shutdown -s -t 0",
+];
+
 const CISCO_SD_WAN_MANAGER_FIXED_RELEASES = [
   "20.9.9.2",
   "20.12.7.2",
@@ -2155,6 +2187,7 @@ function scanHost(options = {}) {
   checkMacosGaslight(findings, targetRoot, homePath);
   checkEvilTokensDeviceCodePhishing(findings, targetRoot, homePath);
   checkBluekitBitmPhishing(findings, targetRoot, homePath);
+  checkTonratPhotoZipPhishing(findings, targetRoot, homePath);
   checkMisticRatInitialAccess(findings, targetRoot, homePath);
   checkFfmpegPixelSmashExposure(findings, targetRoot, homePath);
   checkLibssh2Cve202655200Exposure(findings, targetRoot, homePath);
@@ -4419,6 +4452,60 @@ function checkBluekitBitmPhishing(findings, targetRoot, homePath) {
     if (/proxy API endpoint handling asset|asset .*fetch|fetch(?:es|ing)? images|fetch(?:es|ing)? fonts|fetch(?:es|ing)? CSS|images, fonts, and CSS are fetched/i.test(text)
       && /legitimate login page|target service|victim|phishing|Bluekit|BitM/i.test(text)) {
       addFinding(findings, "warning", "bluekit-asset-proxy-signal", "BlueKit-style phishing asset proxying terms appear in scanned metadata.", relative, "Correlate web proxy logs for login-page assets fetched through phishing infrastructure rather than the legitimate target domain.");
+    }
+  }
+}
+
+function checkTonratPhotoZipPhishing(findings, targetRoot, homePath) {
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const roots = [
+    homeRelative,
+    "/etc",
+    "/opt",
+    "/srv",
+    "/var/log",
+    "/var/www",
+    "/root",
+    "/mnt",
+    "/media",
+  ].filter(Boolean);
+  const files = [];
+  for (const root of roots) {
+    files.push(...findWatchFiles(mapLinuxPath(targetRoot, root), 25000 - files.length));
+    if (files.length >= 25000) break;
+  }
+
+  for (const filePath of files) {
+    const text = readText(filePath);
+    if (!text) continue;
+    const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+    const haystack = `${relative}\n${text}`;
+    const hasTonratContext = /TonRAT|TON blockchain|tonapi\.io|Booking Manager|Calendly|photo-\d+\.zip|\.png\.lnk|AppData[\\/]+Local[\\/]+Nodejs|Node\.js v24\.13\.0|node-v24\.13\.0/i.test(haystack);
+
+    if (/TonRAT/i.test(haystack)) {
+      addFinding(findings, "critical", "tonrat-photo-zip-malware-reference", "TonRAT malware reference appears in scanned metadata.", `${relative}: TonRAT`, "Treat as a Windows hospitality-phishing incident lead. Preserve email, ZIP/LNK, PowerShell, Node.js implant, Run/RunOnce, and network telemetry before cleanup.");
+    }
+
+    if (/(?:Booking Manager|Calendly|hotel|hospitality|reservation|guest)[\s\S]{0,260}(?:share\.google|google redirect|Cloudflare Turnstile|Turnstile|\.cfd|photo-\d+\.zip)|(?:share\.google|google redirect|Cloudflare Turnstile|Turnstile|\.cfd|photo-\d+\.zip)[\s\S]{0,260}(?:Booking Manager|Calendly|hotel|hospitality|reservation|guest)/i.test(haystack)) {
+      addFinding(findings, "warning", "tonrat-photo-zip-hospitality-lure", "TonRAT-style hotel phishing lure terms appear in scanned metadata.", relative, "Review mail gateway logs, redirect chains, Calendly/Google link abuse, Cloudflare-fronted staging domains, and recipient roles before allowing downloaded archives.");
+    }
+
+    if (/photo-\d+\.zip/i.test(haystack) || /\b(?:IMG|PHOTO)[-_]?[A-Za-z0-9_-]*\.png\.lnk\b/i.test(haystack) || /\.png\.lnk/i.test(haystack)) {
+      addFinding(findings, "critical", "tonrat-photo-zip-lnk-attachment", "TonRAT-style photo ZIP or image-looking LNK attachment appears in scanned metadata.", relative, "Do not open the archive or shortcut on production hosts. Preserve the attachment and inspect the shortcut target, PowerShell decode chain, downloaded PS1, and child-process telemetry in isolation.");
+    }
+
+    if (/(?:PowerShell|powershell\.exe|\.lnk)[\s\S]{0,320}(?:AppData[\\/]+Local[\\/]+Nodejs|Node\.js v24\.13\.0|node-v24\.13\.0|node\.exe|\.ps1)|(?:AppData[\\/]+Local[\\/]+Nodejs|Node\.js v24\.13\.0|node-v24\.13\.0|node\.exe|\.ps1)[\s\S]{0,320}(?:PowerShell|powershell\.exe|\.lnk)/i.test(haystack)) {
+      addFinding(findings, "critical", "tonrat-photo-zip-nodejs-stager", "TonRAT-style PowerShell-to-user-space-Node.js staging terms appear in scanned metadata.", relative, "Review PowerShell script-block logs, LNK target strings, downloaded Node.js archives, AppData\\Local\\Nodejs contents, and spawned node.exe processes before containment.");
+    }
+
+    if (hasTonratContext && /(?:TON blockchain|tonapi\.io|encrypted WebSocket|websocket|wss:|ip-api\.com|RunOnce|CurrentVersion\\Run|shutdown -s -t 0|--no-sandbox|headless)/i.test(haystack)) {
+      addFinding(findings, "warning", "tonrat-photo-zip-c2-persistence-review", "TonRAT C2, persistence, or host-control terms appear in scanned metadata.", relative, "Correlate TON API lookups, encrypted WebSocket destinations, geolocation checks, browser/headless launch activity, Run/RunOnce keys, and shutdown commands with the suspected phishing chain.");
+    }
+
+    for (const indicator of TONRAT_PHOTO_ZIP_TEXT_INDICATORS) {
+      if (text.includes(indicator) && hasTonratContext) {
+        addFinding(findings, "review", "tonrat-photo-zip-text-indicator", "TonRAT Photo ZIP advisory term appears in scanned metadata.", `${relative}: ${indicator}`, "Use this as a Windows/client phishing, persistence, and C2 triage lead.");
+      }
     }
   }
 }
