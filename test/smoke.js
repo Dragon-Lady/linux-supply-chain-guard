@@ -854,6 +854,9 @@ function run() {
     "Microsoft Exchange Server 2016 Cumulative Update 23 CVE-2026-45504 PT-2026-47976",
     "Server-side request forgery SSRF can allow an authorized attacker to elevate privileges over a network.",
     "Exchange File Read public PoC: hawktrace/CVE-2026-45504 CVE-2026-45504.py --target-file C:/Windows/System32/drivers/etc/hosts",
+    "Hawktrace chain: EWS exchange.asmx ReferenceAttachment ProviderEndpointUrl calls a WOPI endpoint GetWopiTargetPropertiesByUrl.",
+    "Attacker XML returns WebApplicationUrl file:///C:/windows/win.ini# so appended access_token parameters are dropped before FileWebRequest reads the local file.",
+    "Exchange internals noted in copied triage: OneDriveProUtilities GetWacAttachmentInfo GetWacUrl.",
     "Inventory export: Exchange Server 2016 CU23 build 15.01.2507.060, fixed by KB5094144 build 15.01.2507.069.",
   ].join("\n"));
   write(path.join(root, "var", "log", "exchange-cve-2026-45502.txt"), [
@@ -1175,6 +1178,8 @@ function run() {
   assert(ids.has("cisco-sdwan-manager-text-indicator"));
   assert(ids.has("exchange-cve-2026-45504-reference"));
   assert(ids.has("exchange-cve-2026-45504-ssrf-file-read-review"));
+  assert(ids.has("exchange-cve-2026-45504-wopi-file-read-chain"));
+  assert(ids.has("exchange-cve-2026-45504-fragment-obfuscated-file-url"));
   assert(ids.has("exchange-cve-2026-45504-poc-artifact"));
   assert(ids.has("exchange-cve-2026-45504-possibly-unpatched-build"));
   assert(ids.has("exchange-cve-2026-45504-text-indicator"));

@@ -87,6 +87,7 @@
 - SecurityOnline Cisco SD-WAN zero-day summary: https://securityonline.info/cisco-sd-wan-zero-day/
 - Microsoft MSRC Update Guide for CVE-2026-45504: https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-45504
 - hawktrace public PoC repository for CVE-2026-45504: https://github.com/hawktrace/CVE-2026-45504
+- Hawktrace Exchange CVE-2026-45504 WOPI file-read analysis: https://hawktrace.com/blog/CVE-2026-45504/
 - Aretiq AI analysis for CVE-2026-45502 Exchange EWS InstallApp SSRF: https://aretiq.ai/research/vul260622-cve-2026-45502-microsoft-exchange-server-ews-installapp-server-side-request-forgery/
 - Microsoft MSRC Update Guide for CVE-2026-45502: https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-45502
 - The Hacker News Operation Endgame / SocGholish disruption report: https://thehackernews.com/2026/06/operation-endgame-disrupts-socgholish.html

@@ -463,5 +463,15 @@ authorized-research provenance leads only: confirm patch level, public
 registration policy, repository storage paths, custom Git hook settings, and
 recent repository-create/push/admin activity from a clean posture.
 
+The Exchange June 2026 lane covers Microsoft's SSRF/file-read advisories as
+local/mounted-root inventory and log-hunting leads. `CVE-2026-45504` checks now
+include Hawktrace's WOPI/EWS mechanics: EWS `ReferenceAttachment` and
+`ProviderEndpointUrl`, `GetWopiTargetPropertiesByUrl`, attacker-controlled
+`WebApplicationUrl` values, `FileWebRequest`, `GetWacAttachmentInfo`,
+`GetWacUrl`, and fragment-obfuscated `file://...#` URLs that can drop appended
+access-token parameters. These findings do not prove live Exchange patch state;
+verify directly on the server and preserve EWS/IIS/WOPI evidence before
+remediation.
+
 This project intentionally avoids exploit reproduction steps, cleanup
 automation, and secret disclosure. It cannot prove a host is clean.
