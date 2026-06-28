@@ -1580,6 +1580,37 @@ const PEDIT_COW_TEXT_INDICATORS = [
   "kernel.unprivileged_userns_clone=0",
 ];
 
+const TREND_MICRO_HOOK_RELOAD_TEXT_INDICATORS = [
+  "Trend Micro Deep Security Agent",
+  "Deep Security Agent",
+  "Trend Micro Cloud One",
+  "Workload Security",
+  "/opt/ds_agent",
+  "ds_agent.service",
+  "ds_am.init",
+  "bmhook",
+  "tmhook",
+  "dsa_filter",
+  "dsa_filter_hook",
+  "rmmod bmhook",
+  "rmmod tmhook",
+  "rmmod dsa_filter",
+  "rmmod dsa_filter_hook",
+  "enable_loop_prevention",
+  "thresholdBLP",
+  "enableBLP",
+  "TELEMETRY_EVENT_DROPPED_COUNT",
+  "event.dropped",
+  "bmhook_throttle_check",
+  "bmhook_scan_enqueue",
+  "tmbpf_send_event",
+  "LKM DOWN",
+  "livepatch",
+  "starting unpatching transition",
+  "completing unpatching transition",
+  "starting patching transition",
+];
+
 const NFTABLES_CVE_2026_23111_TEXT_INDICATORS = [
   "CVE-2026-23111",
   "nf_tables",
@@ -2157,6 +2188,7 @@ function scanHost(options = {}) {
   checkAlmaFragnesia(findings, osRelease, kernelRelease);
   checkItScapeArm64Kvm(findings, targetRoot, kernelRelease, architecture);
   checkKernelModules(findings, targetRoot);
+  checkTrendMicroHookReloadBypass(findings, targetRoot, homePath);
   checkDirtyCbcRxgk(findings, targetRoot, homePath);
   checkDirtyClone(findings, targetRoot, homePath);
   checkNfTablesCve202623111(findings, targetRoot, homePath, kernelRelease);
@@ -2395,6 +2427,55 @@ function checkKernelModules(findings, targetRoot) {
   });
   if (missing.length > 0) {
     addFinding(findings, "review", "fragnesia-module-blacklist-not-confirmed", "Temporary DirtyFrag-family module blacklist was not fully confirmed.", `missing install /bin/false entries: ${missing.join(", ")}`, "This is only a mitigation check. Prefer patched kernels and reboot when available.");
+  }
+}
+
+function checkTrendMicroHookReloadBypass(findings, targetRoot, homePath) {
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const roots = [
+    homeRelative,
+    "/etc",
+    "/opt",
+    "/srv",
+    "/var/log",
+    "/root",
+    "/mnt",
+    "/media",
+  ].filter(Boolean);
+  const files = [];
+  for (const root of roots) {
+    files.push(...findWatchFiles(mapLinuxPath(targetRoot, root), 25000 - files.length));
+    if (files.length >= 25000) break;
+  }
+
+  for (const filePath of files) {
+    const text = readText(filePath);
+    if (!text) continue;
+    const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+    const haystack = `${relative}\n${text}`;
+    const hasTrendMicroContext = /Trend Micro|Deep Security Agent|Cloud One|Workload Security|\/opt\/ds_agent|ds_agent\.service|ds_am\.init|bmhook|tmhook|dsa_filter/i.test(haystack);
+
+    if (/(?:Trend Micro|Deep Security Agent|Cloud One|Workload Security)[\s\S]{0,260}(?:bmhook|tmhook|dsa_filter|ds_am\.init)|(?:bmhook|tmhook|dsa_filter|ds_am\.init)[\s\S]{0,260}(?:Trend Micro|Deep Security Agent|Cloud One|Workload Security)/i.test(haystack)) {
+      addFinding(findings, "review", "trendmicro-hook-reload-reference", "Trend Micro Deep Security Agent hook reload bypass terms appear in scanned metadata.", relative, "Use this as a Linux EDR/self-protection review lead. Confirm agent version, vendor guidance, kernel module state, and whether copied logs show hook unload/reload windows.");
+    }
+
+    if (hasTrendMicroContext && /(?:ds_am\.init|antimalware|agent)[\s\S]{0,260}(?:rmmod\s+(?:bmhook|tmhook|dsa_filter|dsa_filter_hook)|modprobe\s+-r\s+(?:bmhook|tmhook|dsa_filter|dsa_filter_hook))|(?:rmmod\s+(?:bmhook|tmhook|dsa_filter|dsa_filter_hook)|modprobe\s+-r\s+(?:bmhook|tmhook|dsa_filter|dsa_filter_hook))[\s\S]{0,260}(?:ds_am\.init|antimalware|agent)/i.test(haystack)) {
+      addFinding(findings, "warning", "trendmicro-hook-agent-rmmod-window", "Trend Micro hook module removal appears in scanned metadata.", relative, "Review whether bmhook/tmhook/dsa_filter removal was vendor-controlled reload behavior, attacker-triggered, or maintenance. Preserve systemd, kernel, and agent logs around the reload window.");
+    }
+
+    if (hasTrendMicroContext && /(?:livepatch|LKM DOWN|starting unpatching transition|completing unpatching transition|starting patching transition)[\s\S]{0,260}(?:bmhook|tmhook|dsa_filter|breadcrumb|reload)|(?:bmhook|tmhook|dsa_filter|breadcrumb|reload)[\s\S]{0,260}(?:livepatch|LKM DOWN|starting unpatching transition|completing unpatching transition|starting patching transition)/i.test(haystack)) {
+      addFinding(findings, "warning", "trendmicro-hook-livepatch-reload-window", "Trend Micro hook livepatch/reload-window terms appear in scanned metadata.", relative, "Correlate kernel livepatch messages, Trend Micro agent telemetry, and process/file activity during the unhooked interval. Treat detections around this window as potentially incomplete.");
+    }
+
+    if (hasTrendMicroContext && /(?:TELEMETRY_EVENT_DROPPED_COUNT|event\.dropped|bmhook_throttle_check|bmhook_scan_enqueue|tmbpf_send_event|enable_loop_prevention|thresholdBLP|enableBLP)[\s\S]{0,260}(?:dropped|loop|event|telemetry|throttle)|(?:dropped|loop|event|telemetry|throttle)[\s\S]{0,260}(?:TELEMETRY_EVENT_DROPPED_COUNT|event\.dropped|bmhook_throttle_check|bmhook_scan_enqueue|tmbpf_send_event|enable_loop_prevention|thresholdBLP|enableBLP)/i.test(haystack)) {
+      addFinding(findings, "warning", "trendmicro-hook-event-storm-suppression", "Trend Micro hook event-storm or telemetry-drop terms appear in scanned metadata.", relative, "Review agent logs for event flood suppression, dropped telemetry, hook reloads, and gaps in file/process monitoring before assuming endpoint coverage was continuous.");
+    }
+
+    for (const indicator of TREND_MICRO_HOOK_RELOAD_TEXT_INDICATORS) {
+      if (text.includes(indicator) && hasTrendMicroContext) {
+        addFinding(findings, "review", "trendmicro-hook-reload-text-indicator", "Trend Micro hook reload advisory term appears in scanned metadata.", `${relative}: ${indicator}`, "Use this as a Trend Micro Deep Security Agent hook-reload and telemetry-gap review lead.");
+      }
+    }
   }
 }
 

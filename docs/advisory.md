@@ -353,6 +353,15 @@ Known supply-chain persistence checks include:
 - `~/.local/bin/pgmonitor.py`
 - `/usr/bin/pgmonitor.py`
 
+The Trend Micro Deep Security Agent hook-reload lane tracks MatheuZ Security's
+BMHook/TMHook reload-bypass analysis as local/mounted-root evidence review. The
+guard flags copied logs and notes that combine Trend Micro Deep Security Agent
+context with `bmhook`, `tmhook`, `dsa_filter`, `dsa_filter_hook`, `ds_am.init`,
+agent-controlled module removal/reload behavior, livepatch unpatch/patch
+transitions, `LKM DOWN`, and event-storm or telemetry-drop terms such as
+`TELEMETRY_EVENT_DROPPED_COUNT`. These checks do not reproduce the event storm
+or unload modules; they only surface possible monitoring-gap evidence.
+
 Known DPRK npm RAT dependency indicators include:
 
 - `terminal-logger-utils`

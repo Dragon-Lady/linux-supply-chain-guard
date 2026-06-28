@@ -329,6 +329,15 @@ Exit codes:
   - AlmaLinux 10: `kernel-6.12.0-124.56.2.el10_1` and above
 - DirtyFrag-family module state for `esp4`, `esp6`, and `rxrpc`.
 - Temporary module blacklist confirmation in `/etc/modprobe.d`.
+- Trend Micro Deep Security Agent hook reload bypass indicators:
+  - `bmhook`, `tmhook`, `dsa_filter`, `dsa_filter_hook`, `ds_am.init`,
+    `/opt/ds_agent`, and `ds_agent.service` metadata
+  - copied logs showing agent-controlled `rmmod` / module reload behavior,
+    livepatch unpatch/patch transitions, `LKM DOWN`, or reload breadcrumbs
+  - event-storm and telemetry-gap terms such as
+    `TELEMETRY_EVENT_DROPPED_COUNT`, `event.dropped`,
+    `bmhook_throttle_check`, `bmhook_scan_enqueue`, `tmbpf_send_event`,
+    `enable_loop_prevention`, `thresholdBLP`, and `enableBLP`
 - ITScape / `CVE-2026-46316` ARM64 KVM posture:
   - ARM64/aarch64 architecture detection from scanner options, `/proc/cpuinfo`,
     or kernel metadata
@@ -857,6 +866,8 @@ the known indicators it checks.
   https://research.jfrog.com/post/dissecting-and-exploiting-linux-lpe-variant-dirtyclone-cve-2026-43503/
 - The Hacker News DirtyClone / Copy Fail summary:
   https://thehackernews.com/2026/06/new-dirtyclone-linux-kernel-flaw-lets.html
+- MatheuZ Security Trend Micro BMHook/TMHook reload bypass analysis:
+  https://matheuzsecurity.github.io/hacking/trendmicro-bmhook-tmhook-reload-bypass/
 - Cyber Security News on ITScape / CVE-2026-46316 ARM64 KVM guest-to-host
   escape PoC:
   https://cybersecuritynews.com/poc-exploit-released-linux-kernel-vulnerability/

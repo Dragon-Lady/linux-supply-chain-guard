@@ -635,6 +635,13 @@ function run() {
     "aa54b1d27fe0 SKBFL_SHARED_FRAG skb_has_shared_frag RXGK_SERVER_ENC_TOKEN rxrpc_s RXRPC_CHARGE_ACCEPT RXRPC_CLIENT_INITIATED",
     "PoC notes mention poc.c and poc.py for authorized defensive validation only"
   ].join("\n"));
+  write(path.join(root, "var", "log", "trendmicro-hook-reload.log"), [
+    "Trend Micro Deep Security Agent Workload Security /opt/ds_agent ds_agent.service ds_am.init maintenance note.",
+    "Agent log shows ds_am.init issuing rmmod bmhook and rmmod tmhook with dsa_filter and dsa_filter_hook reload context.",
+    "Kernel log shows livepatch tmhook starting unpatching transition, completing unpatching transition, starting patching transition, and LKM DOWN breadcrumb.",
+    "Telemetry notes include TELEMETRY_EVENT_DROPPED_COUNT event.dropped bmhook_throttle_check bmhook_scan_enqueue tmbpf_send_event.",
+    "Loop prevention config mentions enable_loop_prevention thresholdBLP enableBLP."
+  ].join("\n"));
   write(path.join(root, "var", "log", "dirtyclone-triage.log"), [
     "JFrog DirtyClone CVE-2026-43503 and Copy Fail CVE-2026-31431 DirtyFrag family note for Linux LPE review.",
     "Initial DirtyFrag CVE-2026-43284 and CVE-2026-43500 plus Fragnesia CVE-2026-46300 need the full patch chain.",
@@ -882,6 +889,11 @@ function run() {
   assert(ids.has("itscape-arm64-kvm-exposure"));
   assert(ids.has("itscape-arm64-kvm-kernel-review"));
   assert(ids.has("fragnesia-risk-modules-loaded"));
+  assert(ids.has("trendmicro-hook-reload-reference"));
+  assert(ids.has("trendmicro-hook-agent-rmmod-window"));
+  assert(ids.has("trendmicro-hook-livepatch-reload-window"));
+  assert(ids.has("trendmicro-hook-event-storm-suppression"));
+  assert(ids.has("trendmicro-hook-reload-text-indicator"));
   assert(ids.has("nftables-cve-2026-23111-userns-exposure"));
   assert(ids.has("nftables-cve-2026-23111-reference"));
   assert(ids.has("nftables-cve-2026-23111-advisory-terms"));
