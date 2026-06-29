@@ -446,9 +446,12 @@ copy-on-write implications. The guard flags copied advisory/provenance terms
 such as `Pedit COW`, `CVE-2026-46331`, `tcf_pedit_act`, `tc pedit`,
 `TCA_PEDIT_KEY_EX`, `skb_ensure_writable`, `skb_linearize`, `cls_u32`,
 `CAP_NET_ADMIN`, `unprivileged user namespace`, and
-`kernel.unprivileged_userns_clone=0`. These are review leads: verify distro
-backport status, patch and reboot, review traffic-control module exposure, and
-do not compile or run PoC material on production or credential-bearing hosts.
+`kernel.unprivileged_userns_clone=0`. The Hacker News' June 26, 2026 summary
+adds operational terms such as `packet_edit_meme`, `/bin/su`, `setuid root
+binary`, `user.max_user_namespaces=0`, `install act_pedit /bin/true`, and
+`drop_caches`. These are review leads: verify distro backport status, patch and
+reboot, review traffic-control module exposure, and do not compile or run PoC
+material on production or credential-bearing hosts.
 
 Known supply-chain persistence checks include:
 

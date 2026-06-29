@@ -435,8 +435,12 @@ Exit codes:
     `skb_linearize`
   - exposure/mitigation terms including `cls_u32`, `CAP_NET_ADMIN`,
     `unprivileged user namespace`, and `kernel.unprivileged_userns_clone=0`
+  - THN-reported exploit/mitigation terms including `packet_edit_meme`,
+    `/bin/su`, `setuid root binary`, `user.max_user_namespaces=0`,
+    `lsmod | grep act_pedit`, `install act_pedit /bin/true`, `drop_caches`,
+    `Debian 13`, `trixie`, and `RHEL 10`
   - copied PoC/provenance markers such as `tc qdisc`, `tc filter`,
-    `tc action`, and `unshare -Urn` are review-only signals
+    `tc action`, `unshare -Urn`, and `packet_edit_meme` are review-only signals
 - nf_tables / `CVE-2026-23111` review indicators:
   - affected upstream kernel trains from the public checker notes, including
     `6.18 < 6.18.10`, `6.12 < 6.12.70`, `6.6 < 6.6.124`,
