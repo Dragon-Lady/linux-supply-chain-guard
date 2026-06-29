@@ -178,6 +178,18 @@ Python release URL automation, non-official Python release-looking URLs, and
 Sigstore/PGP/PEP 761 provenance terms so operators can verify mirrors, pinned
 hashes, and signatures before trusting cached Python artifacts.
 
+CPython `tarfile` / `CVE-2026-11940` is included as an archive-extraction code
+review lane. The PSF advisory describes an incomplete fix for `CVE-2025-4330`
+where `tarfile.extractall()` with the `data` or `tar` filter can be bypassed by
+a crafted archive whose hardlink references a deeper symlink, causing the
+fallback path to recreate the symlink at a shallower hardlink path and escape
+the intended destination. The guard flags copied advisory terms, patch PR and
+commit provenance, hardlink/symlink bypass mechanics, and Python code that uses
+`tarfile.extractall()` or `extract()` with `filter="data"` or `filter="tar"` on
+upload, artifact, cache, restore, import, or ingest paths. Findings are review
+leads: verify PSF or vendor-fixed Python builds and avoid extracting untrusted
+tar archives until patched.
+
 Cyber Security News' Splunk Enterprise / `CVE-2026-20253` coverage is included
 as a local posture and log-triage lane. The guard looks for Splunk Enterprise
 10.x references, CISA KEV/BOD copied notes, PostgreSQL sidecar recovery
