@@ -1663,6 +1663,47 @@ const LIBSSH2_CVE202655200_POC_TEXT_INDICATORS = [
   "libpwn-rce-verified",
 ];
 
+const LIBSSH2_CVE202658050_TEXT_INDICATORS = [
+  "CVE-2026-58050",
+  "publickey subsystem",
+  "publickey Subsystem Attribute Allocation",
+  "libssh2_publickey_list_fetch",
+  "num_attrs",
+  "libssh2_publickey_attribute",
+  "CWE-190",
+  "Integer Overflow",
+  "heap buffer overflow",
+  "heap overflow",
+  "attribute count",
+  "src/publickey.c",
+  "malicious SSH server",
+  "VulnCheck",
+];
+
+const LIBSSH2_CVE202658050_POC_FILES = new Set([
+  "publickey_win32_heap_groom_calc_repro.c",
+  "publickey_win64_arbitrary_free_calc_repro.c",
+  "live_publickey_server.py",
+  "live_publickey_client_win64.c",
+  "replay-calc-poc.py",
+  "2026-06-25-local-calc-replay.txt",
+]);
+
+const LIBSSH2_CVE202658050_POC_TEXT_INDICATORS = [
+  "libssh2-publickey-list-calc-poc",
+  "publickey list calc PoCs",
+  "Win32 allocation-wrap chain",
+  "Win64 publickey-list cleanup chain",
+  "x86_vulnerable_calc=hit",
+  "calc_launch=success",
+  "publickey_win32_heap_groom_calc_repro",
+  "publickey_win64_arbitrary_free_calc_repro",
+  "live_publickey_server.py",
+  "live_publickey_client_win64.c",
+  "victim_freed=1",
+  "same_as_victim=1",
+];
+
 const PACKAGEKIT_CVE202641651_AFFECTED_MIN = "1.0.2";
 const PACKAGEKIT_CVE202641651_FIXED = "1.3.5";
 const PACKAGEKIT_CVE202641651_TEXT_INDICATORS = [
@@ -5246,10 +5287,12 @@ function checkLibssh2Cve202655200Exposure(findings, targetRoot, homePath) {
   const libssh2Packages = libssh2PackagesFromDpkgStatus(packageStatus);
   for (const pkg of libssh2Packages) {
     addFinding(findings, "review", "libssh2-cve-2026-55200-package-review", "libssh2 package appears installed on a host relevant to CVE-2026-55200 client-side SSH/SCP/SFTP exposure.", `${pkg.name} ${pkg.version}`, `Confirm a vendor-fixed build that includes libssh2 commit ${LIBSSH2_CVE202655200_FIXED_COMMIT} or later.`);
+    addFinding(findings, "review", "libssh2-cve-2026-58050-package-review", "libssh2 package appears installed on a host relevant to CVE-2026-58050 publickey-subsystem client exposure.", `${pkg.name} ${pkg.version}`, "Confirm a vendor-fixed build that includes the publickey attribute-count bounds check and list-entry initialization.");
 
     const upstreamVersion = normalizePackageVersion(pkg.version);
     if (upstreamVersion && compareDottedVersion(normalizeDottedVersion(upstreamVersion), LIBSSH2_CVE202655200_AFFECTED_MAX) <= 0) {
       addFinding(findings, "warning", "libssh2-cve-2026-55200-affected-version", "Installed libssh2 package version is in the reported affected range through 1.11.1.", `${pkg.name} ${pkg.version}`, "Patch through the distribution or rebuild with the upstream packet_length boundary checks. Prioritize clients that connect to untrusted SSH/SCP/SFTP servers or cross hostile networks.");
+      addFinding(findings, "warning", "libssh2-cve-2026-58050-affected-version", "Installed libssh2 package version is in the reported CVE-2026-58050 affected range through 1.11.1.", `${pkg.name} ${pkg.version}`, "Patch through the distribution or rebuild with the publickey subsystem hardening. Prioritize clients that connect to untrusted or interceptable SSH servers.");
     }
   }
 
@@ -5283,10 +5326,16 @@ function checkLibssh2Cve202655200Exposure(findings, targetRoot, homePath) {
       addFinding(findings, "review", "libssh2-cve-2026-55200-poc-artifact", "libssh2 CVE-2026-55200 PoC artifact appears in scanned host metadata.", relative, "Treat as research code until provenance and authorization are verified. Do not execute PoC scaffolds on workstations or shared runners during routine triage.");
     }
 
+    if (LIBSSH2_CVE202658050_POC_FILES.has(base)
+      || relative.includes("/libssh2-publickey-list-calc-poc/")) {
+      addFinding(findings, "review", "libssh2-cve-2026-58050-poc-artifact", "libssh2 CVE-2026-58050 publickey-list PoC artifact appears in scanned host metadata.", relative, "Treat as research code until provenance and authorization are verified. Do not execute PoC scaffolds on workstations, runners, or credential-bearing hosts during routine triage.");
+    }
+
     const versions = packageVersionsInText(text, "libssh2");
     for (const version of versions) {
       if (compareDottedVersion(normalizeDottedVersion(version), LIBSSH2_CVE202655200_AFFECTED_MAX) <= 0) {
         addFinding(findings, "warning", "libssh2-cve-2026-55200-affected-version", "Scanned metadata references libssh2 in the CVE-2026-55200 affected range through 1.11.1.", `${relative}: libssh2 ${version}`, "Inventory statically linked clients and bundled builds, not only system packages. Verify whether the packet_length boundary-check commit is present.");
+        addFinding(findings, "warning", "libssh2-cve-2026-58050-affected-version", "Scanned metadata references libssh2 in the CVE-2026-58050 affected range through 1.11.1.", `${relative}: libssh2 ${version}`, "Inventory statically linked clients and bundled builds, not only system packages. Verify whether the publickey parser hardening is present.");
       }
     }
 
@@ -5299,6 +5348,18 @@ function checkLibssh2Cve202655200Exposure(findings, targetRoot, homePath) {
     for (const indicator of LIBSSH2_CVE202655200_POC_TEXT_INDICATORS) {
       if (text.includes(indicator)) {
         addFinding(findings, "review", "libssh2-cve-2026-55200-poc-indicator", "libssh2 CVE-2026-55200 PoC/exploitarium marker appears in scanned host metadata.", `${relative}: ${indicator}`, "Review whether this is authorized research material. Keep PoC files out of ordinary build, CI, and developer credential contexts.");
+      }
+    }
+
+    for (const indicator of LIBSSH2_CVE202658050_TEXT_INDICATORS) {
+      if (text.includes(indicator)) {
+        addFinding(findings, "review", "libssh2-cve-2026-58050-text-indicator", "libssh2 CVE-2026-58050 publickey-subsystem advisory term appears in scanned host metadata.", `${relative}: ${indicator}`, "Correlate with package state, bundled libraries, static builds, and clients that connect to SSH servers that may be hostile or intercepted.");
+      }
+    }
+
+    for (const indicator of LIBSSH2_CVE202658050_POC_TEXT_INDICATORS) {
+      if (text.includes(indicator)) {
+        addFinding(findings, "review", "libssh2-cve-2026-58050-poc-indicator", "libssh2 CVE-2026-58050 publickey-list PoC marker appears in scanned host metadata.", `${relative}: ${indicator}`, "Review whether this is authorized research material. Keep PoC files out of ordinary build, CI, and developer credential contexts.");
       }
     }
 

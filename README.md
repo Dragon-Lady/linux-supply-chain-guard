@@ -255,9 +255,11 @@ The June 2026 libssh2 client-exposure lane adds Debian-family package checks
 and copied-advisory/source-note checks for `CVE-2026-55200`, the
 `ssh2_transport_read()` packet-length out-of-bounds write fixed by upstream
 commit `7acf3df`. It also tracks adjacent `CVE-2026-55199` notes because both
-libssh2 fixes are being triaged together by downstream packagers. The lane also
-flags local copies or notes from the public `bikini/exploitarium`
-`libssh2-cve-2026-55200-poc` tree as PoC research artifacts.
+libssh2 fixes are being triaged together by downstream packagers. The lane now
+also tracks SecurityOnline/VulnCheck-reported `CVE-2026-58050` publickey
+subsystem heap-corruption terms and flags local copies or notes from the public
+`bikini/exploitarium` `libssh2-cve-2026-55200-poc` and
+`libssh2-publickey-list-calc-poc` trees as PoC research artifacts.
 
 The June 2026 PackageKit lane adds Debian-family package checks and
 copied-advisory/source-note checks for `CVE-2026-41651`, a local privilege
@@ -822,6 +824,19 @@ Exit codes:
     `libpwn_local_rce_harness.c`, and `libpwn_local_rce_exploit.py`
   - local workflow notes where libssh2 appears near SSH/SCP/SFTP clients such
     as curl, git, backup, deploy, clone, mirror, or artifact-fetch tooling
+- libssh2 `CVE-2026-58050` publickey-subsystem indicators:
+  - installed `libssh2*` Debian-family packages
+  - upstream-looking versions through `1.11.1` flagged for vendor-backport
+    review
+  - advisory terms including `publickey subsystem`,
+    `libssh2_publickey_list_fetch`, `num_attrs`,
+    `libssh2_publickey_attribute`, `CWE-190`, `src/publickey.c`, and
+    `malicious SSH server`
+  - public PoC/research markers including
+    `libssh2-publickey-list-calc-poc`,
+    `publickey_win32_heap_groom_calc_repro.c`,
+    `publickey_win64_arbitrary_free_calc_repro.c`,
+    `live_publickey_server.py`, and `replay-calc-poc.py`
 - PackageKit `CVE-2026-41651` local privilege-escalation indicators:
   - installed `packagekit*` Debian-family packages
   - upstream-looking versions `1.0.2` through `1.3.4` flagged for
@@ -1355,6 +1370,12 @@ the known indicators it checks.
   https://github.com/NixOS/nixpkgs/issues/532920
 - bikini/exploitarium libssh2 `CVE-2026-55200` public PoC tree:
   https://github.com/bikini/exploitarium/tree/main/libssh2-cve-2026-55200-poc
+- SecurityOnline libssh2 `CVE-2026-58050` summary:
+  https://securityonline.info/libssh2-vulnerability-cve-2026-58050/
+- VulnCheck libssh2 `CVE-2026-58050` advisory:
+  https://www.vulncheck.com/advisories/libssh2-integer-overflow-in-publickey-subsystem-attribute-allocation
+- bikini/exploitarium libssh2 publickey-list calc PoC tree:
+  https://github.com/bikini/exploitarium/tree/main/libssh2-publickey-list-calc-poc
 - NVD `CVE-2026-41651` PackageKit record:
   https://nvd.nist.gov/vuln/detail/CVE-2026-41651
 - GitHub Advisory `GHSA-f55j-vvr9-69xv` / PackageKit `CVE-2026-41651`:

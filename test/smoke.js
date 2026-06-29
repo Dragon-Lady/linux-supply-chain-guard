@@ -641,7 +641,9 @@ function run() {
     "CVE-2026-55200 libssh2 through 1.11.1 ssh2_transport_read packet_length out-of-bounds write",
     "Fix includes PR #2052 and commit 7acf3df.",
     "Inventory curl, git, backup, deploy, clone, SCP and SFTP clients that link libssh2.",
-    "Companion note: CVE-2026-55199 SSH_MSG_EXT_INFO fixed in 1762685."
+    "Companion note: CVE-2026-55199 SSH_MSG_EXT_INFO fixed in 1762685.",
+    "CVE-2026-58050 publickey subsystem Integer Overflow in publickey Subsystem Attribute Allocation.",
+    "VulnCheck notes libssh2_publickey_list_fetch, num_attrs, libssh2_publickey_attribute, CWE-190, src/publickey.c, heap buffer overflow, and malicious SSH server exposure."
   ].join("\n"));
   write(path.join(root, "var", "log", "packagekit-cve-2026-41651.log"), [
     "PackageKit CVE-2026-41651 GHSA-f55j-vvr9-69xv local privilege escalation note.",
@@ -666,6 +668,11 @@ function run() {
   write(path.join(home, "research", "exploitarium", "libssh2-cve-2026-55200-poc", "poc", "libpwn_local_rce_exploit.py"), [
     "# bikini/exploitarium libssh2-cve-2026-55200-poc marker",
     "proof = 'RCE_PROOF=PASS libpwn-rce-verified'"
+  ].join("\n"));
+  write(path.join(home, "research", "exploitarium", "libssh2-publickey-list-calc-poc", "README.md"), [
+    "/* libssh2-publickey-list-calc-poc publickey list calc PoCs */",
+    "const char *proof = \"Win32 allocation-wrap chain x86_vulnerable_calc=hit calc_launch=success\";",
+    "const char *also = \"Win64 publickey-list cleanup chain victim_freed=1 same_as_victim=1\";"
   ].join("\n"));
   write(path.join(root, "var", "log", "dirtycbc-rxgk-triage.log"), [
     "DirtyCBC linux-rxgk-decrypt-mac AF_RXRPC YFS-RxGK RxGK RESPONSE page-cache poisoning",
@@ -1278,6 +1285,11 @@ function run() {
   assert(ids.has("libssh2-cve-2026-55200-client-linkage-review"));
   assert(ids.has("libssh2-cve-2026-55200-poc-artifact"));
   assert(ids.has("libssh2-cve-2026-55200-poc-indicator"));
+  assert(ids.has("libssh2-cve-2026-58050-package-review"));
+  assert(ids.has("libssh2-cve-2026-58050-affected-version"));
+  assert(ids.has("libssh2-cve-2026-58050-text-indicator"));
+  assert(ids.has("libssh2-cve-2026-58050-poc-artifact"));
+  assert(ids.has("libssh2-cve-2026-58050-poc-indicator"));
   assert(ids.has("packagekit-cve-2026-41651-package-review"));
   assert(ids.has("packagekit-cve-2026-41651-affected-version"));
   assert(ids.has("packagekit-cve-2026-41651-text-indicator"));
