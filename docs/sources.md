@@ -39,6 +39,8 @@
 - JFrog Shai-Hulud / Hades Leo/RStreams and Backstage npm analysis: https://research.jfrog.com/post/shai-hulud-miasma-alright-lets-see-if-this-works/
 - Socket Miasma Mini Shai-Hulud / ImmobiliareLabs npm package wave: https://socket.dev/blog/miasma-mini-shai-hulud-hits-immobiliarelabs-npm-packages
 - Hacking Articles Impacket for Pentester: SecretDump: https://www.hackingarticles.in/imapacket-for-pentester-secretdump/
+- Kaspersky Securelist DAEMON Tools backdoor analysis: https://securelist.com/tr/daemon-tools-backdoor/119654/
+- The Hacker News DAEMON Tools supply-chain summary: https://thehackernews.com/2026/05/daemon-tools-supply-chain-attack.html
 - SafeDep Astro config blockchain C2 supply-chain report: https://safedep.io/astro-config-blockchain-c2-supply-chain/
 - The Hacker News OpenClaw prompt-injection and agent-phishing report: https://thehackernews.com/2026/06/new-attacks-trick-openclaw-ai-agent.html
 - Microsoft Security AutoJack research: https://www.microsoft.com/en-us/security/blog/2026/06/18/autojack-single-page-rce-host-running-ai-agent/

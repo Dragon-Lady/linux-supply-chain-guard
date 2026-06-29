@@ -1223,6 +1223,65 @@ const IMPACKET_SECRETSDUMP_TEXT_INDICATORS = [
   "Replicating Directory Changes All",
   "Event 4662",
 ];
+const DAEMON_TOOLS_SUPPLY_CHAIN_TEXT_INDICATORS = [
+  "DAEMON Tools Lite",
+  "AVB Disc Soft",
+  "DTHelper.exe",
+  "DiscSoftBusServiceLite.exe",
+  "DTShellHlp.exe",
+  "env-check.daemontools.cc",
+  "env-check.daemontools[.]cc",
+  "38.180.107.76",
+  "38.180.107[.]76",
+  "env_check_script",
+  "envchk.exe",
+  "cdg.exe",
+  "cdg.tmp",
+  "core.tmp",
+  "mcrypto.chiper",
+  "mcrypto.dat",
+  "crypto.dll",
+  "mcrypto_clean",
+  "QUIC RAT",
+  "msquic.dll",
+];
+const DAEMON_TOOLS_COMPROMISED_VERSIONS = [
+  "12.5.0.2421",
+  "12.5.0.2422",
+  "12.5.0.2423",
+  "12.5.0.2424",
+  "12.5.0.2430",
+  "12.5.0.2431",
+  "12.5.0.2433",
+  "12.5.0.2434",
+];
+const DAEMON_TOOLS_FIXED_VERSION = "12.6.0.2445";
+const DAEMON_TOOLS_SHA1_IOCS = [
+  "9ccd769624de98eeeb12714ff1707ec4f5bf196d",
+  "50d47adb6dd45215c7cb4c68bae28b129ca09645",
+  "0c1d3da9c7a651ba40b40e12d48ebd32b3f31820",
+  "28b72576d67ae21d9587d782942628ea46dcc870",
+  "46b90bf370e60d61075d3472828fdc0b85ab0492",
+  "6325179f442e5b1a716580cd70dea644ac9ecd18",
+  "bd8fbb5e6842df8683163adbd6a36136164eac58",
+  "15ed5c3384e12fe4314ad6edbd1dcccf5ac1ee29",
+  "524d2d92909eef80c406e87a0fc37d7bb4dadc14",
+  "427f1728682ebc7ffe3300fef67d0e3cb6b62948",
+  "8e7eb0f5ac60dd3b4a9474d2544348c3bda48045",
+  "00e2df8f42d14072e4385e500d4669ec783aa517",
+  "aea55e42c4436236278e5692d3dcbcbe5fe6ce0b",
+  "0456e2f5f56ec8ed16078941248e7cbba9f1c8eb",
+  "9a09ad7b7e9ff7a465aa1150541e231189911afb",
+  "8d435918d304fc38d54b104a13f2e33e8e598c82",
+  "64462f751788f529c1eb09023b26a47792ecdc54",
+  "2d4eb55b01f59c62c6de9aacba9b47267d398fe4",
+  "9dbfc23ebf36b3c0b56d2f93116abb32656c42e4",
+  "295ce86226b933e7262c2ce4b36bdd6c389aaaef",
+  "98de8147394b74b27158e02ce9e7b0e25eb6e98a",
+  "2ecb292d27c36c1d4e47fb5cafa42af7ffbdda99",
+  "a3e90653bd0a81ebe2ae387a67a59bb8d07ce7b5",
+  "3ee71d75020b2634b2c23866211a0c91b942c8d4",
+];
 
 const OPERATION_HIGHLAND_SHA1_HASHES = loadHashSet("operation-highland-sha1.json");
 const OPERATION_HIGHLAND_IOC_PATHS = [
@@ -2480,6 +2539,7 @@ function scanHost(options = {}) {
   checkAutoJackAgentLocalhostExposure(findings, targetRoot, homePath);
   checkOdinDnsTxtAgentSetupExposure(findings, targetRoot, homePath);
   checkImpacketSecretsdumpArtifacts(findings, targetRoot, homePath);
+  checkDaemonToolsSupplyChainArtifacts(findings, targetRoot, homePath);
   checkNpmV12Readiness(findings, targetRoot, homePath);
   checkOperationHighlandAuthStack(findings, targetRoot, homePath);
   checkAryStingerEdgeProxy(findings, targetRoot, homePath);
@@ -6270,6 +6330,102 @@ function checkImpacketSecretsdumpArtifacts(findings, targetRoot, homePath) {
 
     if (/(?:-outputfile\s+\S+|dump\.ntds|dump\.sam|dump\.secrets|dump\.cached|username:RID:LMhash:NThash|Administrator:[0-9]+:[A-Fa-f0-9*]{16,}:[A-Fa-f0-9*]{16,})/i.test(text)) {
       addFinding(findings, "critical", "impacket-secretsdump-output-artifact", "Impacket secretsdump output artifact or hash-table format appears in scanned metadata.", relative, "Handle as credential material until proven otherwise. Restrict access, preserve evidence, and rotate affected Windows, domain, service, and admin credentials from a clean posture.");
+    }
+  }
+}
+
+function checkDaemonToolsSupplyChainArtifacts(findings, targetRoot, homePath) {
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const roots = [
+    homeRelative,
+    "/root",
+    "/tmp",
+    "/var/tmp",
+    "/opt",
+    "/srv",
+    "/var/www",
+    "/mnt",
+    "/media",
+  ].filter(Boolean);
+  const files = [];
+  for (const root of roots) {
+    files.push(...findWatchFiles(mapLinuxPath(targetRoot, root), 25000 - files.length));
+    if (files.length >= 25000) break;
+  }
+
+  const windowsProgramFiles = [
+    "/Program Files/DAEMON Tools Lite/DTHelper.exe",
+    "/Program Files/DAEMON Tools Lite/DiscSoftBusServiceLite.exe",
+    "/Program Files/DAEMON Tools Lite/DTShellHlp.exe",
+    "/Program Files (x86)/DAEMON Tools Lite/DTHelper.exe",
+    "/Program Files (x86)/DAEMON Tools Lite/DiscSoftBusServiceLite.exe",
+    "/Program Files (x86)/DAEMON Tools Lite/DTShellHlp.exe",
+  ];
+  const windowsPayloadPaths = [
+    "/Windows/Temp/envchk.exe",
+    "/Windows/Temp/cdg.exe",
+    "/Windows/Temp/cdg.tmp",
+    "/Windows/Temp/core.tmp",
+    "/Windows/Temp/crypto.dll",
+    "/ProgramData/Microsoft/mcrypto.chiper",
+    "/ProgramData/Microsoft/mcrypto.dat",
+  ];
+
+  for (const artifact of windowsProgramFiles) {
+    const candidate = mapLinuxPath(targetRoot, artifact);
+    if (exists(candidate)) {
+      addFinding(findings, "review", "daemon-tools-lite-install-artifact", "DAEMON Tools Lite Windows component exists in the scanned root.", artifact, `Verify DAEMON Tools Lite version history. Builds ${DAEMON_TOOLS_COMPROMISED_VERSIONS[0]} through ${DAEMON_TOOLS_COMPROMISED_VERSIONS[DAEMON_TOOLS_COMPROMISED_VERSIONS.length - 1]} were reported compromised; update to ${DAEMON_TOOLS_FIXED_VERSION} or newer and isolate hosts installed during the affected window.`);
+    }
+  }
+
+  for (const artifact of windowsPayloadPaths) {
+    const candidate = mapLinuxPath(targetRoot, artifact);
+    if (exists(candidate)) {
+      addFinding(findings, "critical", "daemon-tools-payload-artifact-path", "DAEMON Tools supply-chain payload path exists in the scanned root.", artifact, "Preserve the mounted Windows image and correlate with DAEMON Tools install/update history, process execution, DNS/proxy logs, and endpoint telemetry before cleanup.");
+    }
+  }
+
+  const compromisedVersionPattern = new RegExp(`\\b(?:${DAEMON_TOOLS_COMPROMISED_VERSIONS.map(escapeRegExp).join("|")})\\b`, "i");
+  const fixedVersionPattern = new RegExp(`\\b${escapeRegExp(DAEMON_TOOLS_FIXED_VERSION)}\\b`, "i");
+  const sha1Pattern = new RegExp(`\\b(?:${DAEMON_TOOLS_SHA1_IOCS.join("|")})\\b`, "i");
+
+  for (const filePath of files) {
+    const text = readText(filePath);
+    if (!text) continue;
+    const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+
+    for (const indicator of DAEMON_TOOLS_SUPPLY_CHAIN_TEXT_INDICATORS) {
+      if (text.includes(indicator)) {
+        addFinding(findings, "review", "daemon-tools-supply-chain-text-indicator", "DAEMON Tools supply-chain advisory term appears in scanned metadata.", `${relative}: ${indicator}`, "Use this as a Windows client supply-chain triage lead. Confirm whether DAEMON Tools Lite was installed or updated from the official channel during the reported April-May 2026 window.");
+      }
+    }
+
+    if (/DAEMON Tools(?: Lite)?|AVB Disc Soft|DTHelper\.exe|DiscSoftBusServiceLite\.exe|DTShellHlp\.exe/i.test(text) && compromisedVersionPattern.test(text)) {
+      addFinding(findings, "critical", "daemon-tools-lite-compromised-version", "DAEMON Tools Lite compromised build number appears in scanned metadata.", relative, `Treat affected Windows hosts as potentially compromised until investigated. Update to ${DAEMON_TOOLS_FIXED_VERSION} or newer and preserve installer, download, proxy, and endpoint evidence.`);
+    }
+
+    if (/DAEMON Tools(?: Lite)?|AVB Disc Soft/i.test(text) && fixedVersionPattern.test(text)) {
+      addFinding(findings, "info", "daemon-tools-lite-fixed-version-reference", "DAEMON Tools Lite fixed build number appears in scanned metadata.", relative, "Confirm this reflects the installed version on every affected Windows host, not only a remediation note or intended target.");
+    }
+
+    if (sha1Pattern.test(text)) {
+      addFinding(findings, "critical", "daemon-tools-sha1-ioc", "DAEMON Tools supply-chain SHA-1 IOC appears in scanned metadata.", relative, "Preserve the referenced artifact and compare against trusted vendor media. Treat installer and payload hash matches as incident evidence.");
+    }
+
+    if (/(?:env-check\.daemontools(?:\[?\.\]?|\.?)cc|38\.180\.107(?:\[?\.\]?|\.)76|\/2032716822411\?s=|\/09505aca4f538bd|\/79437f5edda13f9c066\/version\/check)/i.test(text)) {
+      addFinding(findings, "critical", "daemon-tools-c2-indicator", "DAEMON Tools supply-chain C2 or payload-download indicator appears in scanned metadata.", relative, "Correlate with DNS, proxy, firewall, EDR, and process-creation telemetry. Rotate credentials from a clean host if payload execution is confirmed.");
+    }
+
+    if (/cmd\.exe\s+\/c\s+powershell[\s\S]{0,260}(?:DownloadFile|System\.Net\.WebClient)[\s\S]{0,260}(?:38\.180\.107(?:\[?\.\]?|\.)76|envchk\.exe|cdg\.exe|mcrypto)/i.test(text)) {
+      addFinding(findings, "critical", "daemon-tools-payload-command", "DAEMON Tools supply-chain payload download command shape appears in scanned metadata.", relative, "Review Windows process-command telemetry for the same command chain and preserve PowerShell, cmd.exe, and temp-file evidence.");
+    }
+
+    if (/cdg\.exe[\s\S]{0,180}cdg\.tmp|cdg\.tmp[\s\S]{0,180}cdg\.exe/i.test(text) && /first_match|RC4|schedsvc\.dll|mcrypto\.dat|mcrypto\.chiper/i.test(text)) {
+      addFinding(findings, "warning", "daemon-tools-minimal-backdoor-review", "DAEMON Tools minimal-backdoor staging terms appear together in scanned metadata.", relative, "Review for decrypted payload staging, scheduled-service DLL references, RC4 notes, and persistence under ProgramData or AppData Microsoft paths.");
+    }
+
+    if (/QUIC RAT|msquic\.dll/i.test(text) && /notepad\.exe|conhost\.exe|HTTP\/3|WSS|QUIC|DNS/i.test(text)) {
+      addFinding(findings, "warning", "daemon-tools-quic-rat-review", "DAEMON Tools follow-on QUIC RAT terms appear in scanned metadata.", relative, "Use this as a follow-on payload hunt lead across injection telemetry, protocol logs, and Windows endpoint detections.");
     }
   }
 }
