@@ -1805,8 +1805,14 @@ const DIRTYCLONE_TEXT_INDICATORS = [
   "CAP_NET_ADMIN",
   "kernel.unprivileged_userns_clone=0",
   "v7.1-rc5",
+  "cef401de7be8c4e155c6746bfccf721a4fa5fab9",
   "48f6a5356a33",
   "9e171fc1d7d7",
+  "fbeab9555564a1b98e8582cd106dfe46c4606991",
+  "179f1852bdedc300e373e807cc102cd81feff196",
+  "12401fcfb01f53ccc63ab0a3246570fe8f3105ee",
+  "989214c66884d70716d83dc1d0bf5e16287bf349",
+  "propagate shared-frag marker through frag-transfer helpers",
 ];
 
 const PEDIT_COW_TEXT_INDICATORS = [
@@ -2898,7 +2904,7 @@ function checkDirtyClone(findings, targetRoot, homePath) {
       addFinding(findings, "review", "pedit-cow-reference", "Pedit COW / CVE-2026-46331 reference appears in scanned metadata.", relative, "Use this as a Linux kernel patch and exposure-review lead. Confirm vendor-fixed kernel status, patch and reboot, and avoid running public PoCs on production or credential-bearing hosts.");
     }
 
-    if (hasDirtyCloneContext && /__pskb_copy_fclone|nf_dup_ipv4|skb_shinfo|skb->nohdr|SKBFL_SHARED_FRAG|skb_shift|skb_segment|skb_gro_receive|skb_gro_receive_list|tcp_clone_payload|esp_input\(\)|XFRM\/IPsec|ip xfrm|TEE --gateway|CAP_NET_ADMIN|unprivileged_userns_clone|multi-tenant|container|CI runner/i.test(haystack)) {
+    if (hasDirtyCloneContext && /__pskb_copy_fclone|nf_dup_ipv4|skb_shinfo|skb->nohdr|SKBFL_SHARED_FRAG|shared-frag marker|frag-transfer helpers|skb_shift|skb_segment|skb_gro_receive|skb_gro_receive_list|tcp_clone_payload|esp_input\(\)|XFRM\/IPsec|ip xfrm|local IPsec tunnel|TEE --gateway|CAP_NET_ADMIN|unprivileged_userns_clone|multi-tenant|container|CI runner/i.test(haystack)) {
       addFinding(findings, "warning", "dirtyclone-advisory-terms", "DirtyClone / DirtyFrag-family page-cache poisoning terms appear in scanned metadata.", relative, "Treat this as a host-kernel exposure review lead. Patch and reboot; do not rely on direct disk reads alone because the reported primitive mutates page-cache-backed executable memory.");
     }
 

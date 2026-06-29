@@ -691,7 +691,8 @@ function run() {
     "Initial DirtyFrag CVE-2026-43284 and CVE-2026-43500 plus Fragnesia CVE-2026-46300 need the full patch chain.",
     "__pskb_copy_fclone nf_dup_ipv4 skb_shinfo(skb)->flags skb_shift skb_segment skb_gro_receive skb_gro_receive_list tcp_clone_payload SKBFL_SHARED_FRAG.",
     "XFRM/IPsec esp_input() path with CAP_NET_ADMIN via unshare -Urn, ip xfrm state add, ip xfrm policy add, iptables -t mangle, TEE --gateway, and kernel.unprivileged_userns_clone=0 mitigation for multi-tenant container and CI runner hosts.",
-    "Upstream markers include 48f6a5356a33, 9e171fc1d7d7, and v7.1-rc5; PoC notes target /usr/bin/su with cbc(aes)."
+    "Upstream markers include 48f6a5356a33, 9e171fc1d7d7, and v7.1-rc5; PoC notes target /usr/bin/su with cbc(aes).",
+    "SecurityOnline patch provenance: affected cef401de7be8c4e155c6746bfccf721a4fa5fab9; patched fbeab9555564a1b98e8582cd106dfe46c4606991, 179f1852bdedc300e373e807cc102cd81feff196, 12401fcfb01f53ccc63ab0a3246570fe8f3105ee, 989214c66884d70716d83dc1d0bf5e16287bf349; impact net: skbuff: propagate shared-frag marker through frag-transfer helpers."
   ].join("\n"));
   write(path.join(root, "var", "log", "pedit-cow-triage.log"), [
     "Pedit COW CVE-2026-46331 Linux kernel LPE review for net/sched/act_pedit.c and act_pedit traffic-control action.",

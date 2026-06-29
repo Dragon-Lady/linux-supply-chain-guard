@@ -424,7 +424,9 @@ Exit codes:
   - XFRM/IPsec, `CAP_NET_ADMIN`, `unshare -Urn`, `ip xfrm`, `TEE --gateway`,
     `esp_input()`, and `kernel.unprivileged_userns_clone=0` terms
   - upstream fix/release markers including `48f6a5356a33`, `9e171fc1d7d7`,
-    `v7.1-rc5`, and `SKBFL_SHARED_FRAG`
+    `v7.1-rc5`, `SKBFL_SHARED_FRAG`, SecurityOnline-reported affected
+    marker `cef401de7be8c4e155c6746bfccf721a4fa5fab9`, and stable-backport
+    markers such as `fbeab9555564a1b98e8582cd106dfe46c4606991`
 - Pedit COW / `CVE-2026-46331` review indicators:
   - `Pedit COW`, `CVE-2026-46331`, `act_pedit`, and
     `net/sched/act_pedit.c` advisory terms
@@ -1022,6 +1024,8 @@ the known indicators it checks.
   https://thehackernews.com/2026/06/new-dirtyclone-linux-kernel-flaw-lets.html
 - Positive Technologies DBugs CVE-2026-43503 record:
   https://dbugs.ptsecurity.com/vulnerability/CVE-2026-43503
+- SecurityOnline DirtyClone Linux kernel LPE summary:
+  https://securityonline.info/dirtyclone-linux-kernel-lpe/
 - MatheuZ Security Trend Micro BMHook/TMHook reload bypass analysis:
   https://matheuzsecurity.github.io/hacking/trendmicro-bmhook-tmhook-reload-bypass/
 - System Register Hijacking / ret2entry paper:
