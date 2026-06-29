@@ -136,6 +136,8 @@
 - NVD CVE-2026-41651 PackageKit record: https://nvd.nist.gov/vuln/detail/CVE-2026-41651
 - GitHub Advisory GHSA-f55j-vvr9-69xv / PackageKit CVE-2026-41651: https://github.com/PackageKit/PackageKit/security/advisories/GHSA-f55j-vvr9-69xv
 - Openwall oss-security PackageKit CVE-2026-41651 disclosure: http://www.openwall.com/lists/oss-security/2026/04/22/6
+- Unit 42 cloud bucket hijacking risk analysis: https://unit42.paloaltonetworks.com/cloud-bucket-hijacking-risks/
+- Cyber Security News bucket hijacking summary: https://cybersecuritynews.com/bucket-hijacking-attack/
 - The Hacker News Pedit COW / CVE-2026-46331 summary: https://thehackernews.com/2026/06/new-linux-pedit-cow-exploit-enables.html
 - Positive Technologies DBugs CVE-2026-23111 record: https://dbugs.ptsecurity.com/vulnerability/CVE-2026-23111
 - Linux stable nf_tables CVE-2026-23111 fix commit: https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/commit/?id=8c760ba4e36c750379d13569f23f5a6e185333f5

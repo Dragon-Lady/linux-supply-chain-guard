@@ -305,6 +305,20 @@ TOCTOU/race-condition language, or `Pack2TheRoot`/GHSA provenance markers. These
 signals are for defensive triage and provenance review only; the guard does not
 attempt exploit reproduction.
 
+Cloud bucket hijacking is tracked as a cloud storage posture review signal.
+Unit 42 and follow-on reporting describe a same-name bucket recreation risk:
+if an attacker can delete a bucket used as a destination for cloud logs,
+replication, telemetry, or diagnostic exports, existing data-stream
+configuration may continue writing to an attacker-controlled bucket with the
+same globally unique name.
+
+The guard flags copied notes mentioning Google Cloud Logging sinks, Pub/Sub
+Cloud Storage destinations, Storage Transfer Service jobs, AWS S3 replication,
+Amazon Data Firehose, and Azure Monitor diagnostic exports together with bucket
+or storage-account deletion permissions. Mitigation notes such as VPC Service
+Controls, AWS Service Control Policies, trusted organizational boundaries, and
+account-regional S3 namespaces are tracked as configuration-review prompts.
+
 Fragnesia is a Linux kernel local-root flaw affecting supported AlmaLinux
 releases through the `esp4`, `esp6`, and, on some AlmaLinux 9/10 systems,
 `rxrpc` modules. This tool does not test exploitability. It checks kernel

@@ -629,6 +629,14 @@ function run() {
     "The Pack2TheRoot advisory describes a TOCTOU race condition around InstallFiles and pk_transaction_set_state.",
     "The source-level marker is transaction->cached_transaction_flags in src/pk-transaction.c."
   ].join("\n"));
+  write(path.join(root, "var", "log", "cloud-bucket-hijacking-review.log"), [
+    "Bucket Hijacking cloud storage posture review for active cloud data streams and attacker-controlled external storage bucket risk.",
+    "Google Cloud Logging sink, Pub/Sub subscription, and Storage Transfer Service jobs can keep writing audit logs and telemetry after same-name bucket recreation.",
+    "AWS S3 bucket replication and Amazon Data Firehose destinations should be reviewed for DeleteBucket exposure.",
+    "Azure Monitor diagnostic settings and Microsoft.Storage/storageAccounts/delete need cross-subscription review.",
+    "Permissions include storage.buckets.delete, storage.objects.delete, logging.sinks.update, pubsub.subscriptions.update, and storagetransfer.jobs.update.",
+    "Mitigation notes include VPC Service Controls, Service Control Policies, trusted organizational boundary, and account-regional S3 namespaces."
+  ].join("\n"));
   write(path.join(home, "research", "exploitarium", "libssh2-cve-2026-55200-poc", "poc", "cve_2026_55200_probe.c"), [
     "/* libssh2 CVE-2026-55200 PoC arithmetic verifier */",
     "const char *fix = \"97acf3dfda80c91c3a8c9f2372546301d4a1a7a8\";",
@@ -1101,6 +1109,10 @@ function run() {
   assert(ids.has("packagekit-cve-2026-41651-text-indicator"));
   assert(ids.has("packagekit-cve-2026-41651-race-condition-reference"));
   assert(ids.has("packagekit-cve-2026-41651-poc-provenance"));
+  assert(ids.has("cloud-bucket-hijacking-text-indicator"));
+  assert(ids.has("cloud-bucket-hijacking-data-stream-review"));
+  assert(ids.has("cloud-bucket-hijacking-delete-permission-risk"));
+  assert(ids.has("cloud-bucket-hijacking-perimeter-mitigation-note"));
   assert(ids.has("dirtycbc-rxgk-reference"));
   assert(ids.has("dirtycbc-rxgk-advisory-terms"));
   assert(ids.has("dirtycbc-rxgk-poc-artifact"));

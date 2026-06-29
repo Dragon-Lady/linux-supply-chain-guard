@@ -1526,6 +1526,33 @@ const PACKAGEKIT_CVE202641651_TEXT_INDICATORS = [
   "src/pk-transaction.c",
 ];
 
+const CLOUD_BUCKET_HIJACKING_TEXT_INDICATORS = [
+  "bucket hijacking",
+  "Bucket Hijacking",
+  "global namespace risk",
+  "globally unique bucket name",
+  "attacker-controlled external storage bucket",
+  "active cloud data streams",
+  "cloud data exfiltration",
+  "Google Cloud Logging sink",
+  "Cloud Logging sink",
+  "logging.sinks.update",
+  "Pub/Sub subscription",
+  "pubsub.subscriptions.update",
+  "Storage Transfer Service",
+  "storagetransfer.jobs.update",
+  "storage.buckets.delete",
+  "storage.objects.delete",
+  "S3 bucket replication",
+  "Amazon Data Firehose",
+  "DeleteBucket",
+  "Azure Monitor diagnostic settings",
+  "Microsoft.Storage/storageAccounts/delete",
+  "VPC Service Controls",
+  "Service Control Policies",
+  "account-regional S3 namespaces",
+];
+
 const DIRTYCBC_RXGK_TEXT_INDICATORS = [
   "DirtyCBC",
   "linux-rxgk-decrypt-mac",
@@ -2292,6 +2319,7 @@ function scanHost(options = {}) {
   checkFfmpegPixelSmashExposure(findings, targetRoot, homePath);
   checkLibssh2Cve202655200Exposure(findings, targetRoot, homePath);
   checkPackageKitCve202641651Exposure(findings, targetRoot, homePath);
+  checkCloudBucketHijackingExposure(findings, targetRoot, homePath);
   checkShapedPluginSupplyChainCompromise(findings, targetRoot, homePath);
   checkDcatAuthGoogle2faPackagistCompromise(findings, targetRoot, homePath);
   checkLaravelLivewireCve202554068(findings, targetRoot, homePath);
@@ -4928,6 +4956,57 @@ function checkPackageKitCve202641651Exposure(findings, targetRoot, homePath) {
 
     if (/Pack2TheRoot|pack2theroot|GHSA-f55j-vvr9-69xv|github\.security\.telekom\.com\/2026\/04\/pack2theroot/i.test(text)) {
       addFinding(findings, "review", "packagekit-cve-2026-41651-poc-provenance", "PackageKit CVE-2026-41651 public exploit/advisory provenance term appears in scanned host metadata.", relative, "Confirm provenance and authorization before keeping copied exploit material on developer workstations, CI runners, or shared hosts.");
+    }
+  }
+}
+
+function checkCloudBucketHijackingExposure(findings, targetRoot, homePath) {
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const roots = [
+    "/etc",
+    "/opt",
+    "/srv",
+    "/usr/local",
+    "/var/log",
+    "/mnt",
+    "/media",
+    homeRelative,
+  ].filter(Boolean);
+  const files = [];
+  for (const root of roots) {
+    files.push(...findWatchFiles(mapLinuxPath(targetRoot, root), 25000 - files.length));
+    if (files.length >= 25000) break;
+  }
+
+  for (const filePath of files) {
+    const size = fileSizeBytes(filePath);
+    if (size <= 0 || size > 1024 * 1024) continue;
+    const text = readText(filePath);
+    if (!text) continue;
+    const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+    const hasCloudStorageContext = /bucket hijacking|cloud storage|storage bucket|Google Cloud|GCP|AWS|Amazon Web Services|S3|Azure|Cloud Logging|Pub\/Sub|Storage Transfer Service|Data Firehose|Azure Monitor/i.test(text);
+
+    if (!hasCloudStorageContext) continue;
+
+    for (const indicator of CLOUD_BUCKET_HIJACKING_TEXT_INDICATORS) {
+      if (text.includes(indicator)) {
+        addFinding(findings, "review", "cloud-bucket-hijacking-text-indicator", "Cloud bucket hijacking advisory or service term appears in scanned host metadata.", `${relative}: ${indicator}`, "Use this as a cloud posture review lead. Validate bucket ownership boundaries, deletion permissions, and whether logging, replication, or diagnostic exports can write outside the organization.");
+      }
+    }
+
+    if (/bucket hijacking|attacker-controlled external storage bucket|same bucket name|identical bucket name|globally unique bucket name/i.test(text)
+      && /audit logs|telemetry|metrics|Cloud Logging|logging sink|Pub\/Sub|Storage Transfer Service|S3 bucket replication|Data Firehose|Azure Monitor diagnostic/i.test(text)) {
+      addFinding(findings, "warning", "cloud-bucket-hijacking-data-stream-review", "Cloud storage bucket hijacking terms appear near active logging, replication, telemetry, or diagnostic data streams.", relative, "Review cloud logging sinks, S3 replication or Firehose destinations, Azure Monitor diagnostic exports, and transfer jobs for destination bucket/account ownership.");
+    }
+
+    if (/storage\.buckets\.delete|storage\.objects\.delete|DeleteBucket|Microsoft\.Storage\/storageAccounts\/delete/i.test(text)
+      && /Cloud Logging|logging\.sinks\.update|Pub\/Sub|Storage Transfer Service|S3 bucket replication|Data Firehose|Azure Monitor diagnostic|audit logs|telemetry/i.test(text)) {
+      addFinding(findings, "warning", "cloud-bucket-hijacking-delete-permission-risk", "Cloud bucket or storage-account delete permission appears near cloud data-stream destination terms.", relative, "Restrict bucket deletion permissions to tightly scoped administrative roles and alert on deletion attempts for buckets that receive logs, telemetry, replication, or diagnostic exports.");
+    }
+
+    if (/VPC Service Controls|Service Control Policies|SCPs|account-regional S3 namespaces|trusted organizational boundary|data perimeter/i.test(text)
+      && /bucket hijacking|external storage bucket|Cloud Logging|S3 bucket replication|Data Firehose|Azure Monitor diagnostic/i.test(text)) {
+      addFinding(findings, "info", "cloud-bucket-hijacking-perimeter-mitigation-note", "Cloud bucket hijacking mitigation language appears in scanned host metadata.", relative, "Confirm the stated perimeter control is enforced in the relevant cloud accounts, projects, regions, subscriptions, and logging destinations.");
     }
   }
 }
