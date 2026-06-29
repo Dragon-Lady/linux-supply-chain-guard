@@ -855,7 +855,15 @@ function run() {
     "    advisory: CVE-2026-10561 CVE-2026-7664 CVE-2026-55450 GHSA-x223-p2gf-v735 FOFA Query app=\"LOGSPACE-LangFlow\" PythonREPLComponent Streamable MCP",
   ].join("\n"));
   write(path.join(home, "langflow", "requirements.txt"), "langflow==1.9.0\n");
-  write(path.join(home, "langflow", "legacy.txt"), "langflow==1.8.4 /api/v1/webhook/{flow_id} WEBHOOK_AUTH_ENABLE=False get_user_by_flow_id_or_endpoint_name\n");
+  write(path.join(home, "langflow", "legacy.txt"), [
+    "langflow==1.8.4 /api/v1/webhook/{flow_id} WEBHOOK_AUTH_ENABLE=False get_user_by_flow_id_or_endpoint_name",
+    "CVE-2026-33017 GHSA-vwmf-pq79-vjvx Langflow cryptominer campaign.",
+    "POST /api/v1/build_public_tmp/{flow_id}/flow accepts a data parameter with FlowDataRequest attacker-controlled flow data.",
+    "Arbitrary Python code in node definitions reaches prepare_global_scope and exec() without requiring authentication for public flows.",
+    "KORKERDS init_rmount Kinsing kill list cryptominer XMRig Monero miner activity.",
+    "The malware searches for reused SSH keys, id-rsa-like private key names, authorized key files, SSH worm lateral movement, and connected systems."
+  ].join("\n"));
+  write(path.join(home, "langflow", "init_rmount"), "KORKERDS Langflow CVE-2026-33017 cryptominer persistence marker\n");
   write(path.join(home, "gogs", "custom", "conf", "app.ini"), [
     "APP_NAME = Gogs",
     "RUN_USER = gogs",
@@ -1227,6 +1235,12 @@ function run() {
   assert(ids.has("difytap-chat-file-uuid-review"));
   assert(ids.has("difytap-trace-exfiltration-review"));
   assert(ids.has("difytap-pdfium-parser-review"));
+  assert(ids.has("langflow-cve-2026-33017-vulnerable-version"));
+  assert(ids.has("langflow-cryptominer-text-indicator"));
+  assert(ids.has("langflow-cve-2026-33017-public-build-rce-review"));
+  assert(ids.has("langflow-cryptominer-campaign-review"));
+  assert(ids.has("langflow-ssh-worm-lateral-movement-review"));
+  assert(ids.has("langflow-init-rmount-artifact"));
   assert(ids.has("langflow-cve-2026-10561-vulnerable-version"));
   assert(ids.has("langflow-cve-2026-7664-vulnerable-version"));
   assert(ids.has("langflow-cve-2026-55450-vulnerable-version"));

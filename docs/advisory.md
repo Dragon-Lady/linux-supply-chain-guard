@@ -346,6 +346,20 @@ Suspicious `.amazonq/mcp.json` entries containing shell, curl, PowerShell, or
 developer credential exposure. Symlink notes are tracked separately for the
 `CVE-2026-12958` path-outside-workspace trust-boundary issue.
 
+Langflow `CVE-2026-33017` / `GHSA-vwmf-pq79-vjvx` is tracked as an
+unauthenticated public-flow build RCE fixed in `1.9.0`. The vulnerable endpoint
+is `POST /api/v1/build_public_tmp/{flow_id}/flow`; when attacker-controlled
+`data` is accepted, arbitrary Python in node definitions can reach unsandboxed
+`exec()` through flow-building code. The guard flags local Langflow versions
+before `1.9.0`, endpoint/source terms, and campaign notes tied to the reported
+cryptominer activity.
+
+For the cryptominer campaign, do not scope response to cloud-spend abuse only.
+The guard tracks `KORKERDS`, `init_rmount`, Kinsing/kill-list language,
+XMRig/Monero/miner terms, and reused SSH-key or SSH-worm lateral-movement
+notes. A confirmed hit should trigger credential and SSH key rotation plus
+inspection of connected hosts for secondary persistence.
+
 Fragnesia is a Linux kernel local-root flaw affecting supported AlmaLinux
 releases through the `esp4`, `esp6`, and, on some AlmaLinux 9/10 systems,
 `rxrpc` modules. This tool does not test exploitability. It checks kernel

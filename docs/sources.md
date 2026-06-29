@@ -46,6 +46,9 @@
 - IBM Security Bulletin / Langflow CVE-2026-10561 PythonREPL RCE: https://www.ibm.com/support/pages/node/7277242
 - IBM Security Bulletin / Langflow CVE-2026-7664 webhook/MCP authorization bypass: https://www.ibm.com/support/pages/node/7277243
 - SecurityOnline Langflow RCE summary: https://securityonline.info/langflow-rce-vulnerability/
+- GitHub Security Advisory GHSA-vwmf-pq79-vjvx / Langflow CVE-2026-33017 public-flow build RCE: https://github.com/langflow-ai/langflow/security/advisories/GHSA-vwmf-pq79-vjvx
+- CVE API record for CVE-2026-33017: https://cveawg.mitre.org/api/cve/CVE-2026-33017
+- SecurityOnline Langflow CVE-2026-33017 cryptominer campaign summary: https://securityonline.info/langflow-cryptominer-malware/
 - Imperva Laravel Livewire CVE-2025-54068 credential-theft campaign report: https://www.imperva.com/blog/cve-2025-54068-laravel-livewire-credential-theft-campaign-6000-applications-compromised/
 - Synacktiv Livewire RCE through unmarshaling technical disclosure: https://www.synacktiv.com/en/publications/livewire-remote-command-execution-through-unmarshaling
 - NVD CVE-2025-54068: https://nvd.nist.gov/vuln/detail/CVE-2025-54068

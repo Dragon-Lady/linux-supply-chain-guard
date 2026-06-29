@@ -1310,6 +1310,7 @@ const WATCH_FILE_NAMES = new Set([
   "libpwn_local_rce_exploit.py",
   "libpwn_rce_proof.txt",
   "2026-06-23-local-harness-output.txt",
+  "init_rmount",
   ...PEOPLESOFT_MESH_AGENT_FILES,
   "gentlemen.bmp",
   "README-GENTLEMEN.txt",
@@ -1413,6 +1414,7 @@ const DIFY_DEPLOYMENT_TERMS = [
 const LANGFLOW_UPLOAD_FIXED = "1.9.1";
 const LANGFLOW_WEBHOOK_AFFECTED_MAX = "1.8.4";
 const LANGFLOW_WEBHOOK_FIXED = "1.9.1";
+const LANGFLOW_PUBLIC_BUILD_FIXED = "1.9.0";
 const LANGFLOW_PYTHON_REPL_FIXED = "1.9.4";
 const LANGFLOW_DEPLOYMENT_TERMS = [
   "Langflow",
@@ -1420,10 +1422,14 @@ const LANGFLOW_DEPLOYMENT_TERMS = [
   "langflow-ai/langflow",
   "langflowai/langflow",
   "LOGSPACE-LangFlow",
+  "CVE-2026-33017",
   "CVE-2026-10561",
   "CVE-2026-7664",
   "CVE-2026-55450",
+  "GHSA-vwmf-pq79-vjvx",
   "GHSA-x223-p2gf-v735",
+  "/api/v1/build_public_tmp/{flow_id}/flow",
+  "build_public_tmp",
   "PythonREPLComponent",
   "Python Interpreter",
   "LANGFLOW_AUTO_LOGIN",
@@ -1433,6 +1439,24 @@ const LANGFLOW_DEPLOYMENT_TERMS = [
   "Streamable MCP",
   "/api/v1/upload/{flow_id}",
   "max_file_size_upload",
+];
+const LANGFLOW_CRYPTOMINER_TERMS = [
+  "Langflow cryptominer",
+  "CVE-2026-33017",
+  "GHSA-vwmf-pq79-vjvx",
+  "build_public_tmp",
+  "/api/v1/build_public_tmp",
+  "KORKERDS",
+  "init_rmount",
+  "Kinsing",
+  "cryptominer",
+  "cryptocurrency miner",
+  "Monero",
+  "XMRig",
+  "xmrig",
+  "kill list",
+  "reused SSH keys",
+  "SSH worm",
 ];
 
 const FFMPEG_PIXELSMASH_FIXED = "8.1.2";
@@ -5674,6 +5698,8 @@ function checkLangflowUploadExposure(findings, targetRoot, homePath) {
     "/var/www",
     "/etc",
     "/root",
+    "/tmp",
+    "/var/tmp",
   ].filter(Boolean);
   const files = [];
   for (const root of roots) {
@@ -5685,11 +5711,17 @@ function checkLangflowUploadExposure(findings, targetRoot, homePath) {
     const text = readText(filePath);
     if (!text) continue;
     const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
-    const hasLangflow = hasAnyTerm(text, LANGFLOW_DEPLOYMENT_TERMS) || /\/api\/v1\/upload\/(?:\{flow_id\}|<flow_id>|[0-9a-f-]{8})/i.test(text);
+    const base = path.basename(filePath);
+    const hasLangflow = hasAnyTerm(text, LANGFLOW_DEPLOYMENT_TERMS)
+      || /\/api\/v1\/(?:upload|build_public_tmp)\/(?:\{flow_id\}|<flow_id>|\$\{FLOW_ID\}|[0-9a-f-]{8})/i.test(text)
+      || base === "init_rmount";
     if (!hasLangflow) continue;
 
     for (const version of langflowVersionsInText(text)) {
       const normalizedVersion = normalizeDottedVersion(version);
+      if (compareDottedVersion(normalizedVersion, LANGFLOW_PUBLIC_BUILD_FIXED) < 0) {
+        addFinding(findings, "critical", "langflow-cve-2026-33017-vulnerable-version", "Langflow version appears older than the CVE-2026-33017 public-flow RCE fixed release.", `${relative}: Langflow ${version}`, `Upgrade Langflow to ${LANGFLOW_PUBLIC_BUILD_FIXED} or newer. Treat public flows and exposed build_public_tmp endpoints as unauthenticated RCE risk until patched.`);
+      }
       if (compareDottedVersion(normalizedVersion, LANGFLOW_PYTHON_REPL_FIXED) < 0) {
         addFinding(findings, "critical", "langflow-cve-2026-10561-vulnerable-version", "Langflow version appears older than the CVE-2026-10561 fixed release.", `${relative}: Langflow ${version}`, `Upgrade Langflow to ${LANGFLOW_PYTHON_REPL_FIXED} or newer. Disable AUTO_LOGIN and keep Langflow behind authenticated network controls until patched.`);
       }
@@ -5699,6 +5731,31 @@ function checkLangflowUploadExposure(findings, targetRoot, homePath) {
       if (compareDottedVersion(normalizedVersion, LANGFLOW_UPLOAD_FIXED) < 0) {
         addFinding(findings, "critical", "langflow-cve-2026-55450-vulnerable-version", "Langflow version appears older than the CVE-2026-55450 fixed release.", `${relative}: Langflow ${version}`, `Upgrade Langflow to ${LANGFLOW_UPLOAD_FIXED} or newer and restrict upload routes until patched.`);
       }
+    }
+
+    for (const indicator of LANGFLOW_CRYPTOMINER_TERMS) {
+      if (text.includes(indicator) || (indicator === "init_rmount" && base === "init_rmount")) {
+        addFinding(findings, "review", "langflow-cryptominer-text-indicator", "Langflow CVE-2026-33017 or cryptominer campaign term appears in scanned host metadata.", `${relative}: ${indicator}`, "Use this as a patch-verification and incident-triage lead. Correlate Langflow exposure, process history, miner activity, SSH key reuse, and lateral movement.");
+      }
+    }
+
+    if (/\/api\/v1\/build_public_tmp\/(?:\{flow_id\}|<flow_id>|\$\{FLOW_ID\}|[0-9a-f-]{8})\/flow|POST\s+\/api\/v1\/build_public_tmp|build_public_tmp/i.test(text)
+      && /data parameter|FlowDataRequest|attacker-controlled flow data|arbitrary Python code|node definitions|exec\(\)|prepare_global_scope|public flows|without requiring authentication|Missing Authentication/i.test(text)) {
+      addFinding(findings, "critical", "langflow-cve-2026-33017-public-build-rce-review", "Langflow public-flow build endpoint RCE terms appear in scanned configuration/source.", relative, "Patch to Langflow 1.9.0 or newer, remove public exposure until verified, and review whether attacker-supplied flow data reached unsandboxed Python execution.");
+    }
+
+    if (/Langflow|CVE-2026-33017|build_public_tmp/i.test(text)
+      && /KORKERDS|init_rmount|Kinsing|kill list|cryptominer|cryptocurrency miner|XMRig|xmrig|Monero/i.test(text)) {
+      addFinding(findings, "warning", "langflow-cryptominer-campaign-review", "Langflow CVE-2026-33017 terms appear near cryptominer/KORKERDS campaign markers.", relative, "Treat any confirmed match as more than resource theft. Check persistence, competing-malware cleanup commands, miner pools/wallets, cloud spend, and host-level security control changes.");
+    }
+
+    if (/Langflow|CVE-2026-33017|KORKERDS|cryptominer|init_rmount/i.test(text)
+      && /reused SSH keys|SSH keys|authorized[._ -]?keys|id[._ -]?rsa|SSH worm|lateral movement|connected systems/i.test(text)) {
+      addFinding(findings, "critical", "langflow-ssh-worm-lateral-movement-review", "Langflow cryptominer campaign terms appear near SSH-key worming or lateral-movement language.", relative, "Rotate exposed SSH keys, inspect SSH authorized-key files and login history across connected hosts, and search for secondary persistence beyond the initial Langflow server.");
+    }
+
+    if (base === "init_rmount") {
+      addFinding(findings, "warning", "langflow-init-rmount-artifact", "SecurityOnline-reported Langflow cryptominer persistence filename appears on disk.", relative, "Quarantine from a clean response environment, preserve file metadata, and correlate with Langflow CVE-2026-33017 exploitation, miner processes, and SSH lateral movement.");
     }
 
     if (/PythonREPLComponent|Python Interpreter|get_globals\(\)|global_imports|builtins|LANGFLOW_AUTO_LOGIN|\/api\/v1\/auto_login/i.test(text)) {
