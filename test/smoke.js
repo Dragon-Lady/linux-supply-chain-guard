@@ -775,6 +775,17 @@ function run() {
     "    with tarfile.open(archive_path) as tf:",
     "        tf.extractall(destination, filter='data')"
   ].join("\n"));
+  write(path.join(home, "django-cache-risk", "requirements.txt"), "Django==6.0.4\nredis\npymemcache\n");
+  write(path.join(home, "django-cache-risk", "settings.py"), [
+    "HA-2026-00131 Django v6.0.4 RCE review note.",
+    "Remote Code Execution (RCE) via Insecure Deserialization (Redis, Memcached & SMB/UNC Path Redirection) based on cache poisoning attack.",
+    "CACHES = {'default': {'BACKEND': 'django.core.cache.backends.redis.RedisCache', 'LOCATION': 'redis://0.0.0.0:6379/1'}}",
+    "SESSION_ENGINE = 'django.contrib.sessions.backends.cache'",
+    "SESSION_FILE_PATH = '\\\\\\\\192.168.1.90\\\\share'",
+    "PyMemcacheCache MemcachedCache pymemcache.serde.pickle_serde RedisSerializer pickle.loads(data) pickle.dumps(payload)",
+    "Exposed cache preconditions: unauthenticated Redis protected-mode no, no auth, SSRF, Server-Side Request Forgery, lateral movement, shared cache, multi-tenant.",
+    "PoC markers: sessionid=pwned_session_1337 django.contrib.sessions.cache CACHE_KEY = ':1:django.contrib.sessions.cachepwned_session_1337' Pickle-RCE-Finder class RCE."
+  ].join("\n"));
   write(path.join(home, ".vscode", "extensions", "amazon-q-vscode", "package.json"), JSON.stringify({
     name: "amazon-q-vscode",
     displayName: "Amazon Q Developer",
@@ -1368,6 +1379,14 @@ function run() {
   assert(ids.has("cpython-tarfile-untrusted-archive-flow"));
   assert(ids.has("cpython-tarfile-hardlink-symlink-bypass"));
   assert(ids.has("cpython-tarfile-text-indicator"));
+  assert(ids.has("django-604-cache-deserialization-version-reference"));
+  assert(ids.has("django-cache-deserialization-reference"));
+  assert(ids.has("django-cache-session-pickle-backend-review"));
+  assert(ids.has("django-cache-pickle-deserialization-review"));
+  assert(ids.has("django-cache-service-exposure-review"));
+  assert(ids.has("django-session-file-unc-path-review"));
+  assert(ids.has("django-cache-deserialization-poc-artifact"));
+  assert(ids.has("django-cache-deserialization-text-indicator"));
   assert(ids.has("hades-python-payload-filename"));
   assert(ids.has("hades-text-indicator"));
   assert(ids.has("hades-known-native-extension"));

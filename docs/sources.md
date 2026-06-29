@@ -156,6 +156,10 @@
 - CVE API record for CVE-2026-11940: https://cveawg.mitre.org/api/cve/CVE-2026-11940
 - CPython patch PR for CVE-2026-11940: https://github.com/python/cpython/pull/151559
 - SecurityOnline CPython tarfile vulnerability summary: https://securityonline.info/cpython-tarfile-vulnerability/
+- HackedAlert Django v6.0.4 cache-deserialization RCE writeup: https://hackedalert.com/research/django-v6-0-4-rce-insecure-deserialization/
+- Django PyPI package metadata: https://pypi.org/project/Django/
+- Django upstream Redis cache backend source: https://github.com/django/django/blob/main/django/core/cache/backends/redis.py
+- Django upstream Memcached cache backend source: https://github.com/django/django/blob/main/django/core/cache/backends/memcached.py
 - AWS Security Bulletin 2026-047-AWS, Language Servers for AWS / Amazon Q Developer: https://aws.amazon.com/security/security-bulletins/2026-047-aws/
 - Wiz Amazon Q MCP auto-execution vulnerability analysis: https://www.wiz.io/blog/amazon-q-vulnerability
 - The Register Amazon Q workspace MCP vulnerability summary: https://www.theregister.com/cyber-crime/2026/06/26/amazon-q-flaw-let-booby-trapped-git-repos-execute-code-swipe-cloud-creds/5263202

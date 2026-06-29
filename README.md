@@ -648,6 +648,19 @@ Exit codes:
     hardlink paths, relative targets, and out-of-destination symlinks
   - PSF patch/provenance markers including `python/cpython/pull/151559`,
     `python/cpython/issues/151558`, and patch commit hashes from the CVE record
+- HackedAlert Django cache-deserialization review indicators:
+  - `HA-2026-00131`, `Django v6.0.4 RCE`, Redis/Memcached cache poisoning,
+    and SMB/UNC path-redirection advisory terms
+  - Django `6.0.4` dependency references when paired with cache/session review
+    context
+  - `RedisCache`, `PyMemcacheCache`, `MemcachedCache`, cache-backed sessions,
+    `RedisSerializer`, `pickle.loads(data)`, and
+    `pymemcache.serde.pickle_serde`
+  - exposed Redis/Memcached preconditions such as `0.0.0.0`, `6379`, `11211`,
+    missing auth, SSRF, lateral movement, shared cache, or multi-tenant cache
+  - Windows file-session or cache locations using SMB/UNC path redirection
+  - PoC/provenance terms such as `pwned_session_1337`,
+    `django.contrib.sessions.cache`, `CACHE_KEY`, and `Pickle-RCE-Finder`
 - Cisco CUCM WebDialer / `CVE-2026-20230` indicators:
   - Cisco Unified Communications Manager / Unified CM / Unified CM SME
     references paired with WebDialer, SSRF, or Cisco advisory
@@ -1231,6 +1244,14 @@ the known indicators it checks.
   https://github.com/python/cpython/pull/151559
 - SecurityOnline CPython tarfile vulnerability summary:
   https://securityonline.info/cpython-tarfile-vulnerability/
+- HackedAlert Django v6.0.4 cache-deserialization RCE writeup:
+  https://hackedalert.com/research/django-v6-0-4-rce-insecure-deserialization/
+- Django PyPI package metadata:
+  https://pypi.org/project/Django/
+- Django upstream Redis cache backend source:
+  https://github.com/django/django/blob/main/django/core/cache/backends/redis.py
+- Django upstream Memcached cache backend source:
+  https://github.com/django/django/blob/main/django/core/cache/backends/memcached.py
 - Lantronix EDS5000 latest firmware page:
   https://ltrxdev.atlassian.net/wiki/spaces/LTRXTS/pages/2538438657/Latest%2BFirmware%2Bfor%2Bthe%2BEDS5000%2Bseries%2BEDS5008%2BEDS5016%2BEDS5032
 - NVD CVE-2026-20230 record:

@@ -190,6 +190,17 @@ upload, artifact, cache, restore, import, or ingest paths. Findings are review
 leads: verify PSF or vendor-fixed Python builds and avoid extracting untrusted
 tar archives until patched.
 
+HackedAlert's June 1, 2026 Django `6.0.4` cache-deserialization writeup is
+included as a configuration and trust-boundary review lane, not as a
+CVE-backed official Django advisory. The guard flags the HackedAlert advisory
+ID, Django `6.0.4` dependency references, RedisCache/PyMemcacheCache or
+Memcached cache-backed session settings, pickle serializer/deserializer terms,
+exposed Redis/Memcached cache-poisoning preconditions, Windows SMB/UNC
+file-session path-redirection notes, and PoC/provenance markers such as
+`pwned_session_1337` and `Pickle-RCE-Finder`. Findings mean operators should
+verify cache service network/authentication boundaries, serializer choices,
+shared-cache tenancy, SSRF reachability, and Windows session path handling.
+
 Cyber Security News' Splunk Enterprise / `CVE-2026-20253` coverage is included
 as a local posture and log-triage lane. The guard looks for Splunk Enterprise
 10.x references, CISA KEV/BOD copied notes, PostgreSQL sidecar recovery
