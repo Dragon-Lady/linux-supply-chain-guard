@@ -698,6 +698,7 @@ function run() {
     "Pedit COW CVE-2026-46331 Linux kernel LPE review for net/sched/act_pedit.c and act_pedit traffic-control action.",
     "The affected path includes tcf_pedit_act with tc pedit, TCA_PEDIT_KEY_EX, pedit ex, skb_ensure_writable, skb_linearize, copy-on-write, and page-cache corruption terms.",
     "Exposure notes include cls_u32, CAP_NET_ADMIN in an unprivileged user namespace, unshare -Urn, tc qdisc, tc filter, tc action, kernel.unprivileged_userns_clone=0, and Dirty COW-style impact.",
+    "The Hacker News notes packet_edit_meme, /bin/su cached binary poisoning, Debian 13 trixie, RHEL 10, user.max_user_namespaces=0, lsmod | grep act_pedit, install act_pedit /bin/true, and drop_caches.",
     "PoC notes are authorized defensive references only and must not be run on production hosts."
   ].join("\n"));
   write(path.join(root, "var", "log", "nftables-cve-2026-23111-triage.log"), [

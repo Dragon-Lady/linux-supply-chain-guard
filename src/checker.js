@@ -1822,6 +1822,7 @@ const PEDIT_COW_TEXT_INDICATORS = [
   "net/sched/act_pedit.c",
   "tcf_pedit_act",
   "tc pedit",
+  "packet_edit_meme",
   "skb_ensure_writable",
   "skb_linearize",
   "TCA_PEDIT_KEY_EX",
@@ -1830,6 +1831,15 @@ const PEDIT_COW_TEXT_INDICATORS = [
   "Dirty COW",
   "copy-on-write",
   "page-cache corruption",
+  "setuid root binary",
+  "/bin/su",
+  "install act_pedit /bin/true",
+  "lsmod | grep act_pedit",
+  "user.max_user_namespaces=0",
+  "drop_caches",
+  "Debian 13",
+  "trixie",
+  "RHEL 10",
   "CAP_NET_ADMIN",
   "unprivileged user namespace",
   "kernel.unprivileged_userns_clone=0",
@@ -2960,7 +2970,7 @@ function checkDirtyClone(findings, targetRoot, homePath) {
       addFinding(findings, "warning", "dirtyclone-advisory-terms", "DirtyClone / DirtyFrag-family page-cache poisoning terms appear in scanned metadata.", relative, "Treat this as a host-kernel exposure review lead. Patch and reboot; do not rely on direct disk reads alone because the reported primitive mutates page-cache-backed executable memory.");
     }
 
-    if (hasPeditCowContext && /tcf_pedit_act|skb_ensure_writable|skb_linearize|TCA_PEDIT_KEY_EX|pedit ex|cls_u32|copy-on-write|page-cache corruption|Dirty COW|CAP_NET_ADMIN|unprivileged user namespace/i.test(haystack)) {
+    if (hasPeditCowContext && /tcf_pedit_act|act_pedit|skb_ensure_writable|skb_linearize|TCA_PEDIT_KEY_EX|pedit ex|cls_u32|copy-on-write|page-cache corruption|cached (?:copy|binary)|setuid root binary|\/bin\/su|Dirty COW|CAP_NET_ADMIN|unprivileged user namespace|user\.max_user_namespaces|kernel\.unprivileged_userns_clone/i.test(haystack)) {
       addFinding(findings, "warning", "pedit-cow-advisory-terms", "Pedit COW / CVE-2026-46331 Linux traffic-control page-cache corruption terms appear in scanned metadata.", relative, "Treat this as a host-kernel exposure review lead. Verify fixed kernel/backport status, loaded traffic-control modules such as cls_u32, user-namespace policy, and reboot status after patching.");
     }
 
@@ -2968,7 +2978,7 @@ function checkDirtyClone(findings, targetRoot, homePath) {
       addFinding(findings, "review", "dirtyclone-poc-artifact", "DirtyClone exploit-construction or PoC marker appears in scanned metadata.", relative, "Verify this is authorized research material. Do not compile, execute, or open untrusted PoC trees in agents until the repo has been scanned and isolated.");
     }
 
-    if (hasPeditCowContext && /(?:poc\.c|poc\.py|proof-of-concept|PoC|unshare -Urn|tc qdisc|tc filter|tc action|pedit ex|CAP_NET_ADMIN|\/usr\/bin\/su)/i.test(haystack)) {
+    if (hasPeditCowContext && /(?:packet_edit_meme|poc\.c|poc\.py|proof-of-concept|PoC|unshare -Urn|tc qdisc|tc filter|tc action|pedit ex|CAP_NET_ADMIN|\/usr\/bin\/su|\/bin\/su|install act_pedit \/bin\/true|drop_caches)/i.test(haystack)) {
       addFinding(findings, "review", "pedit-cow-poc-artifact", "Pedit COW exploit-construction or PoC marker appears in scanned metadata.", relative, "Verify this is authorized research material. Do not compile, execute, or open untrusted PoC trees in agents until the repo has been scanned and isolated.");
     }
 
