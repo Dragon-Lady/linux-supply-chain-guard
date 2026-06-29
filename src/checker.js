@@ -2159,6 +2159,29 @@ const CPYTHON_TARFILE_CVE202611940_TEXT_INDICATORS = [
   "79c06bd5c6afa3c440d50faf7ee1b147c8832b4c",
 ];
 
+const DJANGO_CACHE_DESERIALIZATION_TEXT_INDICATORS = [
+  "HA-2026-00131",
+  "Django v6.0.4 RCE",
+  "Django - Version 6.0.4",
+  "Remote Code Execution (RCE) via Insecure Deserialization",
+  "Redis, Memcached & SMB/UNC Path Redirection",
+  "cache poisoning attack",
+  "RedisCache",
+  "MemcachedCache",
+  "PyMemcacheCache",
+  "django.core.cache.backends.redis.RedisCache",
+  "django.core.cache.backends.memcached.PyMemcacheCache",
+  "django.contrib.sessions.backends.cache",
+  "django.contrib.sessions.backends.file",
+  "pymemcache.serde.pickle_serde",
+  "RedisSerializer",
+  "pickle.loads(data)",
+  "sessionid=pwned_session_1337",
+  "django.contrib.sessions.cache",
+  "SESSION_FILE_PATH",
+  "SMB/UNC Path Redirection",
+];
+
 const CISCO_CUCM_WEB_DIALER_TEXT_INDICATORS = [
   "CVE-2026-20230",
   "Cisco Unified Communications Manager",
@@ -2574,6 +2597,7 @@ function scanHost(options = {}) {
   checkImpacketSecretsdumpArtifacts(findings, targetRoot, homePath);
   checkDaemonToolsSupplyChainArtifacts(findings, targetRoot, homePath);
   checkCpythonTarfileCve202611940(findings, targetRoot, homePath);
+  checkDjangoCacheDeserializationExposure(findings, targetRoot, homePath);
   checkNpmV12Readiness(findings, targetRoot, homePath);
   checkOperationHighlandAuthStack(findings, targetRoot, homePath);
   checkAryStingerEdgeProxy(findings, targetRoot, homePath);
@@ -6514,6 +6538,74 @@ function checkCpythonTarfileCve202611940(findings, targetRoot, homePath) {
     for (const indicator of CPYTHON_TARFILE_CVE202611940_TEXT_INDICATORS) {
       if (text.includes(indicator) && hasTarfileContext) {
         addFinding(findings, "review", "cpython-tarfile-text-indicator", "CPython tarfile CVE-2026-11940 advisory term appears in scanned metadata.", `${relative}: ${indicator}`, "Correlate with Python runtime version, vendor backport status, archive-ingestion code paths, and whether tar extraction handles untrusted content.");
+      }
+    }
+  }
+}
+
+function checkDjangoCacheDeserializationExposure(findings, targetRoot, homePath) {
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const roots = [
+    homeRelative,
+    "/etc",
+    "/opt",
+    "/srv",
+    "/var/log",
+    "/var/www",
+    "/usr/local",
+    "/root",
+    "/mnt",
+    "/media",
+  ].filter(Boolean);
+  const files = [];
+  for (const root of roots) {
+    files.push(...findWatchFiles(mapLinuxPath(targetRoot, root), 25000 - files.length));
+    if (files.length >= 25000) break;
+  }
+
+  for (const filePath of files) {
+    const text = readText(filePath);
+    if (!text) continue;
+    const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+    const haystack = `${relative}\n${text}`;
+    const hasDjangoContext = /Django|django\.|DJANGO_|manage\.py|settings\.py|SESSION_ENGINE|CACHES|RedisCache|MemcachedCache|PyMemcacheCache/i.test(haystack);
+
+    for (const version of new Set([...packageVersionsInText(text, "Django"), ...packageVersionsInText(text, "django")])) {
+      if (version === "6.0.4") {
+        addFinding(findings, "review", "django-604-cache-deserialization-version-reference", "Django 6.0.4 version reference appears in scanned metadata.", `${relative}: Django ${version}`, "HackedAlert reported cache-deserialization RCE mechanics against Django 6.0.4. Verify upstream/vendor status and prioritize review if this app uses RedisCache, PyMemcacheCache, cache sessions, exposed cache services, or Windows file sessions.");
+      }
+    }
+
+    if (/HA-2026-00131|Django v6\.0\.4 RCE|Remote Code Execution \(RCE\) via Insecure Deserialization|Redis, Memcached & SMB\/UNC Path Redirection/i.test(text)) {
+      addFinding(findings, "review", "django-cache-deserialization-reference", "HackedAlert Django cache-deserialization RCE reference appears in scanned metadata.", relative, "Use this as a Django cache/session trust-boundary review lead. Confirm cache backend exposure, serializer choices, and whether any cache services are reachable from untrusted networks or SSRF paths.");
+    }
+
+    if (hasDjangoContext && /(?:BACKEND|LOCATION)[\s\S]{0,260}(?:django\.core\.cache\.backends\.redis\.RedisCache|django\.core\.cache\.backends\.memcached\.PyMemcacheCache|RedisCache|PyMemcacheCache|MemcachedCache|redis:\/\/|memcache|memcached)|(?:RedisCache|PyMemcacheCache|MemcachedCache|redis:\/\/|memcache|memcached)[\s\S]{0,260}(?:BACKEND|LOCATION)/i.test(text)
+      && /SESSION_ENGINE[\s=:]+["']django\.contrib\.sessions\.backends\.cache["']|django\.contrib\.sessions\.backends\.cache/i.test(text)) {
+      addFinding(findings, "warning", "django-cache-session-pickle-backend-review", "Django cache-backed sessions use Redis or Memcached cache backend terms.", relative, "Review whether cache contents can be modified by attackers through exposed Redis/Memcached, shared cache tenancy, SSRF, lateral movement, or weak ACLs. Prefer isolated authenticated cache services and non-pickle serializers where supported.");
+    }
+
+    if (hasDjangoContext && /pickle\.loads\s*\(|pickle\.dumps\s*\(|pymemcache\.serde\.pickle_serde|RedisSerializer|serializer\s*=\s*(?:None|RedisSerializer)|django\.core\.cache\.backends\.redis/i.test(text)
+      && /RedisCache|PyMemcacheCache|MemcachedCache|SESSION_ENGINE|sessionid|django\.contrib\.sessions\.cache|cache poisoning/i.test(text)) {
+      addFinding(findings, "warning", "django-cache-pickle-deserialization-review", "Django Redis/Memcached cache terms appear with pickle serialization/deserialization.", relative, "Treat cache data as executable trust boundary material. Harden Redis/Memcached authentication, network reachability, tenancy, and serializer choices before relying on cache-backed sessions for untrusted users.");
+    }
+
+    if (hasDjangoContext && /Redis|Memcached|redis:\/\/|memcache|memcached/i.test(text)
+      && /0\.0\.0\.0|6379|11211|protected-mode\s+no|requirepass\s+["']?["']?$|no auth|unauthenticated|SSRF|Server-Side Request Forgery|lateral movement|shared cache|multi-tenant/i.test(text)) {
+      addFinding(findings, "warning", "django-cache-service-exposure-review", "Django cache backend appears near exposed Redis/Memcached or cache-poisoning precondition terms.", relative, "Restrict cache services to private authenticated networks, disable internet exposure, review SSRF paths, and rotate cache/session secrets if poisoning is plausible.");
+    }
+
+    if (hasDjangoContext && /SESSION_FILE_PATH|django\.contrib\.sessions\.backends\.file|CACHES[\s\S]{0,260}LOCATION|LOCATION[\s\S]{0,260}(?:\\\\\\\\|smb:\/\/|file:\/\/)|SMB\/UNC|UNC Path|remote SMB share/i.test(text)) {
+      addFinding(findings, "warning", "django-session-file-unc-path-review", "Django file-session or cache location terms appear near SMB/UNC path redirection language.", relative, "On Windows deployments, ensure session and cache file paths cannot be redirected to attacker-controlled SMB/UNC shares. Keep session storage local, trusted, and access-controlled.");
+    }
+
+    if (hasDjangoContext && /pwned_session_1337|django\.contrib\.sessions\.cache|CACHE_KEY\s*=|sessionid=.*pwned|pickle\.dumps\(|class\s+RCE\b|Pickle-RCE-Finder/i.test(text)) {
+      addFinding(findings, "review", "django-cache-deserialization-poc-artifact", "Django cache-deserialization PoC or exploit-runner marker appears in scanned metadata.", relative, "Verify this is authorized research material. Do not point PoCs at production cache services, and preserve cache keys/logs if this appeared during incident response.");
+    }
+
+    for (const indicator of DJANGO_CACHE_DESERIALIZATION_TEXT_INDICATORS) {
+      if (text.includes(indicator) && hasDjangoContext) {
+        addFinding(findings, "review", "django-cache-deserialization-text-indicator", "Django cache-deserialization advisory term appears in scanned metadata.", `${relative}: ${indicator}`, "Correlate with Django version, cache/session backend configuration, Redis/Memcached exposure, Windows path handling, and serializer hardening.");
       }
     }
   }
