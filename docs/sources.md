@@ -38,6 +38,7 @@
 - SecurityWeek Shai-Hulud Miasma/Hades summary: https://www.securityweek.com/over-100-npm-pypi-packages-hit-in-new-shai-hulud-supply-chain-attacks/
 - JFrog Shai-Hulud / Hades Leo/RStreams and Backstage npm analysis: https://research.jfrog.com/post/shai-hulud-miasma-alright-lets-see-if-this-works/
 - Socket Miasma Mini Shai-Hulud / ImmobiliareLabs npm package wave: https://socket.dev/blog/miasma-mini-shai-hulud-hits-immobiliarelabs-npm-packages
+- Hacking Articles Impacket for Pentester: SecretDump: https://www.hackingarticles.in/imapacket-for-pentester-secretdump/
 - SafeDep Astro config blockchain C2 supply-chain report: https://safedep.io/astro-config-blockchain-c2-supply-chain/
 - The Hacker News OpenClaw prompt-injection and agent-phishing report: https://thehackernews.com/2026/06/new-attacks-trick-openclaw-ai-agent.html
 - Microsoft Security AutoJack research: https://www.microsoft.com/en-us/security/blog/2026/06/18/autojack-single-page-rce-host-running-ai-agent/

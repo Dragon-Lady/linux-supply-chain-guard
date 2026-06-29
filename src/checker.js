@@ -1202,6 +1202,27 @@ const ODIN_DNS_TXT_AGENT_TERMS = [
   "bash -c \"$cfg\"",
   "bash -i >& /dev/tcp/",
 ];
+const IMPACKET_SECRETSDUMP_TEXT_INDICATORS = [
+  "impacket-secretsdump",
+  "impacket-secretdump",
+  "secretsdump.py",
+  "impacket.examples.secretsdump",
+  "DRSUAPI",
+  "DCSync",
+  "-just-dc",
+  "-just-dc-ntlm",
+  "-just-dc-user",
+  "-use-vss",
+  "-use-remoteSSWMI",
+  "-exec-method wmiexec",
+  "-exec-method mmcexec",
+  "-hashes",
+  "-aesKey",
+  "-k -no-pass",
+  "KRB5CCNAME",
+  "Replicating Directory Changes All",
+  "Event 4662",
+];
 
 const OPERATION_HIGHLAND_SHA1_HASHES = loadHashSet("operation-highland-sha1.json");
 const OPERATION_HIGHLAND_IOC_PATHS = [
@@ -2458,6 +2479,7 @@ function scanHost(options = {}) {
   checkAgentjackingSentryMcpExposure(findings, targetRoot, homePath);
   checkAutoJackAgentLocalhostExposure(findings, targetRoot, homePath);
   checkOdinDnsTxtAgentSetupExposure(findings, targetRoot, homePath);
+  checkImpacketSecretsdumpArtifacts(findings, targetRoot, homePath);
   checkNpmV12Readiness(findings, targetRoot, homePath);
   checkOperationHighlandAuthStack(findings, targetRoot, homePath);
   checkAryStingerEdgeProxy(findings, targetRoot, homePath);
@@ -6194,6 +6216,60 @@ function checkOdinDnsTxtAgentSetupExposure(findings, targetRoot, homePath) {
 
     if (/requirements\.txt[\s\S]{0,220}python3?\s+-m\s+\S+\s+init/i.test(text) && /Claude Code|AI coding agent|agentic coding|freshly cloned|First-Time Setup/i.test(text)) {
       addFinding(findings, "review", "odin-clean-repo-agent-setup-chain", "Clean-repo agent setup chain terms appear in scanned metadata.", relative, "Use this as a 0DIN-style review lead: normal dependency install plus module init can still execute runtime-fetched commands outside the repository diff.");
+    }
+  }
+}
+
+function checkImpacketSecretsdumpArtifacts(findings, targetRoot, homePath) {
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const roots = [
+    homeRelative,
+    "/root",
+    "/tmp",
+    "/var/tmp",
+    "/opt",
+    "/srv",
+    "/var/www",
+    "/mnt",
+    "/media",
+  ].filter(Boolean);
+  const files = [];
+  for (const root of roots) {
+    files.push(...findWatchFiles(mapLinuxPath(targetRoot, root), 25000 - files.length));
+    if (files.length >= 25000) break;
+  }
+
+  for (const filePath of files) {
+    const text = readText(filePath);
+    if (!text) continue;
+    const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+    const hasSecretsdump = /impacket-?secrets?dump|secretsdump\.py|impacket\.examples\.secretsdump/i.test(text);
+    if (!hasSecretsdump) continue;
+
+    for (const indicator of IMPACKET_SECRETSDUMP_TEXT_INDICATORS) {
+      if (text.includes(indicator)) {
+        addFinding(findings, "review", "impacket-secretsdump-text-indicator", "Impacket secretsdump command or option appears in scanned metadata.", `${relative}: ${indicator}`, "Verify this is authorized pentest or incident-response material. Keep credential dumps and hashes out of repos, shared runners, and agent-readable workspaces.");
+      }
+    }
+
+    if (/(?:-just-dc(?:-ntlm|-user)?\b|DRSUAPI|DCSync|Replicating Directory Changes All|krbtgt|Event\s+4662)/i.test(text)) {
+      addFinding(findings, "warning", "impacket-secretsdump-dcsync-review", "Impacket secretsdump DCSync / DRSUAPI credential-dumping terms appear in scanned metadata.", relative, "Correlate with domain-controller Security Event 4662, replication-rights assignments, non-DC source hosts, krbtgt access, and recent admin credential use.");
+    }
+
+    if (/(?:-use-vss\b|-use-remoteSSWMI\b|-exec-method\s+(?:smbexec|wmiexec|mmcexec)|Volume Shadow Copy|vssadmin|NTDS\.DIT|NTDS\.dit)/i.test(text)) {
+      addFinding(findings, "warning", "impacket-secretsdump-vss-review", "Impacket secretsdump VSS / remote shadow-copy terms appear in scanned metadata.", relative, "Review WMI/DCOM/SMB execution logs, VSS activity, remote service creation, copied NTDS/SAM/SYSTEM files, and cleanup messages on the target host.");
+    }
+
+    if (/(?:-sam\s+SAM\s+-system\s+SYSTEM\s+LOCAL|-security\s+SECURITY\s+-system\s+SYSTEM\s+LOCAL|-ntds\s+ntds\.dit\s+-system\s+system\s+local|offline\s+(?:SAM|NTDS)|SAM\s*\+\s*SYSTEM|SECURITY\s+hive|LSA\s+Secrets|DCC2\s+cached\s+logon)/i.test(text)) {
+      addFinding(findings, "warning", "impacket-secretsdump-offline-hive-review", "Impacket secretsdump offline Windows hive parsing terms appear in scanned metadata.", relative, "Treat referenced SAM, SYSTEM, SECURITY, and NTDS artifacts as sensitive credential material. Preserve provenance, restrict access, and remove dumps from developer workspaces after authorized review.");
+    }
+
+    if (/(?:-hashes\b|-aesKey\b|-k\s+-no-pass\b|KRB5CCNAME|Pass-the-Hash|Pass-the-Key|Kerberos\s+ticket|AES-256\s+Kerberos)/i.test(text)) {
+      addFinding(findings, "review", "impacket-secretsdump-auth-material-review", "Impacket secretsdump alternate authentication material terms appear in scanned metadata.", relative, "Check whether NTLM hashes, AES keys, Kerberos tickets, or ccache files were exposed. Rotate or invalidate credentials from a clean administrative path if this was not expected.");
+    }
+
+    if (/(?:-outputfile\s+\S+|dump\.ntds|dump\.sam|dump\.secrets|dump\.cached|username:RID:LMhash:NThash|Administrator:[0-9]+:[A-Fa-f0-9*]{16,}:[A-Fa-f0-9*]{16,})/i.test(text)) {
+      addFinding(findings, "critical", "impacket-secretsdump-output-artifact", "Impacket secretsdump output artifact or hash-table format appears in scanned metadata.", relative, "Handle as credential material until proven otherwise. Restrict access, preserve evidence, and rotate affected Windows, domain, service, and admin credentials from a clean posture.");
     }
   }
 }
