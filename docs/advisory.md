@@ -292,6 +292,19 @@ developer workstation, build host, or runner, confirm provenance and keep them
 out of normal dependency, CI, and credential-bearing workflows unless they are
 explicitly authorized research material.
 
+PackageKit `CVE-2026-41651` is tracked as a local privilege-escalation exposure
+for hosts where unprivileged local users can call PackageKit over D-Bus.
+Upstream advisory data marks PackageKit versions `1.0.2` through `1.3.4` as
+affected and `1.3.5` as fixed. The guard flags installed Debian-family
+`packagekit*` packages, then asks operators to verify distro backports rather
+than relying on upstream-looking version strings alone.
+
+Copied advisory and source notes are tracked when they mention PackageKit with
+`InstallFiles`, `pk_transaction_set_state`, `transaction->cached_transaction_flags`,
+TOCTOU/race-condition language, or `Pack2TheRoot`/GHSA provenance markers. These
+signals are for defensive triage and provenance review only; the guard does not
+attempt exploit reproduction.
+
 Fragnesia is a Linux kernel local-root flaw affecting supported AlmaLinux
 releases through the `esp4`, `esp6`, and, on some AlmaLinux 9/10 systems,
 `rxrpc` modules. This tool does not test exploitability. It checks kernel

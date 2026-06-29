@@ -133,6 +133,9 @@
 - libssh2 upstream PR #2052, additional packet-length boundary checks: https://github.com/libssh2/libssh2/pull/2052
 - NixOS security tracker issue for libssh2 CVE-2026-55199 and CVE-2026-55200: https://github.com/NixOS/nixpkgs/issues/532920
 - bikini/exploitarium libssh2 CVE-2026-55200 public PoC tree: https://github.com/bikini/exploitarium/tree/main/libssh2-cve-2026-55200-poc
+- NVD CVE-2026-41651 PackageKit record: https://nvd.nist.gov/vuln/detail/CVE-2026-41651
+- GitHub Advisory GHSA-f55j-vvr9-69xv / PackageKit CVE-2026-41651: https://github.com/PackageKit/PackageKit/security/advisories/GHSA-f55j-vvr9-69xv
+- Openwall oss-security PackageKit CVE-2026-41651 disclosure: http://www.openwall.com/lists/oss-security/2026/04/22/6
 - The Hacker News Pedit COW / CVE-2026-46331 summary: https://thehackernews.com/2026/06/new-linux-pedit-cow-exploit-enables.html
 - Positive Technologies DBugs CVE-2026-23111 record: https://dbugs.ptsecurity.com/vulnerability/CVE-2026-23111
 - Linux stable nf_tables CVE-2026-23111 fix commit: https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/commit/?id=8c760ba4e36c750379d13569f23f5a6e185333f5

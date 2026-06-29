@@ -429,6 +429,10 @@ function run() {
     "Status: install ok installed",
     "Version: 1.11.1-1",
     "",
+    "Package: packagekit",
+    "Status: install ok installed",
+    "Version: 1.3.4-1",
+    "",
   ].join("\n"));
   write(path.join(root, "etc", "squid", "squid.conf"), [
     "acl Safe_ports port 80",
@@ -618,6 +622,12 @@ function run() {
     "Fix includes PR #2052 and commit 7acf3df.",
     "Inventory curl, git, backup, deploy, clone, SCP and SFTP clients that link libssh2.",
     "Companion note: CVE-2026-55199 SSH_MSG_EXT_INFO fixed in 1762685."
+  ].join("\n"));
+  write(path.join(root, "var", "log", "packagekit-cve-2026-41651.log"), [
+    "PackageKit CVE-2026-41651 GHSA-f55j-vvr9-69xv local privilege escalation note.",
+    "Affected PackageKit versions are 1.0.2 through 1.3.4; fixed release is 1.3.5.",
+    "The Pack2TheRoot advisory describes a TOCTOU race condition around InstallFiles and pk_transaction_set_state.",
+    "The source-level marker is transaction->cached_transaction_flags in src/pk-transaction.c."
   ].join("\n"));
   write(path.join(home, "research", "exploitarium", "libssh2-cve-2026-55200-poc", "poc", "cve_2026_55200_probe.c"), [
     "/* libssh2 CVE-2026-55200 PoC arithmetic verifier */",
@@ -1086,6 +1096,11 @@ function run() {
   assert(ids.has("libssh2-cve-2026-55200-client-linkage-review"));
   assert(ids.has("libssh2-cve-2026-55200-poc-artifact"));
   assert(ids.has("libssh2-cve-2026-55200-poc-indicator"));
+  assert(ids.has("packagekit-cve-2026-41651-package-review"));
+  assert(ids.has("packagekit-cve-2026-41651-affected-version"));
+  assert(ids.has("packagekit-cve-2026-41651-text-indicator"));
+  assert(ids.has("packagekit-cve-2026-41651-race-condition-reference"));
+  assert(ids.has("packagekit-cve-2026-41651-poc-provenance"));
   assert(ids.has("dirtycbc-rxgk-reference"));
   assert(ids.has("dirtycbc-rxgk-advisory-terms"));
   assert(ids.has("dirtycbc-rxgk-poc-artifact"));
