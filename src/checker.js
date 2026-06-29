@@ -700,6 +700,29 @@ const HADES_PYPI_PACKAGES = {
   uprobe: ["0.1.3", "0.1.4"],
 };
 
+const MIASMA_IMMOBILIARELABS_NPM_PACKAGES = {
+  "@immobiliarelabs/backstage-plugin-gitlab": ["1.0.1", "2.1.2", "3.0.3", "4.0.2", "5.2.1", "6.13.1", "7.0.2"],
+  "@immobiliarelabs/backstage-plugin-gitlab-backend": ["3.0.3", "4.0.2", "5.2.1", "6.13.1", "7.0.2"],
+  "@immobiliarelabs/backstage-plugin-ldap-auth": ["1.1.4", "2.0.5", "3.0.2", "4.3.2", "5.2.1"],
+  "@immobiliarelabs/backstage-plugin-ldap-auth-backend": ["1.1.3", "2.0.5", "3.0.2", "4.3.2", "5.2.1"],
+};
+
+const MIASMA_IMMOBILIARELABS_TEXT_INDICATORS = [
+  "Miasma Mini Shai-Hulud",
+  "@immobiliarelabs/backstage-plugin-gitlab",
+  "@immobiliarelabs/backstage-plugin-gitlab-backend",
+  "@immobiliarelabs/backstage-plugin-ldap-auth",
+  "@immobiliarelabs/backstage-plugin-ldap-auth-backend",
+  "codfish/semantic-release-action",
+  "services-admin-pearhealthlabs",
+  "Phantom Gyp",
+  "binding.gyp trick",
+  "thebeautifulsnadsoftime",
+  ".github/setup.js",
+  ".gemini/settings.json",
+  "Cursor rules",
+];
+
 const HADES_TEXT_INDICATORS = [
   joinParts("Hades - The End for the ", "Damned"),
   joinParts("IfYouYankThisToken", "ItWillNukeTheComputerOfTheOwnerFully"),
@@ -1328,6 +1351,7 @@ const WATCH_FILE_NAMES = new Set([
   PEOPLESOFT_EXTORTION_MARKER,
   "psappsrv.cfg",
   "config.xml",
+  "binding.gyp",
   "Review Past Due Doc.zip",
   "LicenseLoader.php",
   "install-persistent.php",
@@ -2389,6 +2413,7 @@ function scanHost(options = {}) {
   checkJetBrainsMarketplaceAiKeyStealers(findings, targetRoot, homePath);
   checkAstroConfigC2(findings, targetRoot, homePath);
   checkHadesPyPi(findings, targetRoot, homePath);
+  checkMiasmaImmobiliareLabsNpm(findings, targetRoot, homePath);
   checkDynatraceTeamPcpWatch(findings, targetRoot, homePath);
   checkPcpJackRelayArtifacts(findings, targetRoot, homePath);
   checkGentlemenRansomware(findings, targetRoot, homePath);
@@ -3591,6 +3616,69 @@ function checkHadesPyPi(findings, targetRoot, homePath) {
       if (text.includes(indicator)) {
         addFinding(findings, "warning", "hades-text-indicator", "Hades PyPI campaign indicator appears in scanned host metadata.", `${relative}: ${indicator}`, "Correlate with installed package versions, Python startup hooks, CI artifacts, and credential exposure.");
       }
+    }
+  }
+}
+
+function checkMiasmaImmobiliareLabsNpm(findings, targetRoot, homePath) {
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const roots = [
+    homeRelative,
+    "/root",
+    "/tmp",
+    "/var/tmp",
+    "/opt",
+    "/srv",
+    "/var/www",
+    "/usr/local/lib/node_modules",
+  ].filter(Boolean);
+  const files = [];
+  for (const root of roots) {
+    files.push(...findWatchFiles(mapLinuxPath(targetRoot, root), 30000 - files.length));
+    if (files.length >= 30000) break;
+  }
+
+  for (const filePath of files) {
+    const text = readText(filePath);
+    if (!text) continue;
+    const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+    const base = path.basename(filePath);
+
+    for (const [packageName, versions] of Object.entries(MIASMA_IMMOBILIARELABS_NPM_PACKAGES)) {
+      if (!text.includes(packageName)) continue;
+      const matchedVersions = scopedPackageVersionsInText(text, packageName).filter((version) => versions.includes(version));
+      for (const version of matchedVersions) {
+        addFinding(findings, "critical", "miasma-immobiliarelabs-npm-version", "Socket-reported Miasma Mini Shai-Hulud ImmobiliareLabs npm package version appears in dependency metadata.", `${relative}: ${packageName}@${version}`, "Do not install or build this dependency tree. Restore known-good lockfiles, review developer and CI runners that installed it, and rotate npm, GitHub, GitLab, cloud, Docker, Kubernetes, Vault, SSH, Slack, Twilio, and CI/CD secrets from a clean machine.");
+      }
+      if (matchedVersions.length === 0) {
+        addFinding(findings, "review", "miasma-immobiliarelabs-package-review", "ImmobiliareLabs Backstage package name from the Miasma Mini Shai-Hulud wave appears in scanned metadata.", `${relative}: ${packageName}`, `Verify the resolved version is not one of Socket's reported affected versions: ${versions.join(", ")}.`);
+      }
+    }
+
+    for (const indicator of MIASMA_IMMOBILIARELABS_TEXT_INDICATORS) {
+      if (text.includes(indicator)) {
+        addFinding(findings, "warning", "miasma-immobiliarelabs-text-indicator", "Miasma Mini Shai-Hulud ImmobiliareLabs campaign indicator appears in scanned metadata.", `${relative}: ${indicator}`, "Correlate with npm install history, GitHub Actions release automation, root-level index.js, binding.gyp, Bun bootstrap artifacts, and credential exposure.");
+      }
+    }
+
+    if (base === "binding.gyp" && /(?:node|node-gyp|actions|target_name)[\s\S]{0,260}index\.js/i.test(text)) {
+      addFinding(findings, "critical", "miasma-phantom-gyp-index-loader", "binding.gyp appears to invoke a root index.js loader.", relative, "Review for Miasma/Phantom Gyp install-time execution before running npm install, node-gyp, build, or package-manager commands.");
+    }
+
+    if (
+      base === "index.js" &&
+      /(?:AES-128-GCM|aes-128-gcm|Caesar|bun-v1\.3\.13|oven-sh\/bun|thebeautifulsnadsoftime|Bun\.spawn|subprocess|download\/bun-v1\.3\.13)/i.test(text) &&
+      /(?:GITHUB_TOKEN|NPM_TOKEN|npmrc|\.env|AWS_|AZURE_|GOOGLE_|GCP|Vault|Docker|Kubernetes|SSH|Slack|Twilio|secrets?)/i.test(text)
+    ) {
+      addFinding(findings, "critical", "miasma-root-index-bun-credential-loader", "Root index.js resembles the Miasma Bun-backed credential-theft loader.", relative, "Preserve the package tarball and installed tree. If this ran, isolate the host or CI runner and rotate developer, repository, package-registry, cloud, and communication-service credentials from a clean posture.");
+    }
+
+    if (/on:\s*deployment|on:\s*\[[^\]]*deployment|deployment:/i.test(text) && /(?:codfish\/semantic-release-action|semantic-release|Dependabot Updates|release\.yml|npm publish)/i.test(text)) {
+      addFinding(findings, "warning", "miasma-github-actions-deployment-release-review", "GitHub Actions deployment-triggered release automation appears near Miasma campaign terms.", relative, "Treat deployment-triggered publishing as a high-risk release boundary. Review actor/event allowlists, environment protection, token permissions, action pinning, and runs around June 26, 2026.");
+    }
+
+    if (/(?:\.gemini\/settings\.json|\.claude|Cursor rules|\.vscode\/tasks\.json|\.github\/setup\.js)[\s\S]{0,360}(?:Miasma|Shai-Hulud|Bun|thebeautifulsnadsoftime|index\.js)|(?:Miasma|Shai-Hulud|Bun|thebeautifulsnadsoftime|index\.js)[\s\S]{0,360}(?:\.gemini\/settings\.json|\.claude|Cursor rules|\.vscode\/tasks\.json|\.github\/setup\.js)/i.test(text)) {
+      addFinding(findings, "warning", "miasma-ai-ide-persistence-review", "Miasma-style AI/IDE persistence artifact terms appear in scanned metadata.", relative, "Review agent and IDE startup hooks before opening this repository in coding agents, VS Code, Cursor, or similar developer tools.");
     }
   }
 }
@@ -7571,6 +7659,22 @@ function packageVersionsInText(text, packageName) {
   for (const pattern of patterns) {
     for (const match of text.matchAll(pattern)) {
       versions.add(match[1]);
+    }
+  }
+  return Array.from(versions);
+}
+
+function scopedPackageVersionsInText(text, packageName) {
+  const escaped = escapeRegExp(packageName);
+  const versions = new Set(packageVersionsInText(text, packageName));
+  const patterns = [
+    new RegExp(`(^|[^A-Za-z0-9_./-])${escaped}@([0-9]+\\.[0-9]+\\.[0-9]+)`, "gi"),
+    new RegExp(`["']${escaped}["']\\s*:\\s*["'][^0-9"']*([0-9]+\\.[0-9]+\\.[0-9]+)`, "gi"),
+    new RegExp(`(?:name|packageName)["']?\\s*[:=]\\s*["']${escaped}["'][\\s\\S]{0,300}?(?:version)["']?\\s*[:=]\\s*["']([0-9]+\\.[0-9]+\\.[0-9]+)["']`, "gi"),
+  ];
+  for (const pattern of patterns) {
+    for (const match of text.matchAll(pattern)) {
+      versions.add(match[2] || match[1]);
     }
   }
   return Array.from(versions);
