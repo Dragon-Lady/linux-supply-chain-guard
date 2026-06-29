@@ -249,6 +249,14 @@ It flags `InstallFiles`, `pk_transaction_set_state`, and
 `transaction->cached_transaction_flags` race-condition notes, plus
 `Pack2TheRoot`/GHSA provenance markers as local research-artifact review leads.
 
+The June 2026 cloud bucket hijacking lane adds copied-advisory and local note
+checks for storage bucket deletion plus same-name recreation risks that can
+reroute cloud data streams. It tracks Google Cloud Logging sinks, Pub/Sub
+Cloud Storage destinations, Storage Transfer jobs, AWS S3 replication, Amazon
+Data Firehose, and Azure Monitor diagnostic export context, along with bucket
+delete permissions and perimeter mitigations such as VPC Service Controls,
+Service Control Policies, and account-regional S3 namespaces.
+
 The June 2026 ShapedPlugin Pro WordPress supply-chain watch pack adds local
 WordPress tree checks for affected Pro plugin slugs and versions,
 `LicenseLoader.php`, fake `woocommerce-subscription` /
@@ -715,6 +723,19 @@ Exit codes:
     and `src/pk-transaction.c`
   - public exploit/advisory provenance markers including `Pack2TheRoot`,
     `pack2theroot`, and `GHSA-f55j-vvr9-69xv`
+- Cloud bucket hijacking posture indicators:
+  - `Bucket Hijacking`, `attacker-controlled external storage bucket`,
+    `active cloud data streams`, and globally unique bucket-name risk language
+  - Google Cloud terms including `Cloud Logging sink`, `Pub/Sub subscription`,
+    `Storage Transfer Service`, `storage.buckets.delete`,
+    `storage.objects.delete`, and `logging.sinks.update`
+  - AWS terms including `S3 bucket replication`, `Amazon Data Firehose`, and
+    `DeleteBucket`
+  - Azure terms including `Azure Monitor diagnostic settings` and
+    `Microsoft.Storage/storageAccounts/delete`
+  - mitigation terms including `VPC Service Controls`, `Service Control
+    Policies`, trusted organizational boundaries, and account-regional S3
+    namespaces
 - ShapedPlugin Pro WordPress supply-chain indicators:
   - affected Pro plugin slugs `woo-product-slider-pro`, `testimonial-pro`, and
     `smart-show-post-pro`
@@ -1163,6 +1184,10 @@ the known indicators it checks.
   https://github.com/PackageKit/PackageKit/security/advisories/GHSA-f55j-vvr9-69xv
 - Openwall oss-security PackageKit `CVE-2026-41651` disclosure:
   http://www.openwall.com/lists/oss-security/2026/04/22/6
+- Unit 42 cloud bucket hijacking risk analysis:
+  https://unit42.paloaltonetworks.com/cloud-bucket-hijacking-risks/
+- Cyber Security News bucket hijacking summary:
+  https://cybersecuritynews.com/bucket-hijacking-attack/
 - The Hacker News Pedit COW / `CVE-2026-46331` summary:
   https://thehackernews.com/2026/06/new-linux-pedit-cow-exploit-enables.html
 - NVD `CVE-2026-46331` record:
