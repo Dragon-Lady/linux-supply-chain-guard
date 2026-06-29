@@ -549,6 +549,16 @@ release workflows, `codfish/semantic-release-action` leads, exfil repository
 markers, and AI/IDE persistence paths such as `.github/setup.js`,
 `.gemini/settings.json`, `.claude`, `.vscode/tasks.json`, and Cursor rules.
 
+The Impacket `secretsdump` lane is a Windows/Active Directory artifact-review
+check for local notes, scripts, reports, or command histories copied onto a
+Linux workstation or mounted evidence tree. It flags `impacket-secretsdump` /
+`secretsdump.py` references when paired with DCSync/DRSUAPI flags, VSS and WMI
+or MMC execution modes, offline `SAM`/`SYSTEM`/`SECURITY`/`ntds.dit` hive
+parsing, alternate auth material such as NTLM hashes, AES keys, Kerberos tickets,
+and output artifacts such as `dump.ntds` or hash-table formats. Findings mean
+the files should be treated as sensitive credential material or authorized
+pentest/IR notes until provenance is confirmed.
+
 Microsoft's June 18, 2026 AutoJack research is included as an agent-localhost
 control-plane posture lane. AutoJack showed that a browsing agent rendering
 untrusted web content on the same host as AutoGen Studio could cross a localhost

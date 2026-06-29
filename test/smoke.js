@@ -840,6 +840,14 @@ function run() {
     ".github/setup.js .gemini/settings.json .claude hooks .vscode/tasks.json Cursor rules",
     "Root index.js and Bun loader are suspicious in this package tree."
   ].join("\n"));
+  write(path.join(home, "windows-ir", "impacket-secretsdump-notes.md"), [
+    "Authorized IR note: impacket-secretsdump and secretsdump.py were used in a lab.",
+    "DCSync review terms: DRSUAPI -just-dc -just-dc-ntlm -just-dc-user administrator Replicating Directory Changes All Event 4662 krbtgt.",
+    "VSS review terms: -use-vss -use-remoteSSWMI -exec-method wmiexec -exec-method mmcexec Volume Shadow Copy vssadmin NTDS.DIT.",
+    "Offline hive review: impacket-secretsdump -sam SAM -system SYSTEM LOCAL; impacket-secretsdump -security SECURITY -system SYSTEM LOCAL; impacket-secretsdump -ntds ntds.dit -system system local; LSA Secrets DCC2 cached logon.",
+    "Auth material review: -hashes :REDACTED_NTLM_HASH -aesKey REDACTED_AES_KEY -k -no-pass KRB5CCNAME Pass-the-Hash Pass-the-Key Kerberos ticket AES-256 Kerberos.",
+    "Output handling: -outputfile dump dump.ntds dump.sam dump.secrets dump.cached username:RID:LMhash:NThash."
+  ].join("\n"));
   write(path.join(home, "agent-config", "sentry-mcp.json"), JSON.stringify({
     servers: {
       "sentry-mcp": {
@@ -1312,6 +1320,12 @@ function run() {
   assert(ids.has("miasma-root-index-bun-credential-loader"));
   assert(ids.has("miasma-github-actions-deployment-release-review"));
   assert(ids.has("miasma-ai-ide-persistence-review"));
+  assert(ids.has("impacket-secretsdump-text-indicator"));
+  assert(ids.has("impacket-secretsdump-dcsync-review"));
+  assert(ids.has("impacket-secretsdump-vss-review"));
+  assert(ids.has("impacket-secretsdump-offline-hive-review"));
+  assert(ids.has("impacket-secretsdump-auth-material-review"));
+  assert(ids.has("impacket-secretsdump-output-artifact"));
   assert(ids.has("hades-python-payload-filename"));
   assert(ids.has("hades-text-indicator"));
   assert(ids.has("hades-known-native-extension"));

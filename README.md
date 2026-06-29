@@ -537,6 +537,17 @@ Exit codes:
     `codfish/semantic-release-action` review leads
   - AI/IDE persistence artifact terms such as `.github/setup.js`,
     `.gemini/settings.json`, `.claude`, `.vscode/tasks.json`, and Cursor rules
+- Impacket `secretsdump` Windows/AD credential-dump artifacts:
+  - `impacket-secretsdump`, `secretsdump.py`, and common DCSync flags such as
+    `-just-dc`, `-just-dc-ntlm`, and `-just-dc-user`
+  - VSS and remote shadow-copy terms including `-use-vss`,
+    `-use-remoteSSWMI`, `wmiexec`, `mmcexec`, and `vssadmin`
+  - offline hive parsing commands for `SAM`, `SYSTEM`, `SECURITY`, and
+    `ntds.dit`
+  - alternate authentication material terms such as `-hashes`, `-aesKey`,
+    `-k -no-pass`, and `KRB5CCNAME`
+  - output artifact names and hash-table formats such as `dump.ntds`,
+    `dump.secrets`, and `username:RID:LMhash:NThash`
 - Agentjacking / Sentry MCP indicators:
   - Sentry DSN or ingest surfaces wired into MCP/agent context
   - Sentry-style fake `## Resolution` content that asks an agent to run `npx`
@@ -1018,6 +1029,8 @@ the known indicators it checks.
   https://research.jfrog.com/post/shai-hulud-miasma-alright-lets-see-if-this-works/
 - Socket Miasma Mini Shai-Hulud / ImmobiliareLabs npm package wave:
   https://socket.dev/blog/miasma-mini-shai-hulud-hits-immobiliarelabs-npm-packages
+- Hacking Articles Impacket for Pentester: SecretDump:
+  https://www.hackingarticles.in/imapacket-for-pentester-secretdump/
 - BleepingComputer AtomicArch / AUR compromise summary:
   https://www.bleepingcomputer.com/news/security/over-400-arch-linux-packages-compromised-to-push-rootkit-infostealer/
 - Tenet Agentjacking Sentry/MCP writeup:
