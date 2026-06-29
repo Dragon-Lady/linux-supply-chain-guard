@@ -538,6 +538,14 @@ Exit codes:
   - reported `autogenstudio` pre-release builds `0.4.3.dev1` and `0.4.3.dev2`
   - reminders that localhost is not a trust boundary when a browsing agent can
     render untrusted web content on the same host
+- 0DIN clean-repo / DNS TXT agent-setup indicators:
+  - first-time setup text that combines `requirements.txt` with
+    `python3 -m ... init` in coding-agent context
+  - package first-run errors that tell the agent to run a module init command
+  - shell scripts that fetch DNS TXT records with `dig` and execute the result
+    through `bash -c`, `sh -c`, or `base64 -d | bash`
+  - demo-specific terms such as `python3 -m axiom init`,
+    `_axiom-config.m100.cloud`, and `Axiom not initialised`
 - Roundcube `CVE-2025-49113` webmail exposure indicators:
   - installed Roundcube versions below `1.5.10` or `1.6.11`
   - local PoC/exploit-runner artifacts referencing `CVE-2025-49113`
@@ -1057,6 +1065,10 @@ the known indicators it checks.
   https://www.microsoft.com/en-us/security/blog/2026/06/18/autojack-single-page-rce-host-running-ai-agent/
 - The Hacker News AutoJack / AutoGen Studio package analysis:
   https://thehackernews.com/2026/06/autojack-attack-lets-one-web-page.html
+- 0DIN clean-repo DNS TXT agent-setup attack research:
+  https://0din.ai/blog/clone-this-repo-and-i-own-your-machine
+- BleepingComputer clean GitHub repo / AI coding-agent malware summary:
+  https://www.bleepingcomputer.com/news/security/clean-github-repo-tricks-ai-coding-agents-into-running-malware/
 - The Hacker News DifyTap cross-tenant AI data exposure summary:
   https://thehackernews.com/2026/06/researchers-detail-difytap-flaws-in.html
 - SecurityWeek DifyTap data exposure summary:

@@ -41,6 +41,8 @@
 - The Hacker News OpenClaw prompt-injection and agent-phishing report: https://thehackernews.com/2026/06/new-attacks-trick-openclaw-ai-agent.html
 - Microsoft Security AutoJack research: https://www.microsoft.com/en-us/security/blog/2026/06/18/autojack-single-page-rce-host-running-ai-agent/
 - The Hacker News AutoJack / AutoGen Studio package analysis: https://thehackernews.com/2026/06/autojack-attack-lets-one-web-page.html
+- 0DIN clean-repo DNS TXT agent-setup attack research: https://0din.ai/blog/clone-this-repo-and-i-own-your-machine
+- BleepingComputer clean GitHub repo / AI coding-agent malware summary: https://www.bleepingcomputer.com/news/security/clean-github-repo-tricks-ai-coding-agents-into-running-malware/
 - The Hacker News DifyTap cross-tenant AI data exposure summary: https://thehackernews.com/2026/06/researchers-detail-difytap-flaws-in.html
 - SecurityWeek DifyTap data exposure summary: https://www.securityweek.com/data-exposure-flaws-threaten-dify-ai-platform-powering-over-1-million-apps/
 - GitHub Security Advisory GHSA-x223-p2gf-v735 / Langflow CVE-2026-55450: https://github.com/langflow-ai/langflow/security/advisories/GHSA-x223-p2gf-v735

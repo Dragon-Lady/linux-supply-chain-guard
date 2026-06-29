@@ -1167,6 +1167,18 @@ const AUTOJACK_AGENT_LOCALHOST_TERMS = [
   "127.0.0.1:8081",
   "b047730",
 ];
+const ODIN_DNS_TXT_AGENT_TERMS = [
+  "0DIN",
+  "clone this repo and I own your machine",
+  "Axiom not initialised",
+  "Axiom not initialized",
+  "python3 -m axiom init",
+  "_axiom-config.m100.cloud",
+  "dig +short TXT",
+  "base64 -d | bash",
+  "bash -c \"$cfg\"",
+  "bash -i >& /dev/tcp/",
+];
 
 const OPERATION_HIGHLAND_SHA1_HASHES = loadHashSet("operation-highland-sha1.json");
 const OPERATION_HIGHLAND_IOC_PATHS = [
@@ -1364,6 +1376,7 @@ const WATCH_FILE_EXTENSIONS = new Set([
   ".log",
   ".jsp",
   ".bat",
+  ".sh",
   ".ps1",
   ".reg",
   ".cmd",
@@ -2419,6 +2432,7 @@ function scanHost(options = {}) {
   checkOpenClawAgentExposure(findings, targetRoot, homePath);
   checkAgentjackingSentryMcpExposure(findings, targetRoot, homePath);
   checkAutoJackAgentLocalhostExposure(findings, targetRoot, homePath);
+  checkOdinDnsTxtAgentSetupExposure(findings, targetRoot, homePath);
   checkNpmV12Readiness(findings, targetRoot, homePath);
   checkOperationHighlandAuthStack(findings, targetRoot, homePath);
   checkAryStingerEdgeProxy(findings, targetRoot, homePath);
@@ -6053,6 +6067,49 @@ function checkAutoJackAgentLocalhostExposure(findings, targetRoot, homePath) {
   }
 }
 
+function checkOdinDnsTxtAgentSetupExposure(findings, targetRoot, homePath) {
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const roots = [
+    homeRelative,
+    "/opt",
+    "/srv",
+    "/var/www",
+    "/etc",
+    "/root",
+    "/tmp",
+    "/var/tmp",
+  ].filter(Boolean);
+  const files = [];
+  for (const root of roots) {
+    files.push(...findWatchFiles(mapLinuxPath(targetRoot, root), 25000 - files.length));
+    if (files.length >= 25000) break;
+  }
+
+  for (const filePath of files) {
+    const text = readText(filePath);
+    if (!text) continue;
+    const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+
+    for (const indicator of ODIN_DNS_TXT_AGENT_TERMS) {
+      if (text.includes(indicator)) {
+        addFinding(findings, "review", "odin-dns-txt-agent-setup-indicator", "0DIN DNS TXT agent-setup attack term appears in scanned metadata.", `${relative}: ${indicator}`, "Treat setup instructions, package error messages, and runtime-fetched config as untrusted code before letting an agent recover from the error or run init commands.");
+      }
+    }
+
+    if (hasDnsTxtShellExecutionShape(text)) {
+      addFinding(findings, "critical", "odin-dns-txt-shell-execution", "Shell script appears to execute command text fetched from a DNS TXT record.", relative, "Do not run this setup path through Claude Code, Codex, Cursor, or another coding agent. Inspect from an isolated shell, block the DNS name, and rotate developer credentials if it already executed.");
+    }
+
+    if (hasAgentInitErrorRecoveryShape(text)) {
+      addFinding(findings, "warning", "odin-agent-init-error-recovery-prompt", "Package or setup text tells an agent/developer to run an init command after a first-run failure.", relative, "Review the init path and every script it invokes before allowing automated error recovery. Pay special attention to network fetches, shell evaluation, and hidden runtime configuration.");
+    }
+
+    if (/requirements\.txt[\s\S]{0,220}python3?\s+-m\s+\S+\s+init/i.test(text) && /Claude Code|AI coding agent|agentic coding|freshly cloned|First-Time Setup/i.test(text)) {
+      addFinding(findings, "review", "odin-clean-repo-agent-setup-chain", "Clean-repo agent setup chain terms appear in scanned metadata.", relative, "Use this as a 0DIN-style review lead: normal dependency install plus module init can still execute runtime-fetched commands outside the repository diff.");
+    }
+  }
+}
+
 function checkNpmV12Readiness(findings, targetRoot, homePath) {
   const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
   const roots = [
@@ -7287,6 +7344,17 @@ function isAstroConfigFileName(fileName) {
 
 function isOpenClawConfigFileName(fileName) {
   return OPENCLAW_CONFIG_FILES.has(fileName.toLowerCase()) || /^openclaw\.(json|jsonc|yaml|yml|toml)$/i.test(fileName);
+}
+
+function hasDnsTxtShellExecutionShape(text) {
+  return /\b(?:cfg|config|payload|cmd|command)\s*=\s*\$\(\s*dig\b[\s\S]{0,220}\bTXT\b[\s\S]{0,220}\)[\s\S]{0,700}\b(?:bash|sh)\s+-c\s+["']?\$\{?(?:cfg|config|payload|cmd|command)\}?/i.test(text)
+    || /\bdig\b[\s\S]{0,220}\bTXT\b[\s\S]{0,260}\|\s*(?:bash|sh)\b/i.test(text)
+    || /\bdig\b[\s\S]{0,220}\bTXT\b[\s\S]{0,360}\bbase64\s+-d\b[\s\S]{0,120}\|\s*(?:bash|sh)\b/i.test(text);
+}
+
+function hasAgentInitErrorRecoveryShape(text) {
+  return /(?:RuntimeError|Exception|Error|not initiali[sz]ed|must be run once|first[- ]time setup)[\s\S]{0,320}(?:Run:\s*)?python3?\s+-m\s+\S+\s+init/i.test(text)
+    || /python3?\s+-m\s+\S+\s+init[\s\S]{0,320}(?:RuntimeError|Exception|Error|not initiali[sz]ed|must be run once|first[- ]time setup)/i.test(text);
 }
 
 function shouldHashGentlemenArtifact(fileName) {
