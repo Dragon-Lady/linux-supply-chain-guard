@@ -265,6 +265,16 @@ context, bearer-token/authenticated-principal terms, and hosted-client
 `AccessToken.subject` isolation notes. Stdio, stateless Streamable HTTP, and
 no-auth deployments are called out as different exposure cases.
 
+The June 2026 Amazon Q Developer lane tracks AWS bulletin `2026-047-AWS`,
+`CVE-2026-12957`, and `CVE-2026-12958` for Language Servers for AWS and
+Amazon Q IDE plugins. It flags vulnerable-looking Amazon Q plugin metadata,
+repository-local `.amazonq/mcp.json` command configs, MCP command/args entries
+near cloud credential inheritance terms, suspicious `aws sts get-caller-identity`
+collection behavior, and symlink trust-boundary review notes. Fixed baselines
+are Language Servers for AWS `1.69.0`, Amazon Q Developer for VS Code `2.20`,
+JetBrains `4.3`, Eclipse `2.7.4`, and AWS Toolkit with Amazon Q for Visual
+Studio `1.94.0.0`.
+
 The June 2026 ShapedPlugin Pro WordPress supply-chain watch pack adds local
 WordPress tree checks for affected Pro plugin slugs and versions,
 `LicenseLoader.php`, fake `woocommerce-subscription` /
@@ -753,6 +763,18 @@ Exit codes:
     authenticated-principal configuration
   - hosted or multi-tenant MCP client notes where per-user subject isolation is
     required instead of only shared OAuth `client_id`
+- Amazon Q Developer / AWS Language Servers workspace MCP indicators:
+  - AWS bulletin `2026-047-AWS`, `CVE-2026-12957`, `CVE-2026-12958`,
+    `GHSA-6v3r-4p5c-mrp5`, and `GHSA-xhcr-j4j9-3gh7`
+  - Amazon Q plugin versions before fixed releases for VS Code, JetBrains,
+    Eclipse, and Visual Studio
+  - `.amazonq/mcp.json`, `mcpServers`, `command`, and `args` entries that can
+    launch local MCP server processes from a workspace
+  - AWS credential inheritance terms such as `AWS_ACCESS_KEY_ID`,
+    `AWS_SECRET_ACCESS_KEY`, `AWS_SESSION_TOKEN`, cloud CLI tokens, API keys,
+    and SSH agent sockets
+  - `aws sts get-caller-identity` / shell or curl collection behavior and
+    symlink trust-boundary language
 - ShapedPlugin Pro WordPress supply-chain indicators:
   - affected Pro plugin slugs `woo-product-slider-pro`, `testimonial-pro`, and
     `smart-show-post-pro`

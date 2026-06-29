@@ -332,6 +332,20 @@ Hosted or multi-tenant MCP client deployments should verify that token
 verification populates a per-user `AccessToken.subject`; a shared OAuth
 `client_id` alone can preserve cross-user session confusion.
 
+Amazon Q Developer / AWS Language Servers `CVE-2026-12957` and
+`CVE-2026-12958` are tracked as workspace trust-boundary issues. The guard
+flags local Amazon Q plugin metadata below fixed baselines, copied AWS/Wiz
+advisory terms, repository-local `.amazonq/mcp.json` files with `mcpServers`
+that can execute `command`/`args`, and notes that place MCP execution near AWS
+credential, API token, or SSH-agent inheritance.
+
+The primary review priority is any untrusted workspace opened with an Amazon Q
+Developer IDE plugin that bundles Language Servers for AWS before `1.69.0`.
+Suspicious `.amazonq/mcp.json` entries containing shell, curl, PowerShell, or
+`aws sts get-caller-identity` collection behavior should be treated as possible
+developer credential exposure. Symlink notes are tracked separately for the
+`CVE-2026-12958` path-outside-workspace trust-boundary issue.
+
 Fragnesia is a Linux kernel local-root flaw affecting supported AlmaLinux
 releases through the `esp4`, `esp6`, and, on some AlmaLinux 9/10 systems,
 `rxrpc` modules. This tool does not test exploitability. It checks kernel

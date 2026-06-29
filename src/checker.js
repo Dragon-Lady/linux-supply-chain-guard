@@ -1574,6 +1574,26 @@ const MCP_PYTHON_SDK_CVE202652869_TEXT_INDICATORS = [
   "BearerAuthBackend",
 ];
 
+const AMAZON_Q_AWS_LANGUAGE_SERVERS_FIXED = "1.69.0";
+const AMAZON_Q_VSCODE_FIXED = "2.20.0";
+const AMAZON_Q_JETBRAINS_FIXED = "4.3.0";
+const AMAZON_Q_ECLIPSE_FIXED = "2.7.4";
+const AMAZON_Q_VISUAL_STUDIO_FIXED = "1.94.0";
+const AMAZON_Q_WORKSPACE_MCP_TEXT_INDICATORS = [
+  "CVE-2026-12957",
+  "CVE-2026-12958",
+  "2026-047-AWS",
+  "GHSA-6v3r-4p5c-mrp5",
+  "GHSA-xhcr-j4j9-3gh7",
+  "Amazon Q Developer",
+  "Language Servers for AWS",
+  ".amazonq/mcp.json",
+  "MCP Auto-Execution",
+  "workspace trust check",
+  "missing symlink-validation",
+  "maliciously crafted workspace",
+];
+
 const DIRTYCBC_RXGK_TEXT_INDICATORS = [
   "DirtyCBC",
   "linux-rxgk-decrypt-mac",
@@ -2342,6 +2362,7 @@ function scanHost(options = {}) {
   checkPackageKitCve202641651Exposure(findings, targetRoot, homePath);
   checkCloudBucketHijackingExposure(findings, targetRoot, homePath);
   checkMcpPythonSdkCve202652869Exposure(findings, targetRoot, homePath);
+  checkAmazonQWorkspaceMcpExposure(findings, targetRoot, homePath);
   checkShapedPluginSupplyChainCompromise(findings, targetRoot, homePath);
   checkDcatAuthGoogle2faPackagistCompromise(findings, targetRoot, homePath);
   checkLaravelLivewireCve202554068(findings, targetRoot, homePath);
@@ -5089,6 +5110,95 @@ function checkMcpPythonSdkCve202652869Exposure(findings, targetRoot, homePath) {
   }
 }
 
+function checkAmazonQWorkspaceMcpExposure(findings, targetRoot, homePath) {
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const roots = [
+    homeRelative,
+    "/opt",
+    "/srv",
+    "/var/www",
+    "/etc",
+    "/root",
+    "/usr/local",
+  ].filter(Boolean);
+  const files = [];
+  for (const root of roots) {
+    files.push(...findWatchFiles(mapLinuxPath(targetRoot, root), 25000 - files.length));
+    if (files.length >= 25000) break;
+  }
+
+  for (const filePath of files) {
+    const size = fileSizeBytes(filePath);
+    if (size <= 0 || size > 1024 * 1024) continue;
+    const text = readText(filePath);
+    if (!text) continue;
+    const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+    const normalizedVersionText = normalizeAmazonQVersionText(text);
+
+    for (const indicator of AMAZON_Q_WORKSPACE_MCP_TEXT_INDICATORS) {
+      if (text.includes(indicator)) {
+        addFinding(findings, "review", "amazon-q-workspace-mcp-text-indicator", "Amazon Q / AWS Language Servers workspace trust advisory term appears in scanned host metadata.", `${relative}: ${indicator}`, "Correlate with installed Amazon Q Developer plugin and Language Servers for AWS versions. Upgrade plugins that bundle Language Servers for AWS before 1.69.0.");
+      }
+    }
+
+    const packageMeta = parseJsonObject(text);
+    if (packageMeta && isAmazonQVsCodeExtensionPackage(packageMeta) && packageMeta.version) {
+      const version = normalizeDottedVersion(String(packageMeta.version));
+      if (compareDottedVersion(version, AMAZON_Q_VSCODE_FIXED) < 0) {
+        addFinding(findings, "warning", "amazon-q-vscode-affected-version", "Amazon Q Developer for VS Code package metadata appears older than the fixed release.", `${relative}: ${packageMeta.version}`, `Upgrade Amazon Q Developer for VS Code to ${AMAZON_Q_VSCODE_FIXED} or newer so it bundles the fixed Language Servers for AWS runtime.`);
+      }
+    }
+
+    for (const version of amazonQVersionsInText(normalizedVersionText, /Amazon Q Developer for Visual Studio Code|amazon-q-vscode/i)) {
+      if (compareDottedVersion(normalizeDottedVersion(version), AMAZON_Q_VSCODE_FIXED) < 0) {
+        addFinding(findings, "warning", "amazon-q-vscode-affected-version", "Amazon Q Developer for VS Code version appears older than the fixed release.", `${relative}: ${version}`, `Upgrade Amazon Q Developer for VS Code to ${AMAZON_Q_VSCODE_FIXED} or newer.`);
+      }
+    }
+
+    for (const version of amazonQVersionsInText(normalizedVersionText, /Amazon Q Developer for JetBrains|Amazon Q for JetBrains|JetBrains/i)) {
+      if (compareDottedVersion(normalizeDottedVersion(version), AMAZON_Q_JETBRAINS_FIXED) < 0) {
+        addFinding(findings, "warning", "amazon-q-jetbrains-affected-version", "Amazon Q Developer for JetBrains version appears older than the fixed release.", `${relative}: ${version}`, `Upgrade Amazon Q Developer for JetBrains to ${AMAZON_Q_JETBRAINS_FIXED} or newer.`);
+      }
+    }
+
+    for (const version of amazonQVersionsInText(normalizedVersionText, /Amazon Q Developer for Eclipse|Amazon Q for Eclipse|Eclipse/i)) {
+      if (compareDottedVersion(normalizeDottedVersion(version), AMAZON_Q_ECLIPSE_FIXED) < 0) {
+        addFinding(findings, "warning", "amazon-q-eclipse-affected-version", "Amazon Q Developer for Eclipse version appears older than the fixed release.", `${relative}: ${version}`, `Upgrade Amazon Q Developer for Eclipse to ${AMAZON_Q_ECLIPSE_FIXED} or newer.`);
+      }
+    }
+
+    for (const version of amazonQVersionsInText(normalizedVersionText, /AWS Toolkit with Amazon Q for Visual Studio|Amazon Q Developer for Visual Studio|AWSToolkitforVisualStudio/i)) {
+      if (compareDottedVersion(normalizeDottedVersion(version), AMAZON_Q_VISUAL_STUDIO_FIXED) < 0) {
+        addFinding(findings, "warning", "amazon-q-visual-studio-affected-version", "AWS Toolkit with Amazon Q for Visual Studio version appears older than the fixed release.", `${relative}: ${version}`, `Upgrade AWS Toolkit with Amazon Q for Visual Studio to ${AMAZON_Q_VISUAL_STUDIO_FIXED} or newer.`);
+      }
+    }
+
+    const isAmazonQMcpConfig = relative.endsWith("/.amazonq/mcp.json") || /\.amazonq\/mcp\.json|\.amazonq\\mcp\.json/i.test(text);
+    const hasCommandMcpServer = /mcpServers/i.test(text) && /"command"\s*:|command\s*:/i.test(text);
+
+    if (isAmazonQMcpConfig && hasCommandMcpServer) {
+      addFinding(findings, "warning", "amazon-q-workspace-mcp-command-config", "Amazon Q workspace MCP config can launch local commands.", relative, "Treat repository-local .amazonq/mcp.json as untrusted input. Review every command/args/env entry before opening or activating Amazon Q in the workspace, and ensure Amazon Q plugins are updated.");
+    }
+
+    if (hasCommandMcpServer
+      && /AWS_ACCESS_KEY_ID|AWS_SECRET_ACCESS_KEY|AWS_SESSION_TOKEN|aws sts get-caller-identity|cloud CLI authentication tokens|SSH_AUTH_SOCK|SSH agent sockets|API keys and secrets/i.test(text)
+      && (isAmazonQMcpConfig || /Amazon Q|\.amazonq\/mcp\.json|CVE-2026-12957|MCP Auto-Execution|workspace trust/i.test(text))) {
+      addFinding(findings, "warning", "amazon-q-mcp-credential-inheritance-review", "Amazon Q MCP command execution terms appear near cloud credential or SSH-agent inheritance language.", relative, "Assume spawned MCP server processes may inherit developer credentials. Rotate exposed cloud/API/SSH material if this config ran on a vulnerable Amazon Q installation.");
+    }
+
+    if (isAmazonQMcpConfig
+      && /aws\s+sts\s+get-caller-identity|curl\s+-s|Invoke-WebRequest|iwr\s+|bash\s+-c|sh\s+-c|powershell|pwsh|exfil|collect/i.test(text)) {
+      addFinding(findings, "critical", "amazon-q-suspicious-mcp-command", "Amazon Q workspace MCP config contains command-execution or cloud-credential collection behavior.", relative, "Do not activate Amazon Q in this workspace. Preserve the config for review, inspect shell history and cloud audit logs, and rotate credentials if the workspace was opened with a vulnerable plugin.");
+    }
+
+    if (/CVE-2026-12958|missing symlink-validation|symlink|symbolic link/i.test(text)
+      && /outside the workspace|outside.*trust boundary|trust boundary|workspace trust/i.test(text)
+      && /Amazon Q|Language Servers for AWS|AWS language servers/i.test(text)) {
+      addFinding(findings, "warning", "amazon-q-symlink-boundary-review", "Amazon Q / AWS Language Servers symlink trust-boundary terms appear in scanned metadata.", relative, "Upgrade Amazon Q Developer plugins to releases bundling Language Servers for AWS 1.69.0 or newer, and review workspace symlinks that resolve outside trusted project roots.");
+    }
+  }
+}
+
 function checkShapedPluginSupplyChainCompromise(findings, targetRoot, homePath) {
   const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
   const roots = [
@@ -7199,6 +7309,41 @@ function escapeRegExp(value) {
 
 function hasAnyTerm(text, terms) {
   return terms.some((term) => text.includes(term));
+}
+
+function parseJsonObject(text) {
+  try {
+    const parsed = JSON.parse(text);
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : null;
+  } catch (_error) {
+    return null;
+  }
+}
+
+function isAmazonQVsCodeExtensionPackage(packageMeta) {
+  const name = String(packageMeta.name || "");
+  const displayName = String(packageMeta.displayName || "");
+  const publisher = String(packageMeta.publisher || "");
+  return /amazon-q-vscode/i.test(name)
+    || (/Amazon Q/i.test(displayName) && /AmazonWebServices|AWS|Amazon/i.test(publisher));
+}
+
+function normalizeAmazonQVersionText(text) {
+  return text.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&");
+}
+
+function amazonQVersionsInText(text, productPattern) {
+  const versions = new Set();
+  const patterns = [
+    new RegExp(`(?:${productPattern.source})[^\\n\\r]{0,120}?(?:version|v|:|<|<=)\\s*([0-9]+\\.[0-9]+(?:\\.[0-9]+)?)`, "gi"),
+    new RegExp(`(?:version|v)\\s*([0-9]+\\.[0-9]+(?:\\.[0-9]+)?)[^\\n\\r]{0,120}?(?:${productPattern.source})`, "gi"),
+  ];
+  for (const pattern of patterns) {
+    for (const match of text.matchAll(pattern)) {
+      versions.add(match[1]);
+    }
+  }
+  return Array.from(versions);
 }
 
 function exposesAllInterfaces(text) {
