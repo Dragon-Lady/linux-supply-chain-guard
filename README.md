@@ -257,6 +257,14 @@ Data Firehose, and Azure Monitor diagnostic export context, along with bucket
 delete permissions and perimeter mitigations such as VPC Service Controls,
 Service Control Policies, and account-regional S3 namespaces.
 
+The June 2026 MCP Python SDK lane adds PyPI `mcp` dependency checks for
+`CVE-2026-52869` / `GHSA-jpw9-pfvf-9f58`, fixed in `1.27.2`. It flags affected
+versions before `1.27.2`, SSE `session_id`/`SseServerTransport` exposure,
+stateful Streamable HTTP `Mcp-Session-Id`/`StreamableHTTPSessionManager`
+context, bearer-token/authenticated-principal terms, and hosted-client
+`AccessToken.subject` isolation notes. Stdio, stateless Streamable HTTP, and
+no-auth deployments are called out as different exposure cases.
+
 The June 2026 ShapedPlugin Pro WordPress supply-chain watch pack adds local
 WordPress tree checks for affected Pro plugin slugs and versions,
 `LicenseLoader.php`, fake `woocommerce-subscription` /
@@ -736,6 +744,15 @@ Exit codes:
   - mitigation terms including `VPC Service Controls`, `Service Control
     Policies`, trusted organizational boundaries, and account-regional S3
     namespaces
+- MCP Python SDK `CVE-2026-52869` indicators:
+  - PyPI `mcp` versions before fixed release `1.27.2`
+  - advisory/source terms including `GHSA-jpw9-pfvf-9f58`, `CWE-639`,
+    `SseServerTransport`, `StreamableHTTPSessionManager`, `Mcp-Session-Id`,
+    `session_id`, `AccessToken.subject`, and `BearerAuthBackend`
+  - SSE or stateful Streamable HTTP transport terms near bearer/OAuth/
+    authenticated-principal configuration
+  - hosted or multi-tenant MCP client notes where per-user subject isolation is
+    required instead of only shared OAuth `client_id`
 - ShapedPlugin Pro WordPress supply-chain indicators:
   - affected Pro plugin slugs `woo-product-slider-pro`, `testimonial-pro`, and
     `smart-show-post-pro`
@@ -1188,6 +1205,10 @@ the known indicators it checks.
   https://unit42.paloaltonetworks.com/cloud-bucket-hijacking-risks/
 - Cyber Security News bucket hijacking summary:
   https://cybersecuritynews.com/bucket-hijacking-attack/
+- GitHub Advisory `GHSA-jpw9-pfvf-9f58` / MCP Python SDK `CVE-2026-52869`:
+  https://github.com/modelcontextprotocol/python-sdk/security/advisories/GHSA-jpw9-pfvf-9f58
+- SkyPoC MCP Python SDK `CVE-2026-52869` analysis:
+  https://skypoc.wordpress.com/2026/06/10/cve-2026-52869/
 - The Hacker News Pedit COW / `CVE-2026-46331` summary:
   https://thehackernews.com/2026/06/new-linux-pedit-cow-exploit-enables.html
 - NVD `CVE-2026-46331` record:

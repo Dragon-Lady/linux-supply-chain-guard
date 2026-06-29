@@ -730,6 +730,18 @@ function run() {
   const hadesSshPath = ["/tmp/.sshu", "-setup.js"].join("");
   write(path.join(root, "tmp", hadesBunSentinel), "marker");
   write(path.join(home, "hades-env", "requirements.txt"), "langchain-core-mcp==1.4.2\n");
+  write(path.join(home, "mcp-python-sdk-risk", "requirements.txt"), [
+    "mcp==1.27.1",
+    "fastapi==0.120.0"
+  ].join("\n"));
+  write(path.join(home, "mcp-python-sdk-risk", "transport-review.md"), [
+    "CVE-2026-52869 GHSA-jpw9-pfvf-9f58 MCP Python SDK review.",
+    "HTTP transports serve session requests without verifying the authenticated principal; CWE-639 Authorization Bypass Through User-Controlled Key.",
+    "Legacy SSE uses SseServerTransport and session_id in the URL while Authorization bearer token and AccessToken checks are enabled.",
+    "Stateful Streamable HTTP uses StreamableHTTPSessionManager and Mcp-Session-Id with OAuth authenticated principal checks.",
+    "Hosted MCP client multi-tenant deployments need AccessToken.subject, issuer, client_id, and per-user isolation instead of only per client identity.",
+    "Custom BearerAuthBackend implementations need equivalent principal binding."
+  ].join("\n"));
   write(
     path.join(home, "hades-env", ".venv", "lib", "python3.12", "site-packages", "langchain_core-setup.pth"),
     [
@@ -1142,6 +1154,11 @@ function run() {
   assert(ids.has("pcpjack-relay-artifact-path"));
   assert(ids.has("pcpjack-xsync-persistence-marker"));
   assert(ids.has("hades-llm-anti-analysis-bait"));
+  assert(ids.has("mcp-python-sdk-cve-2026-52869-affected-version"));
+  assert(ids.has("mcp-python-sdk-cve-2026-52869-text-indicator"));
+  assert(ids.has("mcp-python-sdk-cve-2026-52869-sse-auth-review"));
+  assert(ids.has("mcp-python-sdk-cve-2026-52869-streamable-http-auth-review"));
+  assert(ids.has("mcp-python-sdk-cve-2026-52869-subject-isolation-review"));
   assert(ids.has("agentjacking-sentry-mcp-review"));
   assert(ids.has("agentjacking-sentry-resolution-npx"));
   assert(ids.has("agentjacking-tenet-validation-marker"));

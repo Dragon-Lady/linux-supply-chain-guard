@@ -319,6 +319,19 @@ or storage-account deletion permissions. Mitigation notes such as VPC Service
 Controls, AWS Service Control Policies, trusted organizational boundaries, and
 account-regional S3 namespaces are tracked as configuration-review prompts.
 
+MCP Python SDK `CVE-2026-52869` is tracked as an HTTP transport
+principal-confusion issue in the PyPI `mcp` package. The guard flags dependency
+metadata that names `mcp` versions before fixed release `1.27.2`, then looks
+for SSE and stateful Streamable HTTP transport terms near bearer-token,
+OAuth, authenticated-principal, or session-id configuration.
+
+The exposure boundary matters: HTTP transports with authentication are the
+review priority, specifically SSE and stateful Streamable HTTP. Stdio,
+stateless Streamable HTTP, and no-auth deployments have different exposure.
+Hosted or multi-tenant MCP client deployments should verify that token
+verification populates a per-user `AccessToken.subject`; a shared OAuth
+`client_id` alone can preserve cross-user session confusion.
+
 Fragnesia is a Linux kernel local-root flaw affecting supported AlmaLinux
 releases through the `esp4`, `esp6`, and, on some AlmaLinux 9/10 systems,
 `rxrpc` modules. This tool does not test exploitability. It checks kernel

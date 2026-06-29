@@ -1553,6 +1553,27 @@ const CLOUD_BUCKET_HIJACKING_TEXT_INDICATORS = [
   "account-regional S3 namespaces",
 ];
 
+const MCP_PYTHON_SDK_CVE202652869_FIXED = "1.27.2";
+const MCP_PYTHON_SDK_CVE202652869_TEXT_INDICATORS = [
+  "CVE-2026-52869",
+  "GHSA-jpw9-pfvf-9f58",
+  "Authorization Bypass Through User-Controlled Key",
+  "CWE-639",
+  "HTTP transports serve session requests without verifying the authenticated principal",
+  "MCP Python SDK",
+  "mcp Python SDK",
+  "SseServerTransport",
+  "StreamableHTTPSessionManager",
+  "Streamable HTTP",
+  "stateful mode",
+  "Mcp-Session-Id",
+  "mcp-session-id",
+  "session_id",
+  "authenticated principal",
+  "AccessToken.subject",
+  "BearerAuthBackend",
+];
+
 const DIRTYCBC_RXGK_TEXT_INDICATORS = [
   "DirtyCBC",
   "linux-rxgk-decrypt-mac",
@@ -2320,6 +2341,7 @@ function scanHost(options = {}) {
   checkLibssh2Cve202655200Exposure(findings, targetRoot, homePath);
   checkPackageKitCve202641651Exposure(findings, targetRoot, homePath);
   checkCloudBucketHijackingExposure(findings, targetRoot, homePath);
+  checkMcpPythonSdkCve202652869Exposure(findings, targetRoot, homePath);
   checkShapedPluginSupplyChainCompromise(findings, targetRoot, homePath);
   checkDcatAuthGoogle2faPackagistCompromise(findings, targetRoot, homePath);
   checkLaravelLivewireCve202554068(findings, targetRoot, homePath);
@@ -5007,6 +5029,62 @@ function checkCloudBucketHijackingExposure(findings, targetRoot, homePath) {
     if (/VPC Service Controls|Service Control Policies|SCPs|account-regional S3 namespaces|trusted organizational boundary|data perimeter/i.test(text)
       && /bucket hijacking|external storage bucket|Cloud Logging|S3 bucket replication|Data Firehose|Azure Monitor diagnostic/i.test(text)) {
       addFinding(findings, "info", "cloud-bucket-hijacking-perimeter-mitigation-note", "Cloud bucket hijacking mitigation language appears in scanned host metadata.", relative, "Confirm the stated perimeter control is enforced in the relevant cloud accounts, projects, regions, subscriptions, and logging destinations.");
+    }
+  }
+}
+
+function checkMcpPythonSdkCve202652869Exposure(findings, targetRoot, homePath) {
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const roots = [
+    homeRelative,
+    "/opt",
+    "/srv",
+    "/var/www",
+    "/etc",
+    "/root",
+    "/usr/local",
+  ].filter(Boolean);
+  const files = [];
+  for (const root of roots) {
+    files.push(...findWatchFiles(mapLinuxPath(targetRoot, root), 25000 - files.length));
+    if (files.length >= 25000) break;
+  }
+
+  for (const filePath of files) {
+    const size = fileSizeBytes(filePath);
+    if (size <= 0 || size > 1024 * 1024) continue;
+    const text = readText(filePath);
+    if (!text) continue;
+    const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+    const versions = packageVersionsInText(text, "mcp");
+
+    for (const version of versions) {
+      if (compareDottedVersion(normalizeDottedVersion(version), MCP_PYTHON_SDK_CVE202652869_FIXED) < 0) {
+        addFinding(findings, "warning", "mcp-python-sdk-cve-2026-52869-affected-version", "Python mcp dependency version appears older than the CVE-2026-52869 fixed release.", `${relative}: mcp ${version}`, `Upgrade the PyPI mcp package to ${MCP_PYTHON_SDK_CVE202652869_FIXED} or newer. Prioritize servers using SSE or stateful Streamable HTTP transports with bearer-token authentication.`);
+      }
+    }
+
+    for (const indicator of MCP_PYTHON_SDK_CVE202652869_TEXT_INDICATORS) {
+      if (text.includes(indicator)) {
+        addFinding(findings, "review", "mcp-python-sdk-cve-2026-52869-text-indicator", "MCP Python SDK CVE-2026-52869 advisory or transport term appears in scanned host metadata.", `${relative}: ${indicator}`, "Correlate with installed mcp package version, transport mode, and authentication configuration. Stdio, stateless Streamable HTTP, and unauthenticated deployments have different exposure.");
+      }
+    }
+
+    if (/SseServerTransport|session_id|sse\.py|legacy SSE|Server-Sent Events/i.test(text)
+      && /bearer|Authorization|OAuth|AccessToken|authenticated principal|token/i.test(text)
+      && /mcp|Model Context Protocol|CVE-2026-52869|GHSA-jpw9-pfvf-9f58/i.test(text)) {
+      addFinding(findings, "warning", "mcp-python-sdk-cve-2026-52869-sse-auth-review", "MCP Python SDK SSE transport terms appear near bearer-token/authenticated-principal language.", relative, "If this service uses mcp before 1.27.2, verify the session-to-principal binding fix is present. Also reduce URL query logging of session IDs.");
+    }
+
+    if (/StreamableHTTPSessionManager|Mcp-Session-Id|mcp-session-id|Streamable HTTP/i.test(text)
+      && /stateful|session|bearer|Authorization|OAuth|AccessToken|authenticated principal|token/i.test(text)
+      && /mcp|Model Context Protocol|CVE-2026-52869|GHSA-jpw9-pfvf-9f58/i.test(text)) {
+      addFinding(findings, "warning", "mcp-python-sdk-cve-2026-52869-streamable-http-auth-review", "MCP Python SDK stateful Streamable HTTP terms appear near bearer-token/authenticated-principal language.", relative, "Patch mcp to 1.27.2 or newer and confirm session requests are bound to the authenticated subject, not only a shared OAuth client ID.");
+    }
+
+    if (/AccessToken\.subject|token subject|subject claim|client_id|issuer|authenticated principal/i.test(text)
+      && /hosted MCP client|multi-tenant|many end users|per-user isolation|per client|shared OAuth client/i.test(text)) {
+      addFinding(findings, "review", "mcp-python-sdk-cve-2026-52869-subject-isolation-review", "MCP Python SDK CVE-2026-52869 subject/client isolation terms appear in scanned metadata.", relative, "For hosted or multi-tenant MCP clients, ensure the token verifier populates a per-user subject. Per-client-only identity can preserve cross-user session confusion.");
     }
   }
 }
