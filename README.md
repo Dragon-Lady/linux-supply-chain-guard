@@ -976,6 +976,8 @@ the known indicators it checks.
   https://research.jfrog.com/post/dissecting-and-exploiting-linux-lpe-variant-dirtyclone-cve-2026-43503/
 - The Hacker News DirtyClone / Copy Fail summary:
   https://thehackernews.com/2026/06/new-dirtyclone-linux-kernel-flaw-lets.html
+- Positive Technologies DBugs CVE-2026-43503 record:
+  https://dbugs.ptsecurity.com/vulnerability/CVE-2026-43503
 - MatheuZ Security Trend Micro BMHook/TMHook reload bypass analysis:
   https://matheuzsecurity.github.io/hacking/trendmicro-bmhook-tmhook-reload-bypass/
 - System Register Hijacking / ret2entry paper:
