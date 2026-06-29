@@ -553,6 +553,16 @@ the reported pre-release versions as review prompts. The broader lesson applies
 to other agent frameworks: localhost is not a trust boundary when agents can
 render untrusted pages and also reach privileged local services.
 
+0DIN's June 2026 clean-repo research is included as an agent setup/error
+recovery lane. The reported chain used normal-looking setup instructions,
+`python3 -m axiom init`, a package first-run error that asked for that init
+command, and a shell script that read attacker-controlled DNS TXT data with
+`dig` before executing it through `bash -c`. The guard flags the demo-specific
+`axiom` markers, package errors that instruct `python -m ... init`, and scripts
+that execute DNS TXT output directly or through `base64 -d | bash`. Findings
+mean "inspect before allowing automated recovery," not proof that a repo already
+ran malware.
+
 The June 2026 Gogs lane tracks self-hosted Git exposure-review context from a
 FOFA `app="Gogs"` product query and a public Jorian Woltjer PoC reference. The
 guard flags local deployment artifacts such as Gogs app config or repository
