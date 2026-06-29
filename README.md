@@ -133,6 +133,15 @@ deprecated `/api/v1/upload/{flow_id}` route exposure, absolute upload
 `file_path` leak artifacts, public-bind review, upload-size limit markers, and
 the `LOGSPACE-LangFlow` FOFA/product fingerprint context.
 
+It also tracks Langflow `CVE-2026-33017` / `GHSA-vwmf-pq79-vjvx`, fixed in
+`1.9.0`, for unauthenticated public-flow builds through
+`POST /api/v1/build_public_tmp/{flow_id}/flow`. The guard flags affected
+versions before `1.9.0`, `build_public_tmp` / `FlowDataRequest` /
+attacker-controlled `data` terms, unsandboxed `exec()` / `prepare_global_scope`
+notes, and SecurityOnline-reported cryptominer campaign markers including
+`KORKERDS`, `init_rmount`, `Kinsing`, miner/XMRig/Monero terms, kill-list
+behavior, reused SSH keys, and SSH worm lateral-movement language.
+
 The June 2026 Gogs exposure-review lane adds local/mounted-root checks for Gogs
 deployment artifacts, `app="Gogs"` FOFA fingerprint notes, public PoC
 provenance references, and path-traversal or Git-hook RCE triage terms. These
@@ -1042,6 +1051,12 @@ the known indicators it checks.
   https://www.ibm.com/support/pages/node/7277243
 - SecurityOnline Langflow RCE summary:
   https://securityonline.info/langflow-rce-vulnerability/
+- GitHub Security Advisory GHSA-vwmf-pq79-vjvx / Langflow CVE-2026-33017:
+  https://github.com/langflow-ai/langflow/security/advisories/GHSA-vwmf-pq79-vjvx
+- CVE API record for CVE-2026-33017:
+  https://cveawg.mitre.org/api/cve/CVE-2026-33017
+- SecurityOnline Langflow CVE-2026-33017 cryptominer campaign summary:
+  https://securityonline.info/langflow-cryptominer-malware/
 - Imperva Laravel Livewire CVE-2025-54068 credential-theft campaign report:
   https://www.imperva.com/blog/cve-2025-54068-laravel-livewire-credential-theft-campaign-6000-applications-compromised/
 - Synacktiv Livewire RCE through unmarshaling technical disclosure:
