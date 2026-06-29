@@ -6,6 +6,7 @@
 - JFrog Security Research, DirtyClone / CVE-2026-43503 analysis: https://research.jfrog.com/post/dissecting-and-exploiting-linux-lpe-variant-dirtyclone-cve-2026-43503/
 - The Hacker News DirtyClone / Copy Fail summary: https://thehackernews.com/2026/06/new-dirtyclone-linux-kernel-flaw-lets.html
 - Positive Technologies DBugs CVE-2026-43503 record: https://dbugs.ptsecurity.com/vulnerability/CVE-2026-43503
+- SecurityOnline DirtyClone Linux kernel LPE summary: https://securityonline.info/dirtyclone-linux-kernel-lpe/
 - MatheuZ Security Trend Micro BMHook/TMHook reload bypass analysis: https://matheuzsecurity.github.io/hacking/trendmicro-bmhook-tmhook-reload-bypass/
 - System Register Hijacking / ret2entry paper: https://kylebot.net/papers/ret2entry.pdf
 - Cyber Security News, ITScape / CVE-2026-46316 ARM64 KVM guest-to-host escape PoC: https://cybersecuritynews.com/poc-exploit-released-linux-kernel-vulnerability/

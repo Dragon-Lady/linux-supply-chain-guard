@@ -407,9 +407,13 @@ and skb cloning where `__pskb_copy_fclone` can fail to preserve
 container/CI exposure framing. The guard flags copied advisory/provenance terms
 such as `DirtyClone`, `Copy Fail`, `CVE-2026-43503`, `CVE-2026-31431`,
 `nf_dup_ipv4`, `ip xfrm`, `TEE --gateway`, `CAP_NET_ADMIN`, `unshare -Urn`,
-`kernel.unprivileged_userns_clone=0`, `48f6a5356a33`, and `v7.1-rc5`. These
-are review leads: confirm vendor backport status, patch and reboot, and do not
-compile or run PoC material on production or credential-bearing hosts.
+`kernel.unprivileged_userns_clone=0`, `48f6a5356a33`, and `v7.1-rc5`.
+SecurityOnline's June 28, 2026 summary adds patch-provenance strings such as
+`cef401de7be8c4e155c6746bfccf721a4fa5fab9`,
+`fbeab9555564a1b98e8582cd106dfe46c4606991`, and the
+`propagate shared-frag marker through frag-transfer helpers` impact phrase.
+These are review leads: confirm vendor backport status, patch and reboot, and
+do not compile or run PoC material on production or credential-bearing hosts.
 
 Pedit COW / `CVE-2026-46331` is tracked in the same Linux kernel exposure
 lane. Public reporting and distro trackers describe a local privilege
