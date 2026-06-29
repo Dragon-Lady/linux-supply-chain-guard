@@ -242,6 +242,13 @@ libssh2 fixes are being triaged together by downstream packagers. The lane also
 flags local copies or notes from the public `bikini/exploitarium`
 `libssh2-cve-2026-55200-poc` tree as PoC research artifacts.
 
+The June 2026 PackageKit lane adds Debian-family package checks and
+copied-advisory/source-note checks for `CVE-2026-41651`, a local privilege
+escalation in PackageKit versions `1.0.2` through `1.3.4` fixed in `1.3.5`.
+It flags `InstallFiles`, `pk_transaction_set_state`, and
+`transaction->cached_transaction_flags` race-condition notes, plus
+`Pack2TheRoot`/GHSA provenance markers as local research-artifact review leads.
+
 The June 2026 ShapedPlugin Pro WordPress supply-chain watch pack adds local
 WordPress tree checks for affected Pro plugin slugs and versions,
 `LicenseLoader.php`, fake `woocommerce-subscription` /
@@ -699,6 +706,15 @@ Exit codes:
     `libpwn_local_rce_harness.c`, and `libpwn_local_rce_exploit.py`
   - local workflow notes where libssh2 appears near SSH/SCP/SFTP clients such
     as curl, git, backup, deploy, clone, mirror, or artifact-fetch tooling
+- PackageKit `CVE-2026-41651` local privilege-escalation indicators:
+  - installed `packagekit*` Debian-family packages
+  - upstream-looking versions `1.0.2` through `1.3.4` flagged for
+    vendor-backport review
+  - advisory/source terms including `InstallFiles`, `pk_transaction_set_state`,
+    `transaction->cached_transaction_flags`, `TOCTOU`, `CWE-367`,
+    and `src/pk-transaction.c`
+  - public exploit/advisory provenance markers including `Pack2TheRoot`,
+    `pack2theroot`, and `GHSA-f55j-vvr9-69xv`
 - ShapedPlugin Pro WordPress supply-chain indicators:
   - affected Pro plugin slugs `woo-product-slider-pro`, `testimonial-pro`, and
     `smart-show-post-pro`
@@ -1141,6 +1157,12 @@ the known indicators it checks.
   https://github.com/NixOS/nixpkgs/issues/532920
 - bikini/exploitarium libssh2 `CVE-2026-55200` public PoC tree:
   https://github.com/bikini/exploitarium/tree/main/libssh2-cve-2026-55200-poc
+- NVD `CVE-2026-41651` PackageKit record:
+  https://nvd.nist.gov/vuln/detail/CVE-2026-41651
+- GitHub Advisory `GHSA-f55j-vvr9-69xv` / PackageKit `CVE-2026-41651`:
+  https://github.com/PackageKit/PackageKit/security/advisories/GHSA-f55j-vvr9-69xv
+- Openwall oss-security PackageKit `CVE-2026-41651` disclosure:
+  http://www.openwall.com/lists/oss-security/2026/04/22/6
 - The Hacker News Pedit COW / `CVE-2026-46331` summary:
   https://thehackernews.com/2026/06/new-linux-pedit-cow-exploit-enables.html
 - NVD `CVE-2026-46331` record:

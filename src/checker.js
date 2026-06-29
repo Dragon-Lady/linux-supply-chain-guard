@@ -1504,6 +1504,28 @@ const LIBSSH2_CVE202655200_POC_TEXT_INDICATORS = [
   "libpwn-rce-verified",
 ];
 
+const PACKAGEKIT_CVE202641651_AFFECTED_MIN = "1.0.2";
+const PACKAGEKIT_CVE202641651_FIXED = "1.3.5";
+const PACKAGEKIT_CVE202641651_TEXT_INDICATORS = [
+  "CVE-2026-41651",
+  "PackageKit",
+  "packagekit",
+  "PackageKitd",
+  "packagekitd",
+  "org.freedesktop.PackageKit",
+  "Pack2TheRoot",
+  "pack2theroot",
+  "InstallFiles",
+  "pk_transaction_set_state",
+  "transaction->cached_transaction_flags",
+  "cached_transaction_flags",
+  "time-of-check time-of-use",
+  "TOCTOU",
+  "CWE-367",
+  "GHSA-f55j-vvr9-69xv",
+  "src/pk-transaction.c",
+];
+
 const DIRTYCBC_RXGK_TEXT_INDICATORS = [
   "DirtyCBC",
   "linux-rxgk-decrypt-mac",
@@ -2269,6 +2291,7 @@ function scanHost(options = {}) {
   checkMisticRatInitialAccess(findings, targetRoot, homePath);
   checkFfmpegPixelSmashExposure(findings, targetRoot, homePath);
   checkLibssh2Cve202655200Exposure(findings, targetRoot, homePath);
+  checkPackageKitCve202641651Exposure(findings, targetRoot, homePath);
   checkShapedPluginSupplyChainCompromise(findings, targetRoot, homePath);
   checkDcatAuthGoogle2faPackagistCompromise(findings, targetRoot, homePath);
   checkLaravelLivewireCve202554068(findings, targetRoot, homePath);
@@ -4853,6 +4876,62 @@ function checkLibssh2Cve202655200Exposure(findings, targetRoot, homePath) {
   }
 }
 
+function checkPackageKitCve202641651Exposure(findings, targetRoot, homePath) {
+  const packageStatus = readText(mapLinuxPath(targetRoot, "/var/lib/dpkg/status"));
+  const packageKitPackages = packageKitPackagesFromDpkgStatus(packageStatus);
+  for (const pkg of packageKitPackages) {
+    addFinding(findings, "review", "packagekit-cve-2026-41651-package-review", "PackageKit package appears installed on a host relevant to CVE-2026-41651 local privilege escalation.", `${pkg.name} ${pkg.version}`, "Confirm PackageKit 1.3.5 or a vendor-fixed backport. Prioritize shared workstations, build hosts, kiosks, and systems where unprivileged local users can call PackageKit over D-Bus.");
+
+    const upstreamVersion = normalizePackageVersion(pkg.version);
+    if (upstreamVersion
+      && compareDottedVersion(normalizeDottedVersion(upstreamVersion), PACKAGEKIT_CVE202641651_AFFECTED_MIN) >= 0
+      && compareDottedVersion(normalizeDottedVersion(upstreamVersion), PACKAGEKIT_CVE202641651_FIXED) < 0) {
+      addFinding(findings, "warning", "packagekit-cve-2026-41651-affected-version", "Installed PackageKit package version appears in the CVE-2026-41651 affected upstream range 1.0.2 through 1.3.4.", `${pkg.name} ${pkg.version}`, "Patch through the distribution. Distro package suffixes and backports can be misleading, so verify the vendor advisory before treating a system as fixed.");
+    }
+  }
+
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const roots = [
+    "/etc",
+    "/opt",
+    "/srv",
+    "/usr/local",
+    "/var/log",
+    "/mnt",
+    "/media",
+    homeRelative,
+  ].filter(Boolean);
+  const files = [];
+  for (const root of roots) {
+    files.push(...findWatchFiles(mapLinuxPath(targetRoot, root), 25000 - files.length));
+    if (files.length >= 25000) break;
+  }
+
+  for (const filePath of files) {
+    const size = fileSizeBytes(filePath);
+    if (size <= 0 || size > 1024 * 1024) continue;
+    const text = readText(filePath);
+    if (!text) continue;
+    const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+
+    for (const indicator of PACKAGEKIT_CVE202641651_TEXT_INDICATORS) {
+      if (text.includes(indicator)) {
+        addFinding(findings, "review", "packagekit-cve-2026-41651-text-indicator", "PackageKit CVE-2026-41651 advisory or source term appears in scanned host metadata.", `${relative}: ${indicator}`, "Correlate with installed PackageKit version, D-Bus exposure, local-user access, and distribution backport status.");
+      }
+    }
+
+    if (/PackageKit|packagekit|org\.freedesktop\.PackageKit/i.test(text)
+      && /InstallFiles|pk_transaction_set_state|cached_transaction_flags|transaction->cached_transaction_flags/i.test(text)
+      && /TOCTOU|time-of-check time-of-use|race condition|CVE-2026-41651/i.test(text)) {
+      addFinding(findings, "warning", "packagekit-cve-2026-41651-race-condition-reference", "PackageKit CVE-2026-41651 race-condition mechanics appear in scanned host metadata.", relative, "Treat this as a local privilege-escalation triage lead. Confirm whether the PackageKit build contains the transaction flag/state-machine fix.");
+    }
+
+    if (/Pack2TheRoot|pack2theroot|GHSA-f55j-vvr9-69xv|github\.security\.telekom\.com\/2026\/04\/pack2theroot/i.test(text)) {
+      addFinding(findings, "review", "packagekit-cve-2026-41651-poc-provenance", "PackageKit CVE-2026-41651 public exploit/advisory provenance term appears in scanned host metadata.", relative, "Confirm provenance and authorization before keeping copied exploit material on developer workstations, CI runners, or shared hosts.");
+    }
+  }
+}
+
 function checkShapedPluginSupplyChainCompromise(findings, targetRoot, homePath) {
   const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
   const roots = [
@@ -6481,6 +6560,19 @@ function libssh2PackagesFromDpkgStatus(text) {
     if (!/^Status:\s+install\s+ok\s+installed\s*$/im.test(block)) continue;
     const name = block.match(/^Package:\s*(\S+)/im)?.[1] || "";
     if (!/^libssh2(?:-\d+|-dev|$)/i.test(name)) continue;
+    const version = block.match(/^Version:\s*(\S+)/im)?.[1] || "unknown-version";
+    packages.push({ name, version });
+  }
+  return packages;
+}
+
+function packageKitPackagesFromDpkgStatus(text) {
+  const packages = [];
+  if (!text) return packages;
+  for (const block of text.split(/\n\n+/)) {
+    if (!/^Status:\s+install\s+ok\s+installed\s*$/im.test(block)) continue;
+    const name = block.match(/^Package:\s*(\S+)/im)?.[1] || "";
+    if (!/^packagekit(?:$|-)/i.test(name)) continue;
     const version = block.match(/^Version:\s*(\S+)/im)?.[1] || "unknown-version";
     packages.push({ name, version });
   }
