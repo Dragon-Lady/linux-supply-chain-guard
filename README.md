@@ -548,6 +548,20 @@ Exit codes:
     `-k -no-pass`, and `KRB5CCNAME`
   - output artifact names and hash-table formats such as `dump.ntds`,
     `dump.secrets`, and `username:RID:LMhash:NThash`
+- DAEMON Tools Lite supply-chain indicators:
+  - compromised build references from `12.5.0.2421` through `12.5.0.2434`
+    and fixed-build review marker `12.6.0.2445`
+  - tampered component names `DTHelper.exe`, `DiscSoftBusServiceLite.exe`,
+    and `DTShellHlp.exe`
+  - C2 and payload terms including `env-check.daemontools[.]cc`,
+    `38.180.107[.]76`, `env_check_script`, `envchk.exe`, `cdg.exe`,
+    `cdg.tmp`, `core.tmp`, `mcrypto.chiper`, `mcrypto.dat`, and
+    `crypto.dll`
+  - published SHA-1 IOC matches for affected installers, modified
+    `DiscSoftBusServiceLite.exe` files, and staged payloads
+  - command-shape, minimal-backdoor, and QUIC RAT follow-on review markers
+    including `cmd.exe /c powershell`, `DownloadFile`, `first_match`, RC4,
+    `schedsvc.dll`, `msquic.dll`, `notepad.exe`, and `conhost.exe`
 - Agentjacking / Sentry MCP indicators:
   - Sentry DSN or ingest surfaces wired into MCP/agent context
   - Sentry-style fake `## Resolution` content that asks an agent to run `npx`
@@ -1031,6 +1045,10 @@ the known indicators it checks.
   https://socket.dev/blog/miasma-mini-shai-hulud-hits-immobiliarelabs-npm-packages
 - Hacking Articles Impacket for Pentester: SecretDump:
   https://www.hackingarticles.in/imapacket-for-pentester-secretdump/
+- Kaspersky Securelist DAEMON Tools backdoor analysis:
+  https://securelist.com/tr/daemon-tools-backdoor/119654/
+- The Hacker News DAEMON Tools supply-chain summary:
+  https://thehackernews.com/2026/05/daemon-tools-supply-chain-attack.html
 - BleepingComputer AtomicArch / AUR compromise summary:
   https://www.bleepingcomputer.com/news/security/over-400-arch-linux-packages-compromised-to-push-rootkit-infostealer/
 - Tenet Agentjacking Sentry/MCP writeup:

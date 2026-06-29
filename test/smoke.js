@@ -848,6 +848,20 @@ function run() {
     "Auth material review: -hashes :REDACTED_NTLM_HASH -aesKey REDACTED_AES_KEY -k -no-pass KRB5CCNAME Pass-the-Hash Pass-the-Key Kerberos ticket AES-256 Kerberos.",
     "Output handling: -outputfile dump dump.ntds dump.sam dump.secrets dump.cached username:RID:LMhash:NThash."
   ].join("\n"));
+  write(path.join(home, "windows-ir", "daemon-tools-supply-chain-notes.md"), [
+    "Kaspersky and The Hacker News triage note: DAEMON Tools Lite 12.5.0.2434 from AVB Disc Soft.",
+    "Tampered components included DTHelper.exe DiscSoftBusServiceLite.exe and DTShellHlp.exe.",
+    "Network indicators included env-check.daemontools[.]cc and 38.180.107[.]76 plus env_check_script.",
+    "Payload filenames: envchk.exe cdg.exe cdg.tmp core.tmp mcrypto.chiper mcrypto.dat crypto.dll mcrypto_clean.",
+    "Command shape: cmd.exe /c powershell -NoProfile -Command WebClient DownloadFile from 38.180.107[.]76 to C:\\Windows\\Temp\\envchk.exe.",
+    "Minimal backdoor staging: cdg.exe decrypts cdg.tmp, then first_match RC4 schedsvc.dll mcrypto.dat.",
+    "Follow-on notes: QUIC RAT used msquic.dll and injected into notepad.exe and conhost.exe with HTTP/3 WSS QUIC DNS support.",
+    "SHA1 IOCs observed in notes: 9ccd769624de98eeeb12714ff1707ec4f5bf196d and 2d4eb55b01f59c62c6de9aacba9b47267d398fe4.",
+    "Remediation target: DAEMON Tools Lite 12.6.0.2445 or newer."
+  ].join("\n"));
+  write(path.join(root, "Program Files", "DAEMON Tools Lite", "DTHelper.exe"), "placeholder");
+  write(path.join(root, "Windows", "Temp", "envchk.exe"), "placeholder");
+  write(path.join(root, "ProgramData", "Microsoft", "mcrypto.chiper"), "placeholder");
   write(path.join(home, "agent-config", "sentry-mcp.json"), JSON.stringify({
     servers: {
       "sentry-mcp": {
@@ -1326,6 +1340,16 @@ function run() {
   assert(ids.has("impacket-secretsdump-offline-hive-review"));
   assert(ids.has("impacket-secretsdump-auth-material-review"));
   assert(ids.has("impacket-secretsdump-output-artifact"));
+  assert(ids.has("daemon-tools-lite-install-artifact"));
+  assert(ids.has("daemon-tools-payload-artifact-path"));
+  assert(ids.has("daemon-tools-supply-chain-text-indicator"));
+  assert(ids.has("daemon-tools-lite-compromised-version"));
+  assert(ids.has("daemon-tools-lite-fixed-version-reference"));
+  assert(ids.has("daemon-tools-sha1-ioc"));
+  assert(ids.has("daemon-tools-c2-indicator"));
+  assert(ids.has("daemon-tools-payload-command"));
+  assert(ids.has("daemon-tools-minimal-backdoor-review"));
+  assert(ids.has("daemon-tools-quic-rat-review"));
   assert(ids.has("hades-python-payload-filename"));
   assert(ids.has("hades-text-indicator"));
   assert(ids.has("hades-known-native-extension"));

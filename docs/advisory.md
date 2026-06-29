@@ -559,6 +559,19 @@ and output artifacts such as `dump.ntds` or hash-table formats. Findings mean
 the files should be treated as sensitive credential material or authorized
 pentest/IR notes until provenance is confirmed.
 
+The DAEMON Tools Lite lane covers Kaspersky and The Hacker News reporting on
+compromised official Windows installers. It flags copied notes, command
+histories, hashes, and mounted Windows trees that reference affected builds
+`12.5.0.2421` through `12.5.0.2434`, the fixed `12.6.0.2445` remediation
+target, tampered components such as `DTHelper.exe`,
+`DiscSoftBusServiceLite.exe`, and `DTShellHlp.exe`, the
+`env-check.daemontools[.]cc` / `38.180.107[.]76` C2 and download indicators,
+payload names including `envchk.exe`, `cdg.exe`, `cdg.tmp`, `core.tmp`,
+`mcrypto.chiper`, `mcrypto.dat`, and `crypto.dll`, published SHA-1 IOCs, the
+PowerShell `DownloadFile` command shape, minimal-backdoor staging terms, and
+follow-on QUIC RAT review terms. Findings are mounted-Windows or copied-note
+triage leads; the guard does not execute Windows artifacts.
+
 Microsoft's June 18, 2026 AutoJack research is included as an agent-localhost
 control-plane posture lane. AutoJack showed that a browsing agent rendering
 untrusted web content on the same host as AutoGen Studio could cross a localhost
