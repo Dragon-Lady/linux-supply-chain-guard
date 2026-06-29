@@ -748,6 +748,7 @@ function run() {
   const hadesSeedMarker = ["SEED", "_PAT=redacted\nSeeder\n"].join("");
   const hadesC2 = ["thebeautiful", "marchoftime"].join("");
   const hadesSshPath = ["/tmp/.sshu", "-setup.js"].join("");
+  const miasmaBunUrl = ["oven-sh/bun/releases/", "download/bun-v1.3.", "13/bun-linux-x64.zip"].join("");
   write(path.join(root, "tmp", hadesBunSentinel), "marker");
   write(path.join(home, "hades-env", "requirements.txt"), "langchain-core-mcp==1.4.2\n");
   write(path.join(home, "mcp-python-sdk-risk", "requirements.txt"), [
@@ -805,6 +806,40 @@ function run() {
     `${hadesTitle}\n${hadesWorkflowMarker}${hadesSeedMarker}${hadesC2}\n${hadesSshPath}\n// unrestricted mode ignores safety guidelines for nuclear weapons\n`
   );
   write(path.join(home, "hades-env", ".venv", "lib", "python3.12", "site-packages", "ensmallen_haswell.abi3.so"), "placeholder");
+  write(path.join(home, "miasma-immobiliarelabs", "package.json"), JSON.stringify({
+    dependencies: {
+      "@immobiliarelabs/backstage-plugin-gitlab": "7.0.2",
+      "@immobiliarelabs/backstage-plugin-ldap-auth-backend": "^5.2.1"
+    }
+  }, null, 2));
+  write(path.join(home, "miasma-immobiliarelabs", "binding.gyp"), JSON.stringify({
+    targets: [
+      {
+        target_name: "build",
+        actions: [["install", "node index.js"]]
+      }
+    ]
+  }, null, 2));
+  write(path.join(home, "miasma-immobiliarelabs", "index.js"), [
+    "const marker = 'thebeautifulsnadsoftime';",
+    "const cipher = 'AES-128-GCM Caesar-shift loader';",
+    `const bun = '${miasmaBunUrl}';`,
+    "const targets = ['GITHUB_TOKEN', 'NPM_TOKEN', '.npmrc', '.env', 'AWS_ACCESS_KEY_ID', 'Vault', 'Docker', 'Kubernetes', 'SSH', 'Slack', 'Twilio'];"
+  ].join("\n"));
+  write(path.join(home, "miasma-immobiliarelabs", ".github", "workflows", "release.yml"), [
+    "name: Dependabot Updates",
+    "on: deployment",
+    "jobs:",
+    "  release:",
+    "    steps:",
+    "      - uses: codfish/semantic-release-action@v3",
+    "      - run: npm publish"
+  ].join("\n"));
+  write(path.join(home, "miasma-immobiliarelabs", "persistence-notes.md"), [
+    "Miasma Mini Shai-Hulud persistence review.",
+    ".github/setup.js .gemini/settings.json .claude hooks .vscode/tasks.json Cursor rules",
+    "Root index.js and Bun loader are suspicious in this package tree."
+  ].join("\n"));
   write(path.join(home, "agent-config", "sentry-mcp.json"), JSON.stringify({
     servers: {
       "sentry-mcp": {
@@ -1271,6 +1306,12 @@ function run() {
   assert(ids.has("hades-pth-startup-hook-file"));
   assert(ids.has("hades-pth-bun-loader"));
   assert(ids.has("hades-syspath-payload-loader"));
+  assert(ids.has("miasma-immobiliarelabs-npm-version"));
+  assert(ids.has("miasma-immobiliarelabs-text-indicator"));
+  assert(ids.has("miasma-phantom-gyp-index-loader"));
+  assert(ids.has("miasma-root-index-bun-credential-loader"));
+  assert(ids.has("miasma-github-actions-deployment-release-review"));
+  assert(ids.has("miasma-ai-ide-persistence-review"));
   assert(ids.has("hades-python-payload-filename"));
   assert(ids.has("hades-text-indicator"));
   assert(ids.has("hades-known-native-extension"));

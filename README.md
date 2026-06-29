@@ -526,6 +526,17 @@ Exit codes:
   - GitHub/CI markers including `Run Copilot`, `format-results`, and
     `Hades - The End for the Damned`
   - JFrog-reported seeding markers including `SEED_PAT` and `Seeder`
+- Miasma / ImmobiliareLabs npm indicators:
+  - affected `@immobiliarelabs` Backstage package versions across
+    `backstage-plugin-gitlab`, `backstage-plugin-gitlab-backend`,
+    `backstage-plugin-ldap-auth`, and `backstage-plugin-ldap-auth-backend`
+  - `binding.gyp` / Phantom Gyp install-time execution of root `index.js`
+  - root `index.js` loaders with Bun `v1.3.13`, AES/Caesar-shift language, and
+    developer or CI/CD credential-theft terms
+  - GitHub Actions deployment-triggered release automation and
+    `codfish/semantic-release-action` review leads
+  - AI/IDE persistence artifact terms such as `.github/setup.js`,
+    `.gemini/settings.json`, `.claude`, `.vscode/tasks.json`, and Cursor rules
 - Agentjacking / Sentry MCP indicators:
   - Sentry DSN or ingest surfaces wired into MCP/agent context
   - Sentry-style fake `## Resolution` content that asks an agent to run `npx`
@@ -1005,6 +1016,8 @@ the known indicators it checks.
   https://www.securityweek.com/over-100-npm-pypi-packages-hit-in-new-shai-hulud-supply-chain-attacks/
 - JFrog Shai-Hulud / Hades Leo/RStreams and Backstage npm analysis:
   https://research.jfrog.com/post/shai-hulud-miasma-alright-lets-see-if-this-works/
+- Socket Miasma Mini Shai-Hulud / ImmobiliareLabs npm package wave:
+  https://socket.dev/blog/miasma-mini-shai-hulud-hits-immobiliarelabs-npm-packages
 - BleepingComputer AtomicArch / AUR compromise summary:
   https://www.bleepingcomputer.com/news/security/over-400-arch-linux-packages-compromised-to-push-rootkit-infostealer/
 - Tenet Agentjacking Sentry/MCP writeup:

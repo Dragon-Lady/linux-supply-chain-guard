@@ -540,6 +540,15 @@ Hades / Miasma PyPI indicators include:
 - `Run Copilot`, `format-results`, and `results/results-*.json`
 - `SEED_PAT` and `Seeder`
 
+The ImmobiliareLabs npm lane tracks Socket's June 26, 2026 Miasma Mini
+Shai-Hulud report covering republished `@immobiliarelabs` Backstage GitLab and
+LDAP authentication packages. The guard flags the affected package/version
+pairs, Phantom Gyp `binding.gyp` execution of root `index.js`, root loaders with
+Bun `v1.3.13` and credential-theft terms, deployment-triggered GitHub Actions
+release workflows, `codfish/semantic-release-action` leads, exfil repository
+markers, and AI/IDE persistence paths such as `.github/setup.js`,
+`.gemini/settings.json`, `.claude`, `.vscode/tasks.json`, and Cursor rules.
+
 Microsoft's June 18, 2026 AutoJack research is included as an agent-localhost
 control-plane posture lane. AutoJack showed that a browsing agent rendering
 untrusted web content on the same host as AutoGen Studio could cross a localhost
