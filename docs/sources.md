@@ -140,6 +140,9 @@
 - Cyber Security News bucket hijacking summary: https://cybersecuritynews.com/bucket-hijacking-attack/
 - GitHub Advisory GHSA-jpw9-pfvf-9f58 / MCP Python SDK CVE-2026-52869: https://github.com/modelcontextprotocol/python-sdk/security/advisories/GHSA-jpw9-pfvf-9f58
 - SkyPoC MCP Python SDK CVE-2026-52869 analysis: https://skypoc.wordpress.com/2026/06/10/cve-2026-52869/
+- AWS Security Bulletin 2026-047-AWS, Language Servers for AWS / Amazon Q Developer: https://aws.amazon.com/security/security-bulletins/2026-047-aws/
+- Wiz Amazon Q MCP auto-execution vulnerability analysis: https://www.wiz.io/blog/amazon-q-vulnerability
+- The Register Amazon Q workspace MCP vulnerability summary: https://www.theregister.com/cyber-crime/2026/06/26/amazon-q-flaw-let-booby-trapped-git-repos-execute-code-swipe-cloud-creds/5263202
 - The Hacker News Pedit COW / CVE-2026-46331 summary: https://thehackernews.com/2026/06/new-linux-pedit-cow-exploit-enables.html
 - Positive Technologies DBugs CVE-2026-23111 record: https://dbugs.ptsecurity.com/vulnerability/CVE-2026-23111
 - Linux stable nf_tables CVE-2026-23111 fix commit: https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/commit/?id=8c760ba4e36c750379d13569f23f5a6e185333f5
