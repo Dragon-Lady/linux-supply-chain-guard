@@ -145,6 +145,9 @@
 - libssh2 upstream PR #2052, additional packet-length boundary checks: https://github.com/libssh2/libssh2/pull/2052
 - NixOS security tracker issue for libssh2 CVE-2026-55199 and CVE-2026-55200: https://github.com/NixOS/nixpkgs/issues/532920
 - bikini/exploitarium libssh2 CVE-2026-55200 public PoC tree: https://github.com/bikini/exploitarium/tree/main/libssh2-cve-2026-55200-poc
+- SecurityOnline libssh2 CVE-2026-58050 summary: https://securityonline.info/libssh2-vulnerability-cve-2026-58050/
+- VulnCheck libssh2 CVE-2026-58050 advisory: https://www.vulncheck.com/advisories/libssh2-integer-overflow-in-publickey-subsystem-attribute-allocation
+- bikini/exploitarium libssh2 publickey-list calc PoC tree: https://github.com/bikini/exploitarium/tree/main/libssh2-publickey-list-calc-poc
 - NVD CVE-2026-41651 PackageKit record: https://nvd.nist.gov/vuln/detail/CVE-2026-41651
 - GitHub Advisory GHSA-f55j-vvr9-69xv / PackageKit CVE-2026-41651: https://github.com/PackageKit/PackageKit/security/advisories/GHSA-f55j-vvr9-69xv
 - Openwall oss-security PackageKit CVE-2026-41651 disclosure: http://www.openwall.com/lists/oss-security/2026/04/22/6

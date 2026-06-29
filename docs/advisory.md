@@ -328,6 +328,18 @@ developer workstation, build host, or runner, confirm provenance and keep them
 out of normal dependency, CI, and credential-bearing workflows unless they are
 explicitly authorized research material.
 
+libssh2 `CVE-2026-58050` is tracked as a related client-side publickey
+subsystem exposure. VulnCheck describes libssh2 through `1.11.1` reading a
+server-controlled 32-bit attribute count, using it in a
+`num_attrs * sizeof(libssh2_publickey_attribute)` allocation, and allowing heap
+corruption in a connecting client when the multiplication wraps on 32-bit
+platforms. SecurityOnline's June 28, 2026 summary adds defensive triage context
+for hostile or intercepted SSH servers, CVSS v4 `8.3`, CWE-190, and the public
+`bikini/exploitarium` `libssh2-publickey-list-calc-poc` tree. The guard flags
+those advisory terms and PoC markers as local review leads; do not compile or
+run the PoC tree on workstations, runners, or credential-bearing hosts during
+routine triage.
+
 PackageKit `CVE-2026-41651` is tracked as a local privilege-escalation exposure
 for hosts where unprivileged local users can call PackageKit over D-Bus.
 Upstream advisory data marks PackageKit versions `1.0.2` through `1.3.4` as
