@@ -638,6 +638,16 @@ Exit codes:
     and `Trail of Bits`
   - Python release-looking download URLs outside official python.org/PSF hosts
     are warning-level mirror/provenance review leads
+- CPython `tarfile` / `CVE-2026-11940` extraction-filter indicators:
+  - copied advisory terms for `CVE-2026-11940`, incomplete-fix context for
+    `CVE-2025-4330`, `CWE-22`, and `CWE-59`
+  - Python code using `tarfile.extractall()` or `extract()` with `filter="data"`
+    or `filter="tar"` on archive upload, artifact, cache, restore, import, or
+    ingest paths
+  - hardlink/symlink bypass mechanics including deeper symlink names, shallower
+    hardlink paths, relative targets, and out-of-destination symlinks
+  - PSF patch/provenance markers including `python/cpython/pull/151559`,
+    `python/cpython/issues/151558`, and patch commit hashes from the CVE record
 - Cisco CUCM WebDialer / `CVE-2026-20230` indicators:
   - Cisco Unified Communications Manager / Unified CM / Unified CM SME
     references paired with WebDialer, SSRF, or Cisco advisory
@@ -1213,6 +1223,14 @@ the known indicators it checks.
   https://nvd.nist.gov/vuln/detail/CVE-2026-12569
 - Cyber Security News python.org release-management API vulnerability summary:
   https://cybersecuritynews.com/critical-python-org-vulnerability/
+- Python security-announce `CVE-2026-11940` tarfile advisory:
+  https://mail.python.org/archives/list/security-announce@python.org/thread/LD6QIISNQFQYOIEPJNEUIPV7S3V76FZH/
+- CVE API record for `CVE-2026-11940`:
+  https://cveawg.mitre.org/api/cve/CVE-2026-11940
+- CPython patch PR for `CVE-2026-11940`:
+  https://github.com/python/cpython/pull/151559
+- SecurityOnline CPython tarfile vulnerability summary:
+  https://securityonline.info/cpython-tarfile-vulnerability/
 - Lantronix EDS5000 latest firmware page:
   https://ltrxdev.atlassian.net/wiki/spaces/LTRXTS/pages/2538438657/Latest%2BFirmware%2Bfor%2Bthe%2BEDS5000%2Bseries%2BEDS5008%2BEDS5016%2BEDS5032
 - NVD CVE-2026-20230 record:

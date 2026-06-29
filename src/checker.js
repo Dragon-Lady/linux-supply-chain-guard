@@ -2132,6 +2132,33 @@ const PYTHON_ORG_RELEASE_API_TEXT_INDICATORS = [
   "2026-02-24",
 ];
 
+const CPYTHON_TARFILE_CVE202611940_TEXT_INDICATORS = [
+  "CVE-2026-11940",
+  "CVE-2025-4330",
+  "tarfile.extractall()",
+  "tarfile.extractall",
+  "tarfile.extract(",
+  "filter='data'",
+  "filter=\"data\"",
+  "filter='tar'",
+  "filter=\"tar\"",
+  "extraction filter bypass",
+  "hardlink references a symlink",
+  "symlink stored at a deeper name",
+  "hardlink's shallower path",
+  "out-of-destination symlink",
+  "out-of-destination file reads or writes",
+  "escaping the destination directory",
+  "CWE-22",
+  "CWE-59",
+  "python/cpython/pull/151559",
+  "python/cpython/issues/151558",
+  "27dd970bf6b17ebca7c8ed486a40ab043ed7af8f",
+  "672825e2f36a57e173959b0d9d409d4560dab8df",
+  "771d12dda5140313db0ac550292987975651bbde",
+  "79c06bd5c6afa3c440d50faf7ee1b147c8832b4c",
+];
+
 const CISCO_CUCM_WEB_DIALER_TEXT_INDICATORS = [
   "CVE-2026-20230",
   "Cisco Unified Communications Manager",
@@ -2546,6 +2573,7 @@ function scanHost(options = {}) {
   checkOdinDnsTxtAgentSetupExposure(findings, targetRoot, homePath);
   checkImpacketSecretsdumpArtifacts(findings, targetRoot, homePath);
   checkDaemonToolsSupplyChainArtifacts(findings, targetRoot, homePath);
+  checkCpythonTarfileCve202611940(findings, targetRoot, homePath);
   checkNpmV12Readiness(findings, targetRoot, homePath);
   checkOperationHighlandAuthStack(findings, targetRoot, homePath);
   checkAryStingerEdgeProxy(findings, targetRoot, homePath);
@@ -6432,6 +6460,61 @@ function checkDaemonToolsSupplyChainArtifacts(findings, targetRoot, homePath) {
 
     if (/QUIC RAT|msquic\.dll/i.test(text) && /notepad\.exe|conhost\.exe|HTTP\/3|WSS|QUIC|DNS/i.test(text)) {
       addFinding(findings, "warning", "daemon-tools-quic-rat-review", "DAEMON Tools follow-on QUIC RAT terms appear in scanned metadata.", relative, "Use this as a follow-on payload hunt lead across injection telemetry, protocol logs, and Windows endpoint detections.");
+    }
+  }
+}
+
+function checkCpythonTarfileCve202611940(findings, targetRoot, homePath) {
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const roots = [
+    homeRelative,
+    "/etc",
+    "/opt",
+    "/srv",
+    "/var/log",
+    "/var/www",
+    "/usr/local",
+    "/root",
+    "/mnt",
+    "/media",
+  ].filter(Boolean);
+  const files = [];
+  for (const root of roots) {
+    files.push(...findWatchFiles(mapLinuxPath(targetRoot, root), 25000 - files.length));
+    if (files.length >= 25000) break;
+  }
+
+  for (const filePath of files) {
+    const text = readText(filePath);
+    if (!text) continue;
+    const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+    const haystack = `${relative}\n${text}`;
+    const hasTarfileContext = /CVE-2026-11940|CVE-2025-4330|tarfile|TarFile|extractall|extract\(|hardlink|symlink|archive extraction|extraction filter|CWE-22|CWE-59/i.test(haystack);
+
+    if (/CVE-2026-11940/i.test(haystack)) {
+      addFinding(findings, "review", "cpython-tarfile-cve-2026-11940-reference", "CPython tarfile CVE-2026-11940 reference appears in scanned metadata.", `${relative}: CVE-2026-11940`, "Use this as a Python archive-extraction review lead. Verify the active CPython build includes PSF or vendor backports for CVE-2026-11940 before extracting untrusted tar archives.");
+    }
+
+    if (/CVE-2025-4330/i.test(haystack) && hasTarfileContext) {
+      addFinding(findings, "review", "cpython-tarfile-cve-2025-4330-incomplete-fix-reference", "CPython tarfile incomplete-fix reference appears in scanned metadata.", `${relative}: CVE-2025-4330`, "Treat this as related to CVE-2026-11940. Re-check mitigations that assumed the earlier tarfile extraction-filter issue was fully closed.");
+    }
+
+    if (hasTarfileContext && /tarfile\.extractall\s*\(|\.extractall\s*\(|tarfile\.extract\s*\(|\.extract\s*\(/i.test(text) && /filter\s*=\s*["'](?:data|tar)["']|filter\s*=\s*(?:tarfile\.)?(?:data_filter|tar_filter)|extraction_filter\s*=\s*["'](?:data|tar)["']/i.test(text)) {
+      addFinding(findings, "warning", "cpython-tarfile-filtered-extract-review", "Python code uses tarfile extraction filters relevant to CVE-2026-11940.", relative, "Review whether this code extracts attacker-controlled archives. Patch CPython or vendor Python, avoid untrusted tar extraction until fixed, and add explicit destination containment checks around extracted paths and links.");
+    }
+
+    if (hasTarfileContext && /tarfile\.open\s*\(|TarFile\.open\s*\(/i.test(text) && /extractall\s*\(|extract\s*\(/i.test(text) && /upload|uploads|artifact|artifacts|cache|download|downloads|backup|restore|import|ingest|untrusted|user[-_ ]supplied|archive/i.test(text)) {
+      addFinding(findings, "review", "cpython-tarfile-untrusted-archive-flow", "Python tar archive extraction appears near untrusted or automated archive-flow terms.", relative, "Confirm the archive source is trusted and authenticated. For upload, artifact, cache, restore, or ingest paths, patch Python and restrict extraction privileges and destination directories.");
+    }
+
+    if (hasTarfileContext && /hardlink[\s\S]{0,220}symlink|symlink[\s\S]{0,220}hardlink|deeper name|shallower path|relative target|outside the destination|out-of-destination/i.test(text)) {
+      addFinding(findings, "warning", "cpython-tarfile-hardlink-symlink-bypass", "CPython tarfile hardlink/symlink filter-bypass mechanics appear in scanned metadata.", relative, "Preserve this as advisory or PoC-provenance material. Do not test malicious tar archives on production or credential-bearing hosts.");
+    }
+
+    for (const indicator of CPYTHON_TARFILE_CVE202611940_TEXT_INDICATORS) {
+      if (text.includes(indicator) && hasTarfileContext) {
+        addFinding(findings, "review", "cpython-tarfile-text-indicator", "CPython tarfile CVE-2026-11940 advisory term appears in scanned metadata.", `${relative}: ${indicator}`, "Correlate with Python runtime version, vendor backport status, archive-ingestion code paths, and whether tar extraction handles untrusted content.");
+      }
     }
   }
 }

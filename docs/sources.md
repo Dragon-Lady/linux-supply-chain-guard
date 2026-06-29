@@ -152,6 +152,10 @@
 - Cyber Security News bucket hijacking summary: https://cybersecuritynews.com/bucket-hijacking-attack/
 - GitHub Advisory GHSA-jpw9-pfvf-9f58 / MCP Python SDK CVE-2026-52869: https://github.com/modelcontextprotocol/python-sdk/security/advisories/GHSA-jpw9-pfvf-9f58
 - SkyPoC MCP Python SDK CVE-2026-52869 analysis: https://skypoc.wordpress.com/2026/06/10/cve-2026-52869/
+- Python security-announce CVE-2026-11940 tarfile advisory: https://mail.python.org/archives/list/security-announce@python.org/thread/LD6QIISNQFQYOIEPJNEUIPV7S3V76FZH/
+- CVE API record for CVE-2026-11940: https://cveawg.mitre.org/api/cve/CVE-2026-11940
+- CPython patch PR for CVE-2026-11940: https://github.com/python/cpython/pull/151559
+- SecurityOnline CPython tarfile vulnerability summary: https://securityonline.info/cpython-tarfile-vulnerability/
 - AWS Security Bulletin 2026-047-AWS, Language Servers for AWS / Amazon Q Developer: https://aws.amazon.com/security/security-bulletins/2026-047-aws/
 - Wiz Amazon Q MCP auto-execution vulnerability analysis: https://www.wiz.io/blog/amazon-q-vulnerability
 - The Register Amazon Q workspace MCP vulnerability summary: https://www.theregister.com/cyber-crime/2026/06/26/amazon-q-flaw-let-booby-trapped-git-repos-execute-code-swipe-cloud-creds/5263202

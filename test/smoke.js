@@ -764,6 +764,17 @@ function run() {
     "Hosted MCP client multi-tenant deployments need AccessToken.subject, issuer, client_id, and per-user isolation instead of only per client identity.",
     "Custom BearerAuthBackend implementations need equivalent principal binding."
   ].join("\n"));
+  write(path.join(home, "python-archive-service", "extractor.py"), [
+    "import tarfile",
+    "UPLOAD_DIR = '/srv/uploads'",
+    "def restore_user_backup(archive_path, destination):",
+    "    # CVE-2026-11940 incomplete fix of CVE-2025-4330: tarfile.extractall() filter bypass.",
+    "    # Crafted archive hardlink references a symlink stored at a deeper name, then recreates it at the hardlink's shallower path.",
+    "    # Relative target escapes the destination directory and creates an out-of-destination symlink for file reads or writes.",
+    "    # CWE-22 CWE-59 python/cpython/pull/151559 python/cpython/issues/151558 27dd970bf6b17ebca7c8ed486a40ab043ed7af8f",
+    "    with tarfile.open(archive_path) as tf:",
+    "        tf.extractall(destination, filter='data')"
+  ].join("\n"));
   write(path.join(home, ".vscode", "extensions", "amazon-q-vscode", "package.json"), JSON.stringify({
     name: "amazon-q-vscode",
     displayName: "Amazon Q Developer",
@@ -1351,6 +1362,12 @@ function run() {
   assert(ids.has("daemon-tools-payload-command"));
   assert(ids.has("daemon-tools-minimal-backdoor-review"));
   assert(ids.has("daemon-tools-quic-rat-review"));
+  assert(ids.has("cpython-tarfile-cve-2026-11940-reference"));
+  assert(ids.has("cpython-tarfile-cve-2025-4330-incomplete-fix-reference"));
+  assert(ids.has("cpython-tarfile-filtered-extract-review"));
+  assert(ids.has("cpython-tarfile-untrusted-archive-flow"));
+  assert(ids.has("cpython-tarfile-hardlink-symlink-bypass"));
+  assert(ids.has("cpython-tarfile-text-indicator"));
   assert(ids.has("hades-python-payload-filename"));
   assert(ids.has("hades-text-indicator"));
   assert(ids.has("hades-known-native-extension"));
