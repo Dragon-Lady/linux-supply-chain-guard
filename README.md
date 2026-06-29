@@ -96,6 +96,14 @@ commands, Outlook update lure terms, CloudFront websocket C2s, `AppKey`
 registry setup strings, and published SHA-256 indicators. These are local
 operator notifications only.
 
+The June 2026 Malwarebytes Chrome session-cookie theft lane adds local and
+mounted-root checks for fake `.pfd.js` PDF-lure attachments, malicious Chrome
+extension deployment via Chrome policy settings, Native Messaging host
+manifests, `chrome.runtime.sendNativeMessage`, browser-cookie/session hijacking
+terms, open-tab/URL/language/fingerprinting collection, PowerShell command
+execution, and C: drive enumeration. These are review and incident-response
+signals for Windows browser profiles mounted from response hosts.
+
 The June 2026 Island / The Hacker News Adblock for YouTube watch pack adds
 local Chrome/Chromium/Edge extension inventory checks for
 `cmedhionkhpnakcndndgjdbohmhepckk`, related removed Adblock extension IDs,
@@ -821,6 +829,14 @@ Exit codes:
   - reported SHA-256 values, `dodod.lat`, Solana memo dead-drop wallet and
     program IDs, and loader code that combines WASM with `child_process`,
     `curl | bash`, PowerShell `irm | iex`, or `windowsHide`
+- Malwarebytes Chrome session-cookie theft indicators:
+  - fake PDF attachment marker `.pfd.js`
+  - Chrome policy force-install terms such as `ExtensionInstallForcelist`,
+    `ExtensionSettings`, and Google Chrome policy registry paths
+  - Chrome Native Messaging terms including `NativeMessagingHosts`,
+    `allowed_origins`, and `chrome.runtime.sendNativeMessage`
+  - session-cookie theft, open-tab/URL/language/fingerprint collection, MFA
+    bypass/account-takeover language, and PowerShell/C: drive enumeration terms
 - Island / THN Adblock for YouTube browser-extension indicators:
   - live extension ID `cmedhionkhpnakcndndgjdbohmhepckk`
   - related removed extension IDs `onomjaelhagjjojbkcafidnepbfkpnee`,
@@ -1091,6 +1107,8 @@ the known indicators it checks.
   https://gbhackers.com/gentlemen-raas-unifies-evasion-suite/
 - Zscaler ThreatLabz Edgecution / Payouts King analysis:
   https://www.zscaler.com/blogs/security-research/payouts-king-ransomware-initial-access-broker-deploys-new-edgecution
+- Malwarebytes Chrome session-cookie theft / Native Messaging report:
+  https://www.malwarebytes.com/blog/news/2026/06/malware-steals-chrome-session-cookies-to-take-over-your-accounts
 - Huntress Heaven's Gate defensive overview:
   https://www.huntress.com/cybersecurity-101/topic/what-is-heavens-gate
 - Unit 42 PAN-OS CVE-2026-0257 active exploitation brief:

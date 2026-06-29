@@ -111,6 +111,19 @@ The Hacker News described this as a dormant capability with no observed
 malicious payload distribution, so findings are review leads rather than proof
 of compromise.
 
+Malwarebytes' June 2026 Chrome session-cookie theft report is tracked as a
+Windows browser-profile and native-host review lane. The guard flags fake
+`.pfd.js` PDF-lure attachments, Chrome policy force-install terms,
+`NativeMessagingHosts` manifests, `chrome.runtime.sendNativeMessage`,
+session-cookie theft, browser tab/URL/language/fingerprint collection, MFA
+bypass/account-takeover language, and native-host PowerShell execution.
+
+Confirmed matches should be treated as browser-session compromise, not just
+password theft. Operators should preserve the Chrome profile, extension
+directory, policy registry keys or JSON, native messaging manifests, temp-folder
+drops, and PowerShell logs, then invalidate active web sessions for affected
+accounts from a clean host.
+
 Huntress' Heaven's Gate overview is included as weak-signal Windows evasion
 context. The guard looks for analysis-note references to WOW64 mode-switching
 or Heaven's Gate terms only when they co-occur with shellcode, injection, EDR

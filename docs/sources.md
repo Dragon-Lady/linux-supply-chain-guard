@@ -64,6 +64,7 @@
 - Hunt.io Gentlemen ransomware exposed toolkit analysis: https://hunt.io/blog/ransomware-exposed-gentlemen-ransomware-toolkit-leaks-publicly
 - GBHackers Gentlemen RaaS evasion suite summary: https://gbhackers.com/gentlemen-raas-unifies-evasion-suite/
 - Zscaler ThreatLabz Edgecution / Payouts King analysis: https://www.zscaler.com/blogs/security-research/payouts-king-ransomware-initial-access-broker-deploys-new-edgecution
+- Malwarebytes Chrome session-cookie theft / Native Messaging report: https://www.malwarebytes.com/blog/news/2026/06/malware-steals-chrome-session-cookies-to-take-over-your-accounts
 - Huntress Heaven's Gate defensive overview: https://www.huntress.com/cybersecurity-101/topic/what-is-heavens-gate
 - Unit 42 PAN-OS CVE-2026-0257 active exploitation brief: https://unit42.paloaltonetworks.com/active-exploitation-of-pan-os-cve-2026-0257/
 - The Hacker News PAN-OS GlobalProtect CVE-2026-0257 summary: https://thehackernews.com/2026/06/palo-alto-warns-of-active-exploitation.html

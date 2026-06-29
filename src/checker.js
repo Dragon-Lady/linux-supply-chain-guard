@@ -1008,6 +1008,24 @@ const EDGECUTION_TEXT_INDICATORS = [
   "Updates Registration",
 ];
 
+const CHROME_COOKIE_NATIVE_MESSAGING_TERMS = [
+  "Malware steals Chrome session cookies",
+  "Chrome Native Messaging",
+  "Native Messaging",
+  "native messaging host",
+  "session cookies",
+  "authenticated session cookies",
+  "Chrome policy settings",
+  "ExtensionInstallForcelist",
+  "NativeMessagingHosts",
+  ".pfd.js",
+  "malicious Chrome extension",
+  "open tabs",
+  "language settings",
+  "fingerprinting data",
+  "browser sandbox",
+];
+
 const ADBLOCK_YOUTUBE_EXTENSION_IDS = [
   "cmedhionkhpnakcndndgjdbohmhepckk",
   "onomjaelhagjjojbkcafidnepbfkpnee",
@@ -2362,6 +2380,7 @@ function scanHost(options = {}) {
   checkPcpJackRelayArtifacts(findings, targetRoot, homePath);
   checkGentlemenRansomware(findings, targetRoot, homePath);
   checkEdgecutionPayoutsKing(findings, targetRoot, homePath);
+  checkChromeCookieNativeMessagingHijack(findings, targetRoot, homePath);
   checkAdblockForYoutubeExtension(findings, targetRoot, homePath);
   checkHeavensGateEvasion(findings, targetRoot, homePath);
   checkArgamalGameRat(findings, targetRoot, homePath);
@@ -3851,6 +3870,72 @@ function checkEdgecutionPayoutsKing(findings, targetRoot, homePath) {
       if (text.includes(indicator) && /Edgecution|Payouts King|Microsoft\\Edge|Microsoft\/Edge|native_host|sendNativeMessage|cloudfront|Outlook Updates/i.test(text)) {
         addFinding(findings, "review", "edgecution-text-indicator", "Edgecution/Payouts King advisory term appears in scanned metadata.", `${relative}: ${indicator}`, "Use this as an inventory and triage lead for malicious Edge extension/native-host activity.");
       }
+    }
+  }
+}
+
+function checkChromeCookieNativeMessagingHijack(findings, targetRoot, homePath) {
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const roots = [
+    homeRelative,
+    "/Users",
+    "/ProgramData",
+    "/opt",
+    "/srv",
+    "/var/www",
+    "/etc",
+    "/root",
+  ].filter(Boolean);
+  const files = [];
+  for (const root of roots) {
+    files.push(...findWatchFiles(mapLinuxPath(targetRoot, root), 25000 - files.length));
+    if (files.length >= 25000) break;
+  }
+
+  for (const filePath of files) {
+    const size = fileSizeBytes(filePath);
+    if (size <= 0 || size > 1024 * 1024) continue;
+    const text = readText(filePath);
+    if (!text) continue;
+    const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+    const normalizedRelative = relative.replace(/\\/g, "/").toLowerCase();
+    const base = path.basename(filePath);
+
+    if (/\.pfd\.js$/i.test(base) || /\.pfd\.js/i.test(text)) {
+      addFinding(findings, "warning", "chrome-cookie-hijack-pfd-js-lure", "Malwarebytes-reported fake PDF .pfd.js lure marker appears in scanned metadata.", relative, "Treat the attachment as executable JavaScript, not a PDF. Preserve mail headers, download metadata, script contents, temp-folder drops, and PowerShell history.");
+    }
+
+    for (const indicator of CHROME_COOKIE_NATIVE_MESSAGING_TERMS) {
+      if (text.includes(indicator)) {
+        addFinding(findings, "review", "chrome-cookie-native-messaging-text-indicator", "Chrome session-cookie theft or native-messaging advisory term appears in scanned metadata.", `${relative}: ${indicator}`, "Use this as a triage lead for malicious Chrome extension deployment, native host manifests, browser policy changes, and authenticated session-cookie theft.");
+      }
+    }
+
+    if (/chrome\.runtime\.(?:sendNativeMessage|connectNative)|allowed_origins|NativeMessagingHosts|native messaging host|native_host/i.test(text)
+      && /Chrome|Google\\Chrome|Google\/Chrome|chrome-extension:\/\/|ExtensionInstallForcelist|ExtensionSettings/i.test(text)) {
+      addFinding(findings, "critical", "chrome-cookie-native-messaging-bridge", "Chrome native messaging bridge terms appear near extension or Chrome policy context.", relative, "Inspect Chrome native messaging host manifests, extension policy/force-install settings, host executable paths, and child processes launched by the native host.");
+    }
+
+    if (/ExtensionInstallForcelist|ExtensionSettings|HKLM\\Software\\Policies\\Google\\Chrome|HKCU\\Software\\Policies\\Google\\Chrome|force.?install|administrator-controlled deployment/i.test(text)
+      && /Chrome extension|malicious Chrome extension|Native Messaging|session cookies|PowerShell/i.test(text)) {
+      addFinding(findings, "warning", "chrome-cookie-policy-forced-extension", "Chrome policy or force-installed extension terms appear near cookie-theft/native-messaging context.", relative, "Export Google Chrome policy registry keys or policy JSON, identify forced extension IDs/update URLs, and remove unauthorized policy entries only after preserving evidence.");
+    }
+
+    if (/Cookies|session cookies?|authenticated session cookies?|open tabs|URLs|language settings|fingerprinting data/i.test(text)
+      && /Chrome|browser|extension|Native Messaging|native companion/i.test(text)
+      && /MFA|multi-factor|account takeover|hijack|bypass/i.test(text)) {
+      addFinding(findings, "critical", "chrome-cookie-session-theft-review", "Chrome extension/native companion terms indicate authenticated session-cookie theft.", relative, "Invalidate browser sessions for affected accounts, rotate passwords/tokens as needed, review MFA bypass impact, and inspect Chrome cookie databases and extension storage from a clean response environment.");
+    }
+
+    if (/PowerShell|powershell\.exe|pwsh|enumerate(?:s|d)? the contents of the C: drive|Get-ChildItem\s+C:|dir\s+C:/i.test(text)
+      && /Chrome Native Messaging|native messaging|Chrome extension|session cookies|open tabs|fingerprinting/i.test(text)) {
+      addFinding(findings, "warning", "chrome-cookie-native-host-powershell", "Chrome native-host or malicious-extension terms appear near PowerShell command-execution behavior.", relative, "Review PowerShell script block logs, native host executable command lines, temp-folder drops, and remote command channel activity.");
+    }
+
+    if (/\/google\/chrome\/user data\/.*\/native[ -]?messaging[ -]?hosts\//i.test(normalizedRelative)
+      || /\/google\/chrome\/native[ -]?messaging[ -]?hosts\//i.test(normalizedRelative)
+      || /\/google\/chrome\/nativemessaginghosts\//i.test(normalizedRelative)) {
+      addFinding(findings, "review", "chrome-native-messaging-host-path", "Chrome native messaging host manifest path appears in scanned host tree.", relative, "Inventory the manifest name, allowed_origins, and native host executable path. Unknown manifests tied to browser extensions deserve incident-response review.");
     }
   }
 }

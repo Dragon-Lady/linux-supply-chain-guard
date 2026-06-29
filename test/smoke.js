@@ -516,6 +516,26 @@ function run() {
     "a08d8e63b0cd3638fb40b8e6da546e26da69439597565827f9cec87915f78568 3d1158884fb339b3328bd330fcc27598e1f1c94bcac39e75d1a272afa4deee1a",
     "Python backdoor can Collect and send system information, Run Python code, Retrieve a list of running processes, execute PowerShell commands, and write extension.log with request_id"
   ].join("\n"));
+  write(path.join(root, "Users", "alice", "Downloads", "invoice.pfd.js"), [
+    "Malwarebytes triage: fake PDF attachment uses .pfd.js and drops files into the temporary folder.",
+    "A PowerShell script prepares a malicious Chrome extension and changes Chrome policy settings.",
+    "ExtensionInstallForcelist HKCU\\Software\\Policies\\Google\\Chrome administrator-controlled deployment."
+  ].join("\n"));
+  write(path.join(root, "Users", "alice", "AppData", "Local", "Google", "Chrome", "NativeMessagingHosts", "com.update.bridge.json"), JSON.stringify({
+    name: "com.update.bridge",
+    description: "Chrome Native Messaging host",
+    path: "C:\\Users\\alice\\AppData\\Local\\Temp\\chrome_update_host.exe",
+    type: "stdio",
+    allowed_origins: ["chrome-extension://abcdefghijklmnopabcdefghijklmnop/"],
+    notes: "Native Messaging host receives chrome.runtime.sendNativeMessage from a malicious Chrome extension."
+  }, null, 2));
+  write(path.join(root, "Users", "alice", "AppData", "Local", "Google", "Chrome", "User Data", "Default", "Extensions", "abcdefghijklmnopabcdefghijklmnop", "1.0.0", "background.js"), [
+    "chrome.runtime.sendNativeMessage('com.update.bridge', { task: 'powershell', command: 'Get-ChildItem C:\\\\' });",
+    "Collect authenticated session cookies, open tabs, URLs, language settings, and fingerprinting data.",
+    "Chrome Native Messaging bridges the browser sandbox to PowerShell.",
+    "Stolen session cookies bypass MFA and enable account takeover / hijack.",
+    "Native companion can enumerate the contents of the C: drive."
+  ].join("\n"));
   write(path.join(root, "home", "alice", ".config", "google-chrome", "Default", "Extensions", "cmedhionkhpnakcndndgjdbohmhepckk", "6.8.0", "manifest.json"), JSON.stringify({
     manifest_version: 3,
     name: "Adblock for YouTube",
@@ -1102,6 +1122,13 @@ function run() {
   assert(ids.has("edgecution-edge-appkey-registry"));
   assert(ids.has("edgecution-python-backdoor-behavior"));
   assert(ids.has("edgecution-text-indicator"));
+  assert(ids.has("chrome-cookie-hijack-pfd-js-lure"));
+  assert(ids.has("chrome-cookie-native-messaging-text-indicator"));
+  assert(ids.has("chrome-cookie-native-messaging-bridge"));
+  assert(ids.has("chrome-cookie-policy-forced-extension"));
+  assert(ids.has("chrome-cookie-session-theft-review"));
+  assert(ids.has("chrome-cookie-native-host-powershell"));
+  assert(ids.has("chrome-native-messaging-host-path"));
   assert(ids.has("adblock-youtube-extension-id-path"));
   assert(ids.has("adblock-youtube-extension-id-reference"));
   assert(ids.has("adblock-youtube-network-indicator"));
