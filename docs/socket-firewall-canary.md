@@ -121,7 +121,7 @@ default developer or CI install path.
 
 Run the canary no more than once every 6 hours during that window. This gives
 four observation points per day while keeping it much quieter than active
-Rocky/Oracle 5-minute monitoring.
+five-minute monitoring.
 
 Current Windows timer:
 
