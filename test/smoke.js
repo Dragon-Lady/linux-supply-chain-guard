@@ -52,11 +52,15 @@ function run() {
       "html-to-gutenberg": "4.2.11",
       "fetch-page-assets": "1.2.9",
       "rate-limit-flexible": "^1.0.2",
-      "tailwindcss-merge": "1.0.4"
+      "tailwindcss-merge": "1.0.4",
+      "paperclip2": "1.0.0",
+      "jscrambler": "8.20.0",
+      "@injectivelabs/sdk-ts": "1.20.21"
     },
     scripts: {
       postinstall: "node utils.cjs"
-    }
+    },
+    notes: "185[.]112[.]147[.]174:7007"
   }));
   write(path.join(home, "dprk-socket-loader", "install.js"), [
     "const fs = require('fs');",
@@ -1106,6 +1110,9 @@ function run() {
   assert(ids.has("transformers-pyz-present"));
   assert(ids.has("developer-secret-surfaces-present"));
   assert(ids.has("compromised-npm-package-reference"));
+  assert(ids.has("july-2026-malicious-npm-package"));
+  assert(ids.has("july-2026-compromised-npm-version"));
+  assert(ids.has("july-2026-npm-network-indicator"));
   assert(report.findings.some((finding) => finding.id === "compromised-npm-package-reference" && finding.evidence.includes("free-claude")));
   assert(report.findings.some((finding) => finding.id === "compromised-npm-package-reference" && finding.evidence.includes("search-from-search")));
   assert(report.findings.some((finding) => finding.id === "compromised-npm-package-reference" && finding.evidence.includes("node-fetch-utils")));

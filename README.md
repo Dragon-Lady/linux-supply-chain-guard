@@ -13,6 +13,11 @@ Shai-Hulud / Here We Go Again analysis. It also checks selected dependency
 metadata for the OX-reported DPRK npm RAT package names that target developer
 workstations through install-time payloads.
 
+The July 2026 npm watch pack adds exact-version checks for the compromised
+`jscrambler` and Injective releases, all-version checks for Paperclip2,
+`polymarket-kit`, and the reported Rollup lookalikes, plus campaign network
+markers and IronWorm `pgmon.service` persistence paths.
+
 The May 29, 2026 TeamPCP/Dynatrace watch pack adds weak-signal exposure checks
 for Dynatrace token-shaped credentials and repo/service names observed in
 public threat-actor screenshots. These findings do not prove a Dynatrace breach
