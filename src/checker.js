@@ -110,6 +110,56 @@ const KNOWN_COMPROMISED_NPM_PACKAGES = [
   "rate-limit-flexible",
 ];
 
+const JULY_2026_NPM_ALL_VERSION_PACKAGES = [
+  "paperclip2",
+  "vps-maintenance",
+  "vps-maintenance-paperclip-adapter",
+  "polymarket-kit",
+  "rollup-packages-polyfill-core",
+  "rollup-runtime-polyfill-core",
+  "swift-parse-stream",
+  "quirky-token",
+  "react-icon-svgs",
+  "rollup-plugin-polyfill-connect",
+];
+
+const JULY_2026_NPM_COMPROMISED_VERSIONS = {
+  "jscrambler": ["8.14.0", "8.16.0", "8.17.0", "8.18.0", "8.20.0"],
+  "@injectivelabs/sdk-ts": ["1.20.21"],
+  "@injectivelabs/utils": ["1.20.21"],
+  "@injectivelabs/networks": ["1.20.21"],
+  "@injectivelabs/ts-types": ["1.20.21"],
+  "@injectivelabs/exceptions": ["1.20.21"],
+  "@injectivelabs/wallet-base": ["1.20.21"],
+  "@injectivelabs/wallet-core": ["1.20.21"],
+  "@injectivelabs/wallet-cosmos": ["1.20.21"],
+  "@injectivelabs/wallet-private-key": ["1.20.21"],
+  "@injectivelabs/wallet-evm": ["1.20.21"],
+  "@injectivelabs/wallet-trezor": ["1.20.21"],
+  "@injectivelabs/wallet-cosmostation": ["1.20.21"],
+  "@injectivelabs/wallet-ledger": ["1.20.21"],
+  "@injectivelabs/wallet-wallet-connect": ["1.20.21"],
+  "@injectivelabs/wallet-magic": ["1.20.21"],
+  "@injectivelabs/wallet-strategy": ["1.20.21"],
+  "@injectivelabs/wallet-turnkey": ["1.20.21"],
+  "@injectivelabs/wallet-cosmos-strategy": ["1.20.21"],
+};
+
+const JULY_2026_NPM_NETWORK_INDICATORS = [
+  "svganchordev.net",
+  "svganchordev[.]net",
+  "testnet.archival.chain.grpc-web.injective.network",
+  "testnet[.]archival[.]chain[.]grpc-web[.]injective[.]network",
+  "185.112.147.174:7007",
+  "185[.]112[.]147[.]174:7007",
+  "37.27.122.124",
+  "37[.]27[.]122[.]124",
+  "57.128.246.79",
+  "57[.]128[.]246[.]79",
+  "216.126.236.244",
+  "216[.]126[.]236[.]244",
+];
+
 const ATOMIC_ARCH_AUR_PACKAGE = "atomic-lockfile";
 
 const CHAINVEIL_NPM_PACKAGES = [
@@ -2584,6 +2634,7 @@ function scanHost(options = {}) {
   checkNfTablesCve202623111(findings, targetRoot, homePath, kernelRelease);
   checkPersistence(findings, targetRoot, homePath);
   checkCompromisedNpmPackages(findings, targetRoot, homePath);
+  checkJuly2026NpmCampaigns(findings, targetRoot, homePath);
   checkChainVeilNpmCampaign(findings, targetRoot, homePath);
   checkVsCodeAutorunBlockchainNpm(findings, targetRoot, homePath);
   checkAtomicArchAurCompromise(findings, targetRoot, homePath);
@@ -3110,10 +3161,12 @@ function checkPersistence(findings, targetRoot, homePath) {
     "/etc/systemd/system/pgsql-monitor.service",
     "/usr/bin/pgmonitor.py",
     "/tmp/transformers.pyz",
+    "/etc/systemd/system/pgmon.service",
     homeRelative ? `${homeRelative}/.config/systemd/user/gh-token-monitor.service` : "",
     homeRelative ? `${homeRelative}/.local/bin/gh-token-monitor.sh` : "",
     homeRelative ? `${homeRelative}/.config/gh-token-monitor` : "",
     homeRelative ? `${homeRelative}/.config/systemd/user/pgsql-monitor.service` : "",
+    homeRelative ? `${homeRelative}/.config/systemd/user/pgmon.service` : "",
     homeRelative ? `${homeRelative}/.local/bin/pgmonitor.py` : "",
   ].filter(Boolean);
 
@@ -3205,6 +3258,50 @@ function checkCompromisedNpmPackages(findings, targetRoot, homePath) {
     for (const packageName of KNOWN_COMPROMISED_NPM_PACKAGES) {
       if (text.includes(packageName)) {
         addFinding(findings, "critical", "compromised-npm-package-reference", "Known compromised npm package appears in dependency metadata.", `${relative}: ${packageName}`, "Do not run npm install/build/test in this tree. Isolate affected systems if execution is suspected and rotate secrets from a clean posture.");
+      }
+    }
+  }
+}
+
+function checkJuly2026NpmCampaigns(findings, targetRoot, homePath) {
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const roots = [
+    homeRelative,
+    "/opt",
+    "/srv",
+    "/var/www",
+    "/usr/local/lib/node_modules",
+    "/tmp",
+    "/var/tmp",
+  ].filter(Boolean);
+  const files = [];
+  for (const root of roots) {
+    files.push(...findWatchFiles(mapLinuxPath(targetRoot, root), 30000 - files.length));
+    if (files.length >= 30000) break;
+  }
+
+  for (const filePath of files) {
+    const text = readText(filePath);
+    if (!text) continue;
+    const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+
+    for (const packageName of JULY_2026_NPM_ALL_VERSION_PACKAGES) {
+      if (text.includes(packageName)) {
+        addFinding(findings, "critical", "july-2026-malicious-npm-package", "July 2026 malicious npm package appears in scanned metadata.", `${relative}: ${packageName}`, "Do not run package-manager or build commands in this tree. Preserve evidence and rotate exposed credentials from a clean machine if install or import execution may have occurred.");
+      }
+    }
+
+    for (const [packageName, affectedVersions] of Object.entries(JULY_2026_NPM_COMPROMISED_VERSIONS)) {
+      for (const version of scopedPackageVersionsInText(text, packageName)) {
+        if (affectedVersions.includes(version)) {
+          addFinding(findings, "critical", "july-2026-compromised-npm-version", "July 2026 compromised npm package version appears in scanned metadata.", `${relative}: ${packageName}@${version}`, "Treat the host as potentially compromised if this version was installed or imported. Isolate it, preserve evidence, and rotate npm, source-control, cloud, wallet, SSH, and local vault credentials from a clean machine.");
+        }
+      }
+    }
+
+    for (const indicator of JULY_2026_NPM_NETWORK_INDICATORS) {
+      if (text.includes(indicator)) {
+        addFinding(findings, "critical", "july-2026-npm-network-indicator", "July 2026 npm campaign network indicator appears in scanned host metadata.", `${relative}: ${indicator}`, "Correlate package install timing with DNS, proxy, firewall, process, npm publication, and credential-access telemetry before cleanup.");
       }
     }
   }

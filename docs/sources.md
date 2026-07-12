@@ -180,3 +180,11 @@
 These links are retained for defensive host posture and incident-response
 context. This project intentionally avoids exploit reproduction steps or malware
 execution guidance.
+
+## July 2026 npm campaign sources
+
+- JFrog IronWorm `jscrambler` compromise: https://research.jfrog.com/post/ironworm-returns-rustier-than-ever/
+- JFrog Lazarus-linked Rollup polyfill lookalikes: https://research.jfrog.com/post/rollup-polyfill-masquerading/
+- OX `polymarket-kit` malware analysis: https://www.ox.security/blog/malware-slop-crypto-stealer-impersonating-polymarket-exposes-its-own-credentials/
+- OX Injective SDK compromise: https://www.ox.security/blog/injectivelabs-npm-package-hijacked-impacting-87-dependent-packages/
+- OX Paperclip2 manifest-only reverse shell: https://www.ox.security/blog/malware-detected-reverse-shell-without-javascript-files-in-npm/

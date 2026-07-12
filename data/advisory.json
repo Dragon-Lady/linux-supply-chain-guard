@@ -1,6 +1,6 @@
 {
   "incident": "Linux supply-chain host exposure guard",
-  "lastUpdated": "2026-06-29",
+  "lastUpdated": "2026-07-12",
   "scope": {
     "postureChecks": "Read-only Linux host checks for vulnerable kernel posture, risky module state, Trend Micro Deep Security Agent hook reload indicators, System Register Hijacking / ret2entry research indicators, ITScape ARM64 KVM exposure, DirtyCBC/RxGK and DirtyClone page-cache poisoning research-artifact leads, PackageKit CVE-2026-41651 local-privilege-escalation posture and advisory-provenance indicators, cloud bucket hijacking storage-data-stream posture indicators, MCP Python SDK CVE-2026-52869 HTTP transport principal-confusion indicators, CPython tarfile CVE-2026-11940 archive-extraction filter-bypass indicators, HackedAlert Django cache-deserialization review indicators, Amazon Q Developer / AWS Language Servers workspace MCP auto-execution and symlink-boundary indicators, Langflow CVE-2026-33017 public-flow RCE and cryptominer campaign indicators, known supply-chain persistence paths, selected compromised npm package references, AtomicArch/IronWorm AUR indicators, DPRK npm RAT dependency indicators, OtterCookie npm indicators, Hades PyPI/Miasma indicators, Miasma ImmobiliareLabs npm indicators, Impacket secretsdump Windows/AD credential-dump artifacts, DAEMON Tools Lite supply-chain installer indicators, macOS.Gaslight mounted-root indicators, Agentjacking Sentry/MCP exposure indicators, 0DIN clean-repo DNS TXT agent-setup indicators, Solana FakeFix/CMS loader indicators, GlassWASM/Open VSX extension indicators, Chrome Native Messaging session-cookie theft indicators, Adblock for YouTube browser-extension review indicators, VS Code folder-open npm autorun indicators, TonRAT Photo ZIP phishing indicators, FFmpeg PixelSmash/MagicYUV media-processing exposure, Heaven's Gate WOW64 evasion review indicators, nf_tables CVE-2026-23111 local-privilege-escalation posture and PoC-provenance indicators, Palo Alto GlobalProtect CVE-2026-0257 log-hunting indicators, Cisco Catalyst SD-WAN Manager 2026 zero-day log-hunting indicators, Operation Highland / Velvet Ant auth-stack indicators, and TeamPCP/Dynatrace weak-signal exposure indicators.",
     "notInScope": "No exploit testing, malware execution, automatic cleanup, token revocation, or claims that a host is clean.",
@@ -177,6 +177,11 @@
     "https://www.ptc.com/en/support/article/CS473270",
     "https://nvd.nist.gov/vuln/detail/CVE-2026-12569",
     "https://cybersecuritynews.com/critical-python-org-vulnerability/",
-    "https://cybersecuritynews.com/critical-python-org-vulnerability/amp/"
+    "https://cybersecuritynews.com/critical-python-org-vulnerability/amp/",
+    "https://research.jfrog.com/post/ironworm-returns-rustier-than-ever/",
+    "https://research.jfrog.com/post/rollup-polyfill-masquerading/",
+    "https://www.ox.security/blog/malware-slop-crypto-stealer-impersonating-polymarket-exposes-its-own-credentials/",
+    "https://www.ox.security/blog/injectivelabs-npm-package-hijacked-impacting-87-dependent-packages/",
+    "https://www.ox.security/blog/malware-detected-reverse-shell-without-javascript-files-in-npm/"
   ]
 }
