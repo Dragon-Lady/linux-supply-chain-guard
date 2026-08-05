@@ -191,6 +191,10 @@ execution guidance.
 
 ## August 2026 keyv / cacheable (ChainDrop) sources
 
+Cross-platform npm ecosystem compromise (not Linux-only). Indicators apply to
+any npm-using lane/OS; this guard only reports matches found on Linux host
+roots or mounted workspaces.
+
 - Snyk keyv npm supply-chain compromise analysis: https://snyk.io/blog/inside-keyv-npm-compromise-preinstall-malware-trusted-provenance-ide-hooks/
 - Snyk advisory SNYK-JS-KEYV-18515941: https://security.snyk.io/vuln/SNYK-JS-KEYV-18515941
 - Wiz keyv / cacheable npm supply-chain attack: https://www.wiz.io/blog/keyv-and-cacheable-npm-supply-chain-attack

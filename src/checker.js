@@ -153,9 +153,11 @@ const JULY_2026_NPM_NETWORK_INDICATORS = [
 ];
 
 // August 4, 2026 keyv / cacheable / ChainDrop (Shai-Hulud "Here We Go Again") wave.
-// Initial full-worm carriers verified by Snyk, StepSecurity, Aikido, Wiz, and JFrog:
-// keyv@6.0.0 plus ten related jaredwray-family exact versions (11 total).
-// Read-only notification only — no install, cleanup, or network collection.
+// Cross-platform npm ecosystem compromise (Linux/macOS/Windows and any npm lane)—
+// not a Linux-only host issue. This Linux host scanner only reports matches found
+// under the scanned root. Initial full-worm carriers verified by Snyk, StepSecurity,
+// Aikido, Wiz, and JFrog: keyv@6.0.0 plus ten related jaredwray-family exact versions
+// (11 total). Read-only notification only — no install, cleanup, or network collection.
 const AUGUST_2026_KEYV_NPM_COMPROMISED_VERSIONS = {
   "keyv": ["6.0.0"],
   "flat-cache": ["6.1.24"],
@@ -3364,9 +3366,9 @@ function checkAugust2026KeyvNpmCampaign(findings, targetRoot, homePath) {
             findings,
             "critical",
             "august-2026-keyv-compromised-npm-version",
-            "August 2026 keyv/cacheable (ChainDrop / Shai-Hulud) compromised npm package version appears in scanned metadata.",
+            "August 2026 keyv/cacheable (ChainDrop / Shai-Hulud) compromised npm package version appears in scanned metadata (cross-platform npm ecosystem risk).",
             `${relative}: ${packageName}@${version}`,
-            "Read-only notification only. Do not run package-manager install/build commands in this tree. If this version may have been installed, treat the host/CI runner as potentially compromised: isolate, preserve evidence, rotate npm/GitHub/cloud/SSH/Vault/AI-tool credentials from a clean machine, and follow guidance from Snyk, Wiz, JFrog, Aikido, StepSecurity, and npm Security. This tool does not collect data, remediate packages, or prove a host is clean."
+            "Read-only notification only. This compromise is not Linux-specific—it affects any OS/lane that installed these npm versions. Do not run package-manager install/build commands in this tree. If this version may have been installed, treat the host/CI runner as potentially compromised: isolate, preserve evidence, rotate npm/GitHub/cloud/SSH/Vault/AI-tool credentials from a clean machine, and follow guidance from Snyk, Wiz, JFrog, Aikido, StepSecurity, and npm Security. This tool does not collect data, remediate packages, or prove a host is clean."
           );
         }
       }
@@ -3378,9 +3380,9 @@ function checkAugust2026KeyvNpmCampaign(findings, targetRoot, homePath) {
           findings,
           "critical",
           "august-2026-keyv-npm-network-indicator",
-          "August 2026 keyv/cacheable campaign network indicator appears in scanned host metadata.",
+          "August 2026 keyv/cacheable campaign network indicator appears in scanned metadata (cross-platform npm ecosystem risk).",
           `${relative}: ${indicator}`,
-          "Correlate package install timing with DNS, proxy, process, Ethereum RPC, and credential-access telemetry. Point operators to Snyk, Wiz, JFrog, Aikido, StepSecurity, and npm Security campaign reports. This tool does not phone home or collect telemetry."
+          "This campaign is npm-wide, not Linux-only. Correlate package install timing with DNS, proxy, process, Ethereum RPC, and credential-access telemetry on the install OS. Point operators to Snyk, Wiz, JFrog, Aikido, StepSecurity, and npm Security campaign reports. This tool does not phone home or collect telemetry."
         );
       }
     }
@@ -3391,9 +3393,9 @@ function checkAugust2026KeyvNpmCampaign(findings, targetRoot, homePath) {
           findings,
           "critical",
           "august-2026-keyv-npm-text-indicator",
-          "August 2026 keyv/cacheable campaign payload or persistence marker appears in scanned host metadata.",
+          "August 2026 keyv/cacheable campaign payload or persistence marker appears in scanned metadata (cross-platform npm ecosystem risk).",
           `${relative}: ${indicator}`,
-          "Hunt for setup.mjs / Math_Symbol.js / math_init.js, Bun download staging, IDE/Claude hooks, and GitHub credential-monitor artifacts without executing package code. Follow vendor IR guidance from Snyk, Wiz, JFrog, Aikido, and StepSecurity. This tool is notification-only."
+          "This campaign is npm-wide, not Linux-only. Hunt for setup.mjs / Math_Symbol.js / math_init.js, Bun download staging, IDE/Claude hooks, and GitHub credential-monitor artifacts without executing package code on the install OS. Follow vendor IR guidance from Snyk, Wiz, JFrog, Aikido, and StepSecurity. This tool is notification-only."
         );
       }
     }

@@ -28,10 +28,17 @@ related jaredwray-family releases (`flat-cache@6.1.24`,
 and `ecto@5.0.1`), plus campaign network markers (`npm-cache[.]com`, Ethereum
 C2 contract, public ETH RPC hosts) and payload/persistence text indicators
 (`setup.mjs` / `Math_Symbol.js` / `math_init.js`, Bun 1.3.13 staging, GitHub
-exfil description, and related strings). These are local operator notifications
-only. This tool does not collect data, remediate packages, or prove a host is
-clean. Operators should follow Snyk, Wiz, JFrog, Aikido, StepSecurity, and npm
-Security guidance for containment and credential rotation.
+exfil description, and related strings). This is a **cross-platform npm
+ecosystem** compromise (registry installs, lockfiles, CI, and developer
+workspaces on Linux, macOS, Windows, and other npm-using lanes)—not a
+Linux-only kernel or distro issue. This guard only *observes* those npm
+indicators when they appear under a Linux host root or mounted workspace it
+scans. Sister project scanners (`HereWeGoAgain-incident-scanner`,
+`supply-chain-check`) cover the same package set as project-tree checks.
+Notifications are local only. This tool does not collect data, remediate
+packages, or prove a host is clean. Operators should follow Snyk, Wiz, JFrog,
+Aikido, StepSecurity, and npm Security guidance for containment and credential
+rotation on any affected platform.
 
 The May 29, 2026 TeamPCP/Dynatrace watch pack adds weak-signal exposure checks
 for Dynatrace token-shaped credentials and repo/service names observed in
@@ -501,7 +508,8 @@ Exit codes:
   - `google-cloud-secret-manager-config-poc`
   - `signup-embedder`
   - `ts-grok`
-- August 4, 2026 keyv / cacheable (ChainDrop / Shai-Hulud) npm indicators:
+- August 4, 2026 keyv / cacheable (ChainDrop / Shai-Hulud) npm indicators
+  (**cross-platform npm ecosystem**—not Linux-only):
   - exact compromised versions: `keyv@6.0.0`, `flat-cache@6.1.24`,
     `file-entry-cache@11.1.6`, `cacheable-request@13.0.20`, `cacheable@2.5.1`,
     `@cacheable/memory@2.2.1`, `cache-manager@7.2.10`,
@@ -513,6 +521,8 @@ Exit codes:
   - payload/persistence text: `setup.mjs` / `Math_Symbol.js` / `math_init.js`,
     `preinstall` → `node setup.mjs`, Bun 1.3.13 staging, GitHub description
     `Shai-Hulud: Here We Go Again`, and related campaign strings
+  - scope note: risk follows npm install/lockfile use on any OS; this tool
+    reports matches found on Linux host roots / mounted workspaces only
   - notification only: point operators to Snyk, Wiz, JFrog, Aikido,
     StepSecurity, and npm Security; no data collection or auto-remediation
 - Checkmarx ChainVeil / SuccessKey npm indicators:

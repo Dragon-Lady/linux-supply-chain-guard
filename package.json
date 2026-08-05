@@ -16,7 +16,8 @@
   "scripts": {
     "test": "node --check bin/linux-supply-chain-guard.js && node --check src/checker.js && node test/smoke.js",
     "canary:socket-firewall": "sfw npm install --package-lock-only --ignore-scripts --audit=false --fund=false",
-    "canary:socket-firewall:log": "powershell -ExecutionPolicy Bypass -File scripts/run-socket-firewall-canary.ps1"
+    "canary:socket-firewall:log": "bash scripts/run-socket-firewall-canary.sh",
+    "canary:socket-firewall:log:windows": "powershell -ExecutionPolicy Bypass -File scripts/run-socket-firewall-canary.ps1"
   },
   "keywords": [
     "linux",

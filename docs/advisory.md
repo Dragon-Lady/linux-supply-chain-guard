@@ -94,15 +94,20 @@ runtime/import-time package risk.
 
 The August 4, 2026 keyv / cacheable (ChainDrop / Shai-Hulud "Here We Go Again")
 campaign is included as a read-only dependency-metadata and host-marker
-notification lane. Snyk, StepSecurity, Aikido, Wiz, and JFrog independently
-confirmed an initial wave of eleven full-worm carriers starting with
-`keyv@6.0.0` and ten related jaredwray-family releases, with rapid worm
-propagation to hundreds of additional packages. The guard flags exact
-compromised versions, campaign network strings, and payload/persistence text
-only. It does not download packages, run install hooks, collect telemetry, or
-remediate. Operators should follow the security-vendor and npm Security
-guidance for isolation, evidence preservation, and credential rotation from a
-clean machine.
+notification lane. **The compromise is cross-platform npm ecosystem risk**
+(registry, lockfiles, CI, and workspaces on Linux, macOS, Windows, and other
+npm-using environments)—not a Linux-only host or kernel flaw. Snyk,
+StepSecurity, Aikido, Wiz, and JFrog independently confirmed an initial wave of
+eleven full-worm carriers starting with `keyv@6.0.0` and ten related
+jaredwray-family releases, with rapid worm propagation to hundreds of
+additional packages. This Linux host guard flags exact compromised versions,
+campaign network strings, and payload/persistence text only when they appear
+under the scanned Linux root or mounted workspace. Project-tree scanners in
+the same toolkit cover the same package set on any platform. The guard does
+not download packages, run install hooks, collect telemetry, or remediate.
+Operators should follow the security-vendor and npm Security guidance for
+isolation, evidence preservation, and credential rotation from a clean machine
+on whatever OS the install occurred.
 
 JFrog's June 24, 2026 VS Code autorun / blockchain dead-drop report is included
 because the malicious npm versions avoid normal lifecycle-script execution and
