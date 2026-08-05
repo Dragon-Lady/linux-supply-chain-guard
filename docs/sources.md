@@ -188,3 +188,13 @@ execution guidance.
 - OX `polymarket-kit` malware analysis: https://www.ox.security/blog/malware-slop-crypto-stealer-impersonating-polymarket-exposes-its-own-credentials/
 - OX Injective SDK compromise: https://www.ox.security/blog/injectivelabs-npm-package-hijacked-impacting-87-dependent-packages/
 - OX Paperclip2 manifest-only reverse shell: https://www.ox.security/blog/malware-detected-reverse-shell-without-javascript-files-in-npm/
+
+## August 2026 keyv / cacheable (ChainDrop) sources
+
+- Snyk keyv npm supply-chain compromise analysis: https://snyk.io/blog/inside-keyv-npm-compromise-preinstall-malware-trusted-provenance-ide-hooks/
+- Snyk advisory SNYK-JS-KEYV-18515941: https://security.snyk.io/vuln/SNYK-JS-KEYV-18515941
+- Wiz keyv / cacheable npm supply-chain attack: https://www.wiz.io/blog/keyv-and-cacheable-npm-supply-chain-attack
+- Wiz Research IOCs (keyv packages CSV): https://github.com/wiz-sec-public/wiz-research-iocs/blob/main/reports/keyv-packages.csv
+- Aikido keyv / friends Shai-Hulud supply-chain attack: https://www.aikido.dev/blog/keyv-and-friends-compromised-in-npm-supply-chain-attack
+- JFrog Shai-Hulud August 2026 (keyv and 400+ packages): https://research.jfrog.com/post/shai-hulud-is-back-august/
+- StepSecurity ChainDrop npm worm analysis: https://www.stepsecurity.io/blog/chaindrop-npm-worm

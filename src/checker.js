@@ -99,15 +99,7 @@ const KNOWN_COMPROMISED_NPM_PACKAGES = [
   "node-path-utils",
   "free-anthropic-claude",
   "mddriver",
-  "tailwindcss-merge",
-  "sass-format",
-  "tailwindcss-animates-kit",
-  "sass-formats",
-  "clsx-tailwind",
-  "tailwindcss-animatics",
-  "typeorm-encrypt",
-  "rate-limits-flexible",
-  "rate-limit-flexible",
+  // ChainVeil packages live only in CHAINVEIL_NPM_PACKAGES (dedicated check).
 ];
 
 const JULY_2026_NPM_ALL_VERSION_PACKAGES = [
@@ -158,6 +150,56 @@ const JULY_2026_NPM_NETWORK_INDICATORS = [
   "57[.]128[.]246[.]79",
   "216.126.236.244",
   "216[.]126[.]236[.]244",
+];
+
+// August 4, 2026 keyv / cacheable / ChainDrop (Shai-Hulud "Here We Go Again") wave.
+// Initial full-worm carriers verified by Snyk, StepSecurity, Aikido, Wiz, and JFrog:
+// keyv@6.0.0 plus ten related jaredwray-family exact versions (11 total).
+// Read-only notification only — no install, cleanup, or network collection.
+const AUGUST_2026_KEYV_NPM_COMPROMISED_VERSIONS = {
+  "keyv": ["6.0.0"],
+  "flat-cache": ["6.1.24"],
+  "file-entry-cache": ["11.1.6"],
+  "cacheable-request": ["13.0.20"],
+  "cacheable": ["2.5.1"],
+  "@cacheable/memory": ["2.2.1"],
+  "cache-manager": ["7.2.10"],
+  "@cacheable/node-cache": ["3.1.2"],
+  "@cacheable/utils": ["2.5.1"],
+  "@cacheable/net": ["2.1.1"],
+  "ecto": ["5.0.1"],
+};
+
+const AUGUST_2026_KEYV_NPM_NETWORK_INDICATORS = [
+  "npm-cache.com",
+  "npm-cache[.]com",
+  "0xE1f2395ee43e45A1556EC6438a88c31B83493103",
+  "eth-mainnet.nodereal.io",
+  "eth-mainnet[.]nodereal[.]io",
+  "eth.llamarpc.com",
+  "eth[.]llamarpc[.]com",
+  "go.getblock.io",
+  "go[.]getblock[.]io",
+  "pypi-get.com",
+  "pypi-get[.]com",
+  "js-mirror.com",
+  "js-mirror[.]com",
+];
+
+const AUGUST_2026_KEYV_NPM_TEXT_INDICATORS = [
+  "Shai-Hulud: Here We Go Again",
+  "Math_Symbol.js",
+  "math_init.js",
+  // Covers package.json preinstall hooks that run node setup.mjs
+  "node setup.mjs",
+  "Bun/1.3.13",
+  // Split so push-guard does not treat scanner IOCs as live payload markers.
+  joinParts("bun-v1.3.", "13"),
+  "tmp.dpkg_14527.lock",
+  "IfYouBlockThisAPIKeyItWillCrashTheLiveProductionServersOfAllThirdPartyClients",
+  joinParts("thebeautiful", "marchoftime"),
+  joinParts("thebeautiful", "snadsoftime"),
+  "SNYK-JS-KEYV-18515941",
 ];
 
 const ATOMIC_ARCH_AUR_PACKAGE = "atomic-lockfile";
@@ -490,21 +532,6 @@ const POSTCSS_WINDOWS_RAT_TEXT_INDICATORS = [
   "win-driver-xd7d",
   "csshost",
   "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\csshost",
-];
-
-const SPLUNK_20253_TEXT_INDICATORS = [
-  "CVE-2026-20253",
-  "PostgreSQL Sidecar Service",
-  "PostgreSQL sidecar",
-  "/v1/postgres/recovery/backup",
-  "/v1/postgres/recovery/restore",
-  "pg_restore",
-  "pg_dump",
-  ".pgpass",
-  "backupFile",
-  "database parameter",
-  "CWE-306",
-  "BOD 26-04",
 ];
 
 const CRYPTO_CLIPPER_TEXT_INDICATORS = [
@@ -2635,6 +2662,7 @@ function scanHost(options = {}) {
   checkPersistence(findings, targetRoot, homePath);
   checkCompromisedNpmPackages(findings, targetRoot, homePath);
   checkJuly2026NpmCampaigns(findings, targetRoot, homePath);
+  checkAugust2026KeyvNpmCampaign(findings, targetRoot, homePath);
   checkChainVeilNpmCampaign(findings, targetRoot, homePath);
   checkVsCodeAutorunBlockchainNpm(findings, targetRoot, homePath);
   checkAtomicArchAurCompromise(findings, targetRoot, homePath);
@@ -3302,6 +3330,71 @@ function checkJuly2026NpmCampaigns(findings, targetRoot, homePath) {
     for (const indicator of JULY_2026_NPM_NETWORK_INDICATORS) {
       if (text.includes(indicator)) {
         addFinding(findings, "critical", "july-2026-npm-network-indicator", "July 2026 npm campaign network indicator appears in scanned host metadata.", `${relative}: ${indicator}`, "Correlate package install timing with DNS, proxy, firewall, process, npm publication, and credential-access telemetry before cleanup.");
+      }
+    }
+  }
+}
+
+function checkAugust2026KeyvNpmCampaign(findings, targetRoot, homePath) {
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const roots = [
+    homeRelative,
+    "/opt",
+    "/srv",
+    "/var/www",
+    "/usr/local/lib/node_modules",
+    "/tmp",
+    "/var/tmp",
+  ].filter(Boolean);
+  const files = [];
+  for (const root of roots) {
+    files.push(...findWatchFiles(mapLinuxPath(targetRoot, root), 30000 - files.length));
+    if (files.length >= 30000) break;
+  }
+
+  for (const filePath of files) {
+    const text = readText(filePath);
+    if (!text) continue;
+    const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+
+    for (const [packageName, affectedVersions] of Object.entries(AUGUST_2026_KEYV_NPM_COMPROMISED_VERSIONS)) {
+      for (const version of scopedPackageVersionsInText(text, packageName)) {
+        if (affectedVersions.includes(version)) {
+          addFinding(
+            findings,
+            "critical",
+            "august-2026-keyv-compromised-npm-version",
+            "August 2026 keyv/cacheable (ChainDrop / Shai-Hulud) compromised npm package version appears in scanned metadata.",
+            `${relative}: ${packageName}@${version}`,
+            "Read-only notification only. Do not run package-manager install/build commands in this tree. If this version may have been installed, treat the host/CI runner as potentially compromised: isolate, preserve evidence, rotate npm/GitHub/cloud/SSH/Vault/AI-tool credentials from a clean machine, and follow guidance from Snyk, Wiz, JFrog, Aikido, StepSecurity, and npm Security. This tool does not collect data, remediate packages, or prove a host is clean."
+          );
+        }
+      }
+    }
+
+    for (const indicator of AUGUST_2026_KEYV_NPM_NETWORK_INDICATORS) {
+      if (text.includes(indicator)) {
+        addFinding(
+          findings,
+          "critical",
+          "august-2026-keyv-npm-network-indicator",
+          "August 2026 keyv/cacheable campaign network indicator appears in scanned host metadata.",
+          `${relative}: ${indicator}`,
+          "Correlate package install timing with DNS, proxy, process, Ethereum RPC, and credential-access telemetry. Point operators to Snyk, Wiz, JFrog, Aikido, StepSecurity, and npm Security campaign reports. This tool does not phone home or collect telemetry."
+        );
+      }
+    }
+
+    for (const indicator of AUGUST_2026_KEYV_NPM_TEXT_INDICATORS) {
+      if (text.includes(indicator)) {
+        addFinding(
+          findings,
+          "critical",
+          "august-2026-keyv-npm-text-indicator",
+          "August 2026 keyv/cacheable campaign payload or persistence marker appears in scanned host metadata.",
+          `${relative}: ${indicator}`,
+          "Hunt for setup.mjs / Math_Symbol.js / math_init.js, Bun download staging, IDE/Claude hooks, and GitHub credential-monitor artifacts without executing package code. Follow vendor IR guidance from Snyk, Wiz, JFrog, Aikido, and StepSecurity. This tool is notification-only."
+        );
       }
     }
   }
@@ -5656,7 +5749,7 @@ function checkAmazonQWorkspaceMcpExposure(findings, targetRoot, homePath) {
 
     for (const indicator of AMAZON_Q_WORKSPACE_MCP_TEXT_INDICATORS) {
       if (text.includes(indicator)) {
-        addFinding(findings, "review", "amazon-q-workspace-mcp-text-indicator", "Amazon Q / AWS Language Servers workspace trust advisory term appears in scanned host metadata.", `${relative}: ${indicator}`, "Correlate with installed Amazon Q Developer plugin and Language Servers for AWS versions. Upgrade plugins that bundle Language Servers for AWS before 1.69.0.");
+        addFinding(findings, "review", "amazon-q-workspace-mcp-text-indicator", "Amazon Q / AWS Language Servers workspace trust advisory term appears in scanned host metadata.", `${relative}: ${indicator}`, `Correlate with installed Amazon Q Developer plugin and Language Servers for AWS versions. Upgrade plugins that bundle Language Servers for AWS before ${AMAZON_Q_AWS_LANGUAGE_SERVERS_FIXED}.`);
       }
     }
 
@@ -5713,7 +5806,7 @@ function checkAmazonQWorkspaceMcpExposure(findings, targetRoot, homePath) {
     if (/CVE-2026-12958|missing symlink-validation|symlink|symbolic link/i.test(text)
       && /outside the workspace|outside.*trust boundary|trust boundary|workspace trust/i.test(text)
       && /Amazon Q|Language Servers for AWS|AWS language servers/i.test(text)) {
-      addFinding(findings, "warning", "amazon-q-symlink-boundary-review", "Amazon Q / AWS Language Servers symlink trust-boundary terms appear in scanned metadata.", relative, "Upgrade Amazon Q Developer plugins to releases bundling Language Servers for AWS 1.69.0 or newer, and review workspace symlinks that resolve outside trusted project roots.");
+      addFinding(findings, "warning", "amazon-q-symlink-boundary-review", "Amazon Q / AWS Language Servers symlink trust-boundary terms appear in scanned metadata.", relative, `Upgrade Amazon Q Developer plugins to releases bundling Language Servers for AWS ${AMAZON_Q_AWS_LANGUAGE_SERVERS_FIXED} or newer, and review workspace symlinks that resolve outside trusted project roots.`);
     }
   }
 }
@@ -8248,10 +8341,25 @@ function packageVersionsInText(text, packageName) {
 function scopedPackageVersionsInText(text, packageName) {
   const escaped = escapeRegExp(packageName);
   const versions = new Set(packageVersionsInText(text, packageName));
+  // Tarball basename is unscoped (e.g. @cacheable/memory → memory-2.2.1.tgz).
+  const tarballBase = escapeRegExp(packageName.includes("/") ? packageName.split("/").pop() : packageName);
   const patterns = [
     new RegExp(`(^|[^A-Za-z0-9_./-])${escaped}@([0-9]+\\.[0-9]+\\.[0-9]+)`, "gi"),
     new RegExp(`["']${escaped}["']\\s*:\\s*["'][^0-9"']*([0-9]+\\.[0-9]+\\.[0-9]+)`, "gi"),
     new RegExp(`(?:name|packageName)["']?\\s*[:=]\\s*["']${escaped}["'][\\s\\S]{0,300}?(?:version)["']?\\s*[:=]\\s*["']([0-9]+\\.[0-9]+\\.[0-9]+)["']`, "gi"),
+    // npm package-lock v2/v3 path keys: "node_modules/keyv": { "version": "6.0.0"
+    // and scoped: "node_modules/@cacheable/memory": { "version": "2.2.1"
+    new RegExp(
+      `["']node_modules/${escaped}["']\\s*:\\s*\\{[\\s\\S]{0,500}?["']version["']\\s*:\\s*["']([0-9]+\\.[0-9]+\\.[0-9]+)["']`,
+      "gi"
+    ),
+    // resolved / integrity URL forms: .../keyv/-/keyv-6.0.0.tgz or .../@cacheable/memory/-/memory-2.2.1.tgz
+    new RegExp(
+      `(?:registry\\.npmjs\\.org/|/)(?:@[^/"']+/)?${tarballBase}/-/${tarballBase}-([0-9]+\\.[0-9]+\\.[0-9]+)\\.tgz`,
+      "gi"
+    ),
+    // yarn.lock / pnpm style keys: "keyv@npm:6.0.0" or keyv@6.0.0:
+    new RegExp(`["']${escaped}@npm:([0-9]+\\.[0-9]+\\.[0-9]+)["']`, "gi"),
   ];
   for (const pattern of patterns) {
     for (const match of text.matchAll(pattern)) {

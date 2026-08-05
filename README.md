@@ -18,6 +18,21 @@ The July 2026 npm watch pack adds exact-version checks for the compromised
 `polymarket-kit`, and the reported Rollup lookalikes, plus campaign network
 markers and IronWorm `pgmon.service` persistence paths.
 
+The August 4, 2026 keyv / cacheable (ChainDrop / Shai-Hulud "Here We Go Again")
+watch pack adds exact-version checks for the initial full-worm carriers
+verified by Snyk, StepSecurity, Aikido, Wiz, and JFrog: `keyv@6.0.0` and ten
+related jaredwray-family releases (`flat-cache@6.1.24`,
+`file-entry-cache@11.1.6`, `cacheable-request@13.0.20`, `cacheable@2.5.1`,
+`@cacheable/memory@2.2.1`, `cache-manager@7.2.10`,
+`@cacheable/node-cache@3.1.2`, `@cacheable/utils@2.5.1`, `@cacheable/net@2.1.1`,
+and `ecto@5.0.1`), plus campaign network markers (`npm-cache[.]com`, Ethereum
+C2 contract, public ETH RPC hosts) and payload/persistence text indicators
+(`setup.mjs` / `Math_Symbol.js` / `math_init.js`, Bun 1.3.13 staging, GitHub
+exfil description, and related strings). These are local operator notifications
+only. This tool does not collect data, remediate packages, or prove a host is
+clean. Operators should follow Snyk, Wiz, JFrog, Aikido, StepSecurity, and npm
+Security guidance for containment and credential rotation.
+
 The May 29, 2026 TeamPCP/Dynatrace watch pack adds weak-signal exposure checks
 for Dynatrace token-shaped credentials and repo/service names observed in
 public threat-actor screenshots. These findings do not prove a Dynatrace breach
@@ -486,6 +501,20 @@ Exit codes:
   - `google-cloud-secret-manager-config-poc`
   - `signup-embedder`
   - `ts-grok`
+- August 4, 2026 keyv / cacheable (ChainDrop / Shai-Hulud) npm indicators:
+  - exact compromised versions: `keyv@6.0.0`, `flat-cache@6.1.24`,
+    `file-entry-cache@11.1.6`, `cacheable-request@13.0.20`, `cacheable@2.5.1`,
+    `@cacheable/memory@2.2.1`, `cache-manager@7.2.10`,
+    `@cacheable/node-cache@3.1.2`, `@cacheable/utils@2.5.1`,
+    `@cacheable/net@2.1.1`, `ecto@5.0.1`
+  - network markers: `npm-cache[.]com`, Ethereum contract
+    `0xE1f2395ee43e45A1556EC6438a88c31B83493103`, and public ETH RPC hosts used
+    for C2 resolution
+  - payload/persistence text: `setup.mjs` / `Math_Symbol.js` / `math_init.js`,
+    `preinstall` → `node setup.mjs`, Bun 1.3.13 staging, GitHub description
+    `Shai-Hulud: Here We Go Again`, and related campaign strings
+  - notification only: point operators to Snyk, Wiz, JFrog, Aikido,
+    StepSecurity, and npm Security; no data collection or auto-remediation
 - Checkmarx ChainVeil / SuccessKey npm indicators:
   - typosquat package names including `tailwindcss-merge`, `sass-format`,
     `sass-formats`, `tailwindcss-animates-kit`, `tailwindcss-animatics`,
@@ -1082,6 +1111,20 @@ the known indicators it checks.
   https://cybersecuritynews.com/poc-exploit-released-linux-kernel-vulnerability/
 - JFrog Shai-Hulud: Here We Go Again:
   https://research.jfrog.com/post/shai-hulud-here-we-go-again/
+- Snyk keyv npm supply-chain compromise analysis:
+  https://snyk.io/blog/inside-keyv-npm-compromise-preinstall-malware-trusted-provenance-ide-hooks/
+- Snyk advisory SNYK-JS-KEYV-18515941:
+  https://security.snyk.io/vuln/SNYK-JS-KEYV-18515941
+- Wiz keyv / cacheable npm supply-chain attack:
+  https://www.wiz.io/blog/keyv-and-cacheable-npm-supply-chain-attack
+- Wiz Research IOCs (keyv packages CSV):
+  https://github.com/wiz-sec-public/wiz-research-iocs/blob/main/reports/keyv-packages.csv
+- Aikido keyv / friends Shai-Hulud supply-chain attack:
+  https://www.aikido.dev/blog/keyv-and-friends-compromised-in-npm-supply-chain-attack
+- JFrog Shai-Hulud August 2026 (keyv and 400+ packages):
+  https://research.jfrog.com/post/shai-hulud-is-back-august/
+- StepSecurity ChainDrop npm worm analysis:
+  https://www.stepsecurity.io/blog/chaindrop-npm-worm
 - OX Security DPRK npm RAT writeup:
   https://www.ox.security/blog/north-korean-npm-infostealer-rat/
 - Socket Hades PyPI wave analysis:
