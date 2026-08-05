@@ -92,6 +92,18 @@ approval. Findings in this lane should be handled by narrowing `allowScripts`,
 upgrade. This does not prove a host is compromised and does not eliminate
 runtime/import-time package risk.
 
+The August 4, 2026 keyv / cacheable (ChainDrop / Shai-Hulud "Here We Go Again")
+campaign is included as a read-only dependency-metadata and host-marker
+notification lane. Snyk, StepSecurity, Aikido, Wiz, and JFrog independently
+confirmed an initial wave of eleven full-worm carriers starting with
+`keyv@6.0.0` and ten related jaredwray-family releases, with rapid worm
+propagation to hundreds of additional packages. The guard flags exact
+compromised versions, campaign network strings, and payload/persistence text
+only. It does not download packages, run install hooks, collect telemetry, or
+remediate. Operators should follow the security-vendor and npm Security
+guidance for isolation, evidence preservation, and credential rotation from a
+clean machine.
+
 JFrog's June 24, 2026 VS Code autorun / blockchain dead-drop report is included
 because the malicious npm versions avoid normal lifecycle-script execution and
 instead rely on trusted editor folder-open task behavior. The guard checks for

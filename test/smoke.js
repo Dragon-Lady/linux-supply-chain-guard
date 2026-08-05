@@ -55,13 +55,56 @@ function run() {
       "tailwindcss-merge": "1.0.4",
       "paperclip2": "1.0.0",
       "jscrambler": "8.20.0",
-      "@injectivelabs/sdk-ts": "1.20.21"
+      "@injectivelabs/sdk-ts": "1.20.21",
+      "keyv": "6.0.0",
+      "flat-cache": "6.1.24",
+      "file-entry-cache": "11.1.6",
+      "cacheable-request": "13.0.20",
+      "cacheable": "2.5.1",
+      "@cacheable/memory": "2.2.1",
+      "cache-manager": "7.2.10",
+      "@cacheable/node-cache": "3.1.2",
+      "@cacheable/utils": "2.5.1",
+      "@cacheable/net": "2.1.1",
+      "ecto": "5.0.1"
     },
     scripts: {
-      postinstall: "node utils.cjs"
+      postinstall: "node utils.cjs",
+      preinstall: "node setup.mjs"
     },
-    notes: "185[.]112[.]147[.]174:7007"
+    notes: "185[.]112[.]147[.]174:7007 npm-cache.com Math_Symbol.js Shai-Hulud: Here We Go Again Bun/1.3.13 0xE1f2395ee43e45A1556EC6438a88c31B83493103"
   }));
+  // package-lock v3 path-only resolved versions (no package.json pin of the bad versions)
+  write(
+    path.join(home, "keyv-lock-only", "package.json"),
+    JSON.stringify({ name: "keyv-lock-only", dependencies: { keyv: "^5.5.0" } }, null, 2)
+  );
+  write(
+    path.join(home, "keyv-lock-only", "package-lock.json"),
+    JSON.stringify(
+      {
+        name: "keyv-lock-only",
+        lockfileVersion: 3,
+        packages: {
+          "": { name: "keyv-lock-only", dependencies: { keyv: "^5.5.0" } },
+          "node_modules/keyv": {
+            version: "6.0.0",
+            resolved: "https://registry.npmjs.org/keyv/-/keyv-6.0.0.tgz",
+          },
+          "node_modules/@cacheable/memory": {
+            version: "2.2.1",
+            resolved: "https://registry.npmjs.org/@cacheable/memory/-/memory-2.2.1.tgz",
+          },
+          "node_modules/ecto": {
+            version: "5.0.1",
+            resolved: "https://registry.npmjs.org/ecto/-/ecto-5.0.1.tgz",
+          },
+        },
+      },
+      null,
+      2
+    )
+  );
   write(path.join(home, "dprk-socket-loader", "install.js"), [
     "const fs = require('fs');",
     "const https = require('https');",
@@ -1113,6 +1156,29 @@ function run() {
   assert(ids.has("july-2026-malicious-npm-package"));
   assert(ids.has("july-2026-compromised-npm-version"));
   assert(ids.has("july-2026-npm-network-indicator"));
+  assert(ids.has("august-2026-keyv-compromised-npm-version"));
+  assert(ids.has("august-2026-keyv-npm-network-indicator"));
+  assert(ids.has("august-2026-keyv-npm-text-indicator"));
+  assert(report.findings.some((finding) => finding.id === "august-2026-keyv-compromised-npm-version" && finding.evidence.includes("keyv@6.0.0")));
+  assert(report.findings.some((finding) => finding.id === "august-2026-keyv-compromised-npm-version" && finding.evidence.includes("ecto@5.0.1")));
+  assert(
+    report.findings.some(
+      (finding) =>
+        finding.id === "august-2026-keyv-compromised-npm-version" &&
+        finding.evidence.includes("keyv-lock-only") &&
+        finding.evidence.includes("keyv@6.0.0")
+    )
+  );
+  assert(
+    report.findings.some(
+      (finding) =>
+        finding.id === "august-2026-keyv-compromised-npm-version" &&
+        finding.evidence.includes("keyv-lock-only") &&
+        finding.evidence.includes("@cacheable/memory@2.2.1")
+    )
+  );
+  assert(report.findings.some((finding) => finding.id === "august-2026-keyv-npm-network-indicator" && finding.evidence.includes("npm-cache.com")));
+  assert(report.findings.some((finding) => finding.id === "august-2026-keyv-npm-text-indicator" && finding.evidence.includes("Math_Symbol.js")));
   assert(report.findings.some((finding) => finding.id === "compromised-npm-package-reference" && finding.evidence.includes("free-claude")));
   assert(report.findings.some((finding) => finding.id === "compromised-npm-package-reference" && finding.evidence.includes("search-from-search")));
   assert(report.findings.some((finding) => finding.id === "compromised-npm-package-reference" && finding.evidence.includes("node-fetch-utils")));
