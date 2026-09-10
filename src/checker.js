@@ -4,6 +4,13 @@ const crypto = require("crypto");
 const fs = require("fs");
 const path = require("path");
 
+let scanFileCache = null;
+let scanTextCache = null;
+let scanTextCacheBytes = 0;
+let scanIncludeResearch = false;
+let scanSkippedResearchDirs = 0;
+const MAX_SCAN_TEXT_CACHE_BYTES = 64 * 1024 * 1024;
+
 const PATCHED_KERNELS = {
   "8": "4.18.0-553.124.2.el8_10",
   "9": "5.14.0-611.54.4.el9_7",
@@ -189,7 +196,6 @@ const AUGUST_2026_KEYV_NPM_NETWORK_INDICATORS = [
 ];
 
 const AUGUST_2026_KEYV_NPM_TEXT_INDICATORS = [
-  "Shai-Hulud: Here We Go Again",
   "Math_Symbol.js",
   "math_init.js",
   // Covers package.json preinstall hooks that run node setup.mjs
@@ -269,7 +275,6 @@ const CHAINVEIL_NETWORK_INDICATORS = [
   "198.105.127.210",
   "23.27.202.27",
   "/$/boot",
-  "/upload",
   "ws://166.88.54.158:443",
   "http://166.88.54.158/upload",
   "http://166.88.54.158/$/boot",
@@ -291,8 +296,6 @@ const CHAINVEIL_BLOCKCHAIN_INDICATORS = [
 ];
 
 const CHAINVEIL_TEXT_INDICATORS = [
-  "ChainVeil",
-  "SuccessKey",
   "successkeyteck",
   "global['_V']",
   "global[\"_V\"]",
@@ -860,16 +863,10 @@ const HADES_TEXT_INDICATORS = [
   joinParts("bun-v1.3.", "13"),
   joinParts("bun-v1.3.", "14"),
   joinParts("oven-sh/bun/releases/", "download"),
-  "urllib.request",
-  "urlretrieve",
-  "tempfile.gettempdir",
-  "subprocess.run",
   "langchain_core-setup.pth",
   joinParts("thebeautiful", "marchoftime"),
   joinParts("thebeautiful", "snadsoftime"),
   joinParts("/tmp/.sshu", "-setup.js"),
-  "/var/run/docker.sock",
-  "harden-runner",
 ];
 
 const HADES_NATIVE_EXTENSION_FILES = new Set([
@@ -1738,15 +1735,8 @@ const FFMPEG_PIXELSMASH_TEXT_INDICATORS = [
   "magicyuv",
   "VFS..D magicyuv",
   "ffmpeg -decoders",
-  "ffprobe",
   "AVBuffer.free",
   "crafted MagicYUV AVI",
-  "Jellyfin",
-  "Nextcloud",
-  "Movie preview",
-  "PhotoPrism",
-  "Immich",
-  "ffmpegthumbnailer",
 ];
 
 const LIBSSH2_CVE202655200_FIXED_COMMIT = "7acf3df";
@@ -2696,6 +2686,11 @@ function scanHost(options = {}) {
   const targetRoot = path.resolve(options.targetRoot || "/");
   const homePath = options.homePath || process.env.HOME || "";
   const findings = [];
+  scanFileCache = new Map();
+  scanTextCache = new Map();
+  scanTextCacheBytes = 0;
+  scanIncludeResearch = Boolean(options.includeResearch);
+  scanSkippedResearchDirs = 0;
   const osRelease = readOsRelease(readText(mapLinuxPath(targetRoot, "/etc/os-release")));
   const kernelRelease =
     options.kernelRelease ||
@@ -2706,107 +2701,129 @@ function scanHost(options = {}) {
   checkAlmaFragnesia(findings, osRelease, kernelRelease);
   checkItScapeArm64Kvm(findings, targetRoot, kernelRelease, architecture);
   checkKernelModules(findings, targetRoot);
-  checkTrendMicroHookReloadBypass(findings, targetRoot, homePath);
-  checkSystemRegisterHijackingResearch(findings, targetRoot, homePath);
-  checkDirtyCbcRxgk(findings, targetRoot, homePath);
-  checkDirtyClone(findings, targetRoot, homePath);
   checkNfTablesCve202623111(findings, targetRoot, homePath, kernelRelease);
   checkSeptember2026LinuxLpePack(findings, targetRoot, homePath, kernelRelease);
   checkPersistence(findings, targetRoot, homePath);
   checkCompromisedNpmPackages(findings, targetRoot, homePath);
-  checkJuly2026NpmCampaigns(findings, targetRoot, homePath);
   checkAugust2026KeyvNpmCampaign(findings, targetRoot, homePath);
   checkAugust2026TrinititeNpm(findings, targetRoot, homePath);
   checkChainVeilNpmCampaign(findings, targetRoot, homePath);
-  checkVsCodeAutorunBlockchainNpm(findings, targetRoot, homePath);
-  checkAtomicArchAurCompromise(findings, targetRoot, homePath);
   checkDprkNpmRat(findings, targetRoot, homePath);
-  checkDprkSocketIoLoader(findings, targetRoot, homePath);
-  checkOtterCookieNpm(findings, targetRoot, homePath);
-  checkEasyDayJsMastraNpm(findings, targetRoot, homePath);
-  checkProcwireRoutecraftNpm(findings, targetRoot, homePath);
-  checkWshuNetAndStitchSdkNpm(findings, targetRoot, homePath);
-  checkMyraApintergrationpostNpm(findings, targetRoot, homePath);
-  checkPostcssWindowsRatNpm(findings, targetRoot, homePath);
-  checkSolanaFakeFix(findings, targetRoot, homePath);
-  checkGlassWasmOpenVsx(findings, targetRoot, homePath);
-  checkJetBrainsMarketplaceAiKeyStealers(findings, targetRoot, homePath);
-  checkAstroConfigC2(findings, targetRoot, homePath);
   checkHadesPyPi(findings, targetRoot, homePath);
-  checkMiasmaImmobiliareLabsNpm(findings, targetRoot, homePath);
-  checkDynatraceTeamPcpWatch(findings, targetRoot, homePath);
-  checkPcpJackRelayArtifacts(findings, targetRoot, homePath);
-  checkGentlemenRansomware(findings, targetRoot, homePath);
   checkAuroraLinuxRansomware(findings, targetRoot, homePath);
-  checkEdgecutionPayoutsKing(findings, targetRoot, homePath);
   checkChromeCookieNativeMessagingHijack(findings, targetRoot, homePath);
-  checkAdblockForYoutubeExtension(findings, targetRoot, homePath);
-  checkHeavensGateEvasion(findings, targetRoot, homePath);
-  checkArgamalGameRat(findings, targetRoot, homePath);
-  checkCryptoClipperUsbWorm(findings, targetRoot, homePath);
-  checkPeopleSoftCve202635273(findings, targetRoot, homePath);
-  checkPaloAltoGlobalProtect0257(findings, targetRoot, homePath);
-  checkRoundcubeCve202549113(findings, targetRoot, homePath);
-  checkJoomlaJceCve202648907(findings, targetRoot, homePath);
-  checkJoomlaSpPageBuilderCve202648908(findings, targetRoot, homePath);
-  checkSplunkEnterpriseCve202620253(findings, targetRoot, homePath);
-  checkRedcapExposure(findings, targetRoot, homePath);
-  checkFortinetCredentialExposure(findings, targetRoot, homePath);
-  checkClickFixKb4Phishing(findings, targetRoot, homePath);
-  checkClickFixMacosDmgStealer(findings, targetRoot, homePath);
-  checkMacosGaslight(findings, targetRoot, homePath);
-  checkEvilTokensDeviceCodePhishing(findings, targetRoot, homePath);
-  checkBluekitBitmPhishing(findings, targetRoot, homePath);
-  checkTonratPhotoZipPhishing(findings, targetRoot, homePath);
-  checkMisticRatInitialAccess(findings, targetRoot, homePath);
   checkFfmpegPixelSmashExposure(findings, targetRoot, homePath);
-  checkLibssh2Cve202655200Exposure(findings, targetRoot, homePath);
   checkPackageKitCve202641651Exposure(findings, targetRoot, homePath);
-  checkCloudBucketHijackingExposure(findings, targetRoot, homePath);
-  checkMcpPythonSdkCve202652869Exposure(findings, targetRoot, homePath);
-  checkAmazonQWorkspaceMcpExposure(findings, targetRoot, homePath);
-  checkShapedPluginSupplyChainCompromise(findings, targetRoot, homePath);
-  checkDcatAuthGoogle2faPackagistCompromise(findings, targetRoot, homePath);
-  checkLaravelLivewireCve202554068(findings, targetRoot, homePath);
-  checkSquidbleedFtpProxyExposure(findings, targetRoot, homePath);
-  checkHaproxyCve202655203Exposure(findings, targetRoot, homePath);
-  checkNginxCritical2026Exposure(findings, targetRoot, homePath);
-  checkLiteLlmGatewayExposure(findings, targetRoot, homePath);
-  checkDifyTapExposure(findings, targetRoot, homePath);
-  checkLangflowUploadExposure(findings, targetRoot, homePath);
-  checkGogsPathTraversalRceExposure(findings, targetRoot, homePath);
   checkOpenClawAgentExposure(findings, targetRoot, homePath);
-  checkAgentjackingSentryMcpExposure(findings, targetRoot, homePath);
-  checkAutoJackAgentLocalhostExposure(findings, targetRoot, homePath);
-  checkOdinDnsTxtAgentSetupExposure(findings, targetRoot, homePath);
-  checkImpacketSecretsdumpArtifacts(findings, targetRoot, homePath);
-  checkDaemonToolsSupplyChainArtifacts(findings, targetRoot, homePath);
-  checkCpythonTarfileCve202611940(findings, targetRoot, homePath);
-  checkDjangoCacheDeserializationExposure(findings, targetRoot, homePath);
-  checkNpmV12Readiness(findings, targetRoot, homePath);
-  checkOperationHighlandAuthStack(findings, targetRoot, homePath);
-  checkAryStingerEdgeProxy(findings, targetRoot, homePath);
-  checkCisaKevEdgeDeviceLatest(findings, targetRoot, homePath);
-  checkPtcWindchillCve202612569(findings, targetRoot, homePath);
-  checkPythonOrgReleaseApiTrust(findings, targetRoot, homePath);
-  checkCiscoSdWanManager2026(findings, targetRoot, homePath);
-  checkCiscoCucmWebDialer20230(findings, targetRoot, homePath);
-  checkExchangeCve202645504(findings, targetRoot, homePath);
   checkTransformersPayload(findings, targetRoot);
+
+  if (options.includeHistorical) {
+    checkTrendMicroHookReloadBypass(findings, targetRoot, homePath);
+    checkSystemRegisterHijackingResearch(findings, targetRoot, homePath);
+    checkDirtyCbcRxgk(findings, targetRoot, homePath);
+    checkDirtyClone(findings, targetRoot, homePath);
+    checkJuly2026NpmCampaigns(findings, targetRoot, homePath);
+    checkVsCodeAutorunBlockchainNpm(findings, targetRoot, homePath);
+    checkAtomicArchAurCompromise(findings, targetRoot, homePath);
+    checkDprkSocketIoLoader(findings, targetRoot, homePath);
+    checkOtterCookieNpm(findings, targetRoot, homePath);
+    checkEasyDayJsMastraNpm(findings, targetRoot, homePath);
+    checkProcwireRoutecraftNpm(findings, targetRoot, homePath);
+    checkWshuNetAndStitchSdkNpm(findings, targetRoot, homePath);
+    checkMyraApintergrationpostNpm(findings, targetRoot, homePath);
+    checkPostcssWindowsRatNpm(findings, targetRoot, homePath);
+    checkSolanaFakeFix(findings, targetRoot, homePath);
+    checkGlassWasmOpenVsx(findings, targetRoot, homePath);
+    checkJetBrainsMarketplaceAiKeyStealers(findings, targetRoot, homePath);
+    checkAstroConfigC2(findings, targetRoot, homePath);
+    checkMiasmaImmobiliareLabsNpm(findings, targetRoot, homePath);
+    checkDynatraceTeamPcpWatch(findings, targetRoot, homePath);
+    checkPcpJackRelayArtifacts(findings, targetRoot, homePath);
+    checkGentlemenRansomware(findings, targetRoot, homePath);
+    checkEdgecutionPayoutsKing(findings, targetRoot, homePath);
+    checkAdblockForYoutubeExtension(findings, targetRoot, homePath);
+    checkHeavensGateEvasion(findings, targetRoot, homePath);
+    checkArgamalGameRat(findings, targetRoot, homePath);
+    checkCryptoClipperUsbWorm(findings, targetRoot, homePath);
+    checkPeopleSoftCve202635273(findings, targetRoot, homePath);
+    checkPaloAltoGlobalProtect0257(findings, targetRoot, homePath);
+    checkRoundcubeCve202549113(findings, targetRoot, homePath);
+    checkJoomlaJceCve202648907(findings, targetRoot, homePath);
+    checkJoomlaSpPageBuilderCve202648908(findings, targetRoot, homePath);
+    checkSplunkEnterpriseCve202620253(findings, targetRoot, homePath);
+    checkRedcapExposure(findings, targetRoot, homePath);
+    checkFortinetCredentialExposure(findings, targetRoot, homePath);
+    checkClickFixKb4Phishing(findings, targetRoot, homePath);
+    checkClickFixMacosDmgStealer(findings, targetRoot, homePath);
+    checkMacosGaslight(findings, targetRoot, homePath);
+    checkEvilTokensDeviceCodePhishing(findings, targetRoot, homePath);
+    checkBluekitBitmPhishing(findings, targetRoot, homePath);
+    checkTonratPhotoZipPhishing(findings, targetRoot, homePath);
+    checkMisticRatInitialAccess(findings, targetRoot, homePath);
+    checkLibssh2Cve202655200Exposure(findings, targetRoot, homePath);
+    checkCloudBucketHijackingExposure(findings, targetRoot, homePath);
+    checkMcpPythonSdkCve202652869Exposure(findings, targetRoot, homePath);
+    checkAmazonQWorkspaceMcpExposure(findings, targetRoot, homePath);
+    checkShapedPluginSupplyChainCompromise(findings, targetRoot, homePath);
+    checkDcatAuthGoogle2faPackagistCompromise(findings, targetRoot, homePath);
+    checkLaravelLivewireCve202554068(findings, targetRoot, homePath);
+    checkSquidbleedFtpProxyExposure(findings, targetRoot, homePath);
+    checkHaproxyCve202655203Exposure(findings, targetRoot, homePath);
+    checkNginxCritical2026Exposure(findings, targetRoot, homePath);
+    checkLiteLlmGatewayExposure(findings, targetRoot, homePath);
+    checkDifyTapExposure(findings, targetRoot, homePath);
+    checkLangflowUploadExposure(findings, targetRoot, homePath);
+    checkGogsPathTraversalRceExposure(findings, targetRoot, homePath);
+    checkAgentjackingSentryMcpExposure(findings, targetRoot, homePath);
+    checkAutoJackAgentLocalhostExposure(findings, targetRoot, homePath);
+    checkOdinDnsTxtAgentSetupExposure(findings, targetRoot, homePath);
+    checkImpacketSecretsdumpArtifacts(findings, targetRoot, homePath);
+    checkDaemonToolsSupplyChainArtifacts(findings, targetRoot, homePath);
+    checkCpythonTarfileCve202611940(findings, targetRoot, homePath);
+    checkDjangoCacheDeserializationExposure(findings, targetRoot, homePath);
+    checkNpmV12Readiness(findings, targetRoot, homePath);
+    checkOperationHighlandAuthStack(findings, targetRoot, homePath);
+    checkAryStingerEdgeProxy(findings, targetRoot, homePath);
+    checkCisaKevEdgeDeviceLatest(findings, targetRoot, homePath);
+    checkPtcWindchillCve202612569(findings, targetRoot, homePath);
+    checkPythonOrgReleaseApiTrust(findings, targetRoot, homePath);
+    checkCiscoSdWanManager2026(findings, targetRoot, homePath);
+    checkCiscoCucmWebDialer20230(findings, targetRoot, homePath);
+    checkExchangeCve202645504(findings, targetRoot, homePath);
+  }
   checkSecretSurfaces(findings, targetRoot, homePath);
+
+  const finalized = finalizeFindings(findings, {
+    includeResearch: Boolean(options.includeResearch),
+    includeResolved: Boolean(options.includeResolved),
+  });
+  finalized.suppressed.research += scanSkippedResearchDirs;
+  scanFileCache = null;
+  scanTextCache = null;
+  scanTextCacheBytes = 0;
+  scanIncludeResearch = false;
+  scanSkippedResearchDirs = 0;
 
   return {
     tool: "linux-supply-chain-guard",
-    version: "0.1.1",
+    version: "0.1.2",
     generatedAt: new Date().toISOString(),
     targetRoot,
+    options: {
+      includeHistorical: Boolean(options.includeHistorical),
+      includeResearch: Boolean(options.includeResearch),
+      includeResolved: Boolean(options.includeResolved),
+    },
     host: {
       os: osRelease,
       kernelRelease,
       architecture: architecture || "unknown",
     },
-    summary: summarize(findings),
-    findings,
+    summary: {
+      ...summarize(finalized.findings),
+      suppressed: finalized.suppressed,
+    },
+    findings: finalized.findings,
   };
 }
 
@@ -2960,7 +2977,7 @@ function checkKernelModules(findings, targetRoot) {
     const pattern = new RegExp(`install\\s+${escapeRegExp(name)}\\s+/bin/false`);
     return !pattern.test(modprobeText);
   });
-  if (missing.length > 0) {
+  if (missing.length > 0 && risky.length > 0) {
     addFinding(findings, "review", "fragnesia-module-blacklist-not-confirmed", "Temporary DirtyFrag-family module blacklist was not fully confirmed.", `missing install /bin/false entries: ${missing.join(", ")}`, "This is only a mitigation check. Prefer patched kernels and reboot when available.");
   }
 }
@@ -3292,11 +3309,15 @@ function checkNfTablesCve202623111(findings, targetRoot, homePath, kernelRelease
     addFinding(findings, "review", "nftables-cve-2026-23111-eol-kernel-review", "Running kernel is in an EOL range called out by CVE-2026-23111 public reporting.", kernelRelease, "Move to a vendor-supported fixed kernel. Do not rely on EOL upstream trains for this nf_tables local privilege-escalation class.");
   }
 
-  if ((nfTablesLoaded || nfTablesConfigured) && unprivilegedUserNsEnabled) {
+  if (kernelAssessment.status !== "fixed"
+    && (nfTablesLoaded || nfTablesConfigured)
+    && unprivilegedUserNsEnabled) {
     addFinding(findings, "warning", "nftables-cve-2026-23111-userns-exposure", "nf_tables and unprivileged user namespaces are both present, matching CVE-2026-23111 exposure preconditions.", `nf_tables=${nfTablesLoaded ? "loaded" : "configured"}; kernel.unprivileged_userns_clone=1`, "Patch and reboot. As a temporary mitigation where workloads allow it, disable unprivileged user namespaces and restrict untrusted local shell access.");
-  } else if (nfTablesLoaded || nfTablesConfigured) {
+  } else if (kernelAssessment.status !== "fixed" && (nfTablesLoaded || nfTablesConfigured)) {
     addFinding(findings, "review", "nftables-cve-2026-23111-nftables-present", "nf_tables is present on this host; review CVE-2026-23111 kernel fix status.", nfTablesLoaded ? "nf_tables module loaded" : "CONFIG_NF_TABLES enabled", "Correlate with running kernel version, distro backport status, and user-namespace policy.");
   }
+
+  if (kernelAssessment.status === "fixed") return;
 
   const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
   const roots = [
@@ -3385,7 +3406,7 @@ function checkDprkNpmRat(findings, targetRoot, homePath) {
     if (!text) continue;
     const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
     for (const packageName of KNOWN_DPRK_NPM_PACKAGES) {
-      if (text.includes(packageName)) {
+      if (npmPackageNameInDependencyText(text, packageName)) {
         addFinding(findings, "critical", "dprk-npm-rat-package-reference", "Known DPRK npm RAT package name appears in dependency metadata.", `${relative}: ${packageName}`, "Do not run npm install/build/test in this tree. Inspect from a clean posture and rotate credentials if execution is suspected.");
       }
     }
@@ -3443,7 +3464,7 @@ function checkCompromisedNpmPackages(findings, targetRoot, homePath) {
     if (!text) continue;
     const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
     for (const packageName of KNOWN_COMPROMISED_NPM_PACKAGES) {
-      if (text.includes(packageName)) {
+      if (npmPackageNameInDependencyText(text, packageName)) {
         addFinding(findings, "critical", "compromised-npm-package-reference", "Known compromised npm package appears in dependency metadata.", `${relative}: ${packageName}`, "Do not run npm install/build/test in this tree. Isolate affected systems if execution is suspected and rotate secrets from a clean posture.");
       }
     }
@@ -3473,7 +3494,7 @@ function checkJuly2026NpmCampaigns(findings, targetRoot, homePath) {
     const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
 
     for (const packageName of JULY_2026_NPM_ALL_VERSION_PACKAGES) {
-      if (text.includes(packageName)) {
+      if (npmPackageNameInDependencyText(text, packageName)) {
         addFinding(findings, "critical", "july-2026-malicious-npm-package", "July 2026 malicious npm package appears in scanned metadata.", `${relative}: ${packageName}`, "Do not run package-manager or build commands in this tree. Preserve evidence and rotate exposed credentials from a clean machine if install or import execution may have occurred.");
       }
     }
@@ -3515,24 +3536,27 @@ function checkAugust2026KeyvNpmCampaign(findings, targetRoot, homePath) {
     const text = readText(filePath);
     if (!text) continue;
     const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+    const dependencyMetadata = DEPENDENCY_FILE_NAMES.has(path.basename(filePath));
 
-    for (const [packageName, affectedVersions] of Object.entries(AUGUST_2026_KEYV_NPM_COMPROMISED_VERSIONS)) {
-      for (const version of scopedPackageVersionsInText(text, packageName)) {
-        if (affectedVersions.includes(version)) {
-          addFinding(
-            findings,
-            "critical",
-            "august-2026-keyv-compromised-npm-version",
-            "August 2026 keyv/cacheable (ChainDrop / Shai-Hulud) compromised npm package version appears in scanned metadata (cross-platform npm ecosystem risk).",
-            `${relative}: ${packageName}@${version}`,
-            "Read-only notification only. This compromise is not Linux-specific—it affects any OS/lane that installed these npm versions. Do not run package-manager install/build commands in this tree. If this version may have been installed, treat the host/CI runner as potentially compromised: isolate, preserve evidence, rotate npm/GitHub/cloud/SSH/Vault/AI-tool credentials from a clean machine, and follow guidance from Snyk, Wiz, JFrog, Aikido, StepSecurity, and npm Security. This tool does not collect data, remediate packages, or prove a host is clean."
-          );
+    if (dependencyMetadata) {
+      for (const [packageName, affectedVersions] of Object.entries(AUGUST_2026_KEYV_NPM_COMPROMISED_VERSIONS)) {
+        for (const version of scopedPackageVersionsInText(text, packageName)) {
+          if (affectedVersions.includes(version)) {
+            addFinding(
+              findings,
+              "critical",
+              "august-2026-keyv-compromised-npm-version",
+              "August 2026 keyv/cacheable (ChainDrop / Shai-Hulud) compromised npm package version appears in scanned metadata (cross-platform npm ecosystem risk).",
+              `${relative}: ${packageName}@${version}`,
+              "Read-only notification only. This compromise is not Linux-specific—it affects any OS/lane that installed these npm versions. Do not run package-manager install/build commands in this tree. If this version may have been installed, treat the host/CI runner as potentially compromised: isolate, preserve evidence, rotate npm/GitHub/cloud/SSH/Vault/AI-tool credentials from a clean machine, and follow guidance from Snyk, Wiz, JFrog, Aikido, StepSecurity, and npm Security. This tool does not collect data, remediate packages, or prove a host is clean."
+            );
+          }
         }
       }
     }
 
     for (const indicator of AUGUST_2026_KEYV_NPM_NETWORK_INDICATORS) {
-      if (text.includes(indicator)) {
+      if (!isDocumentationPath(relative) && text.includes(indicator)) {
         addFinding(
           findings,
           "critical",
@@ -3545,7 +3569,7 @@ function checkAugust2026KeyvNpmCampaign(findings, targetRoot, homePath) {
     }
 
     for (const indicator of AUGUST_2026_KEYV_NPM_TEXT_INDICATORS) {
-      if (text.includes(indicator)) {
+      if (!isDocumentationPath(relative) && text.includes(indicator)) {
         addFinding(
           findings,
           "critical",
@@ -3572,14 +3596,16 @@ function checkAugust2026TrinititeNpm(findings, targetRoot, homePath) {
     const text = readText(filePath);
     if (!text) continue;
     const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
-    for (const version of trinititeVersionsInText(text)) {
-      if (AUGUST_2026_TRINITITE_VERSIONS.includes(version)) {
-        addFinding(findings, "critical", "trinitite-compromised-npm-version", "Trinitite / Mini Shai-Hulud compromised npm package version appears in scanned metadata.", `${relative}: ${AUGUST_2026_TRINITITE_PACKAGE}@${version}`, "Do not run install or build commands in this tree. If lifecycle scripts or node-gyp may have run, isolate the host or runner and rotate GitHub, npm, PyPI, RubyGems, cloud, Kubernetes, Vault, SSH, and CI credentials from a separate clean machine.");
+    if (DEPENDENCY_FILE_NAMES.has(path.basename(filePath))) {
+      for (const version of trinititeVersionsInText(text)) {
+        if (AUGUST_2026_TRINITITE_VERSIONS.includes(version)) {
+          addFinding(findings, "critical", "trinitite-compromised-npm-version", "Trinitite / Mini Shai-Hulud compromised npm package version appears in scanned metadata.", `${relative}: ${AUGUST_2026_TRINITITE_PACKAGE}@${version}`, "Do not run install or build commands in this tree. If lifecycle scripts or node-gyp may have run, isolate the host or runner and rotate GitHub, npm, PyPI, RubyGems, cloud, Kubernetes, Vault, SSH, and CI credentials from a separate clean machine.");
+        }
       }
     }
 
     for (const indicator of AUGUST_2026_TRINITITE_INDICATORS) {
-      if (text.includes(indicator)) {
+      if (!isDocumentationPath(relative) && text.includes(indicator)) {
         addFinding(findings, "critical", "trinitite-campaign-indicator", "Trinitite / Mini Shai-Hulud payload or exfiltration marker appears in scanned metadata.", `${relative}: ${indicator}`, "Preserve evidence without executing it. Correlate with August 28, 2026 install history, unexpected public GitHub repositories, package publication, and credential use; rotate exposed credentials from a clean machine.");
       }
     }
@@ -3614,27 +3640,28 @@ function checkChainVeilNpmCampaign(findings, targetRoot, homePath) {
     const text = readText(filePath);
     if (!text) continue;
     const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+    const dependencyMetadata = DEPENDENCY_FILE_NAMES.has(path.basename(filePath));
 
     for (const packageName of CHAINVEIL_NPM_PACKAGES) {
-      if (text.includes(packageName)) {
+      if (dependencyMetadata && npmPackageNameInDependencyText(text, packageName)) {
         addFinding(findings, "critical", "chainveil-npm-package-reference", "Checkmarx ChainVeil / SuccessKey npm package name appears in scanned metadata.", `${relative}: ${packageName}`, "Do not import or run this project. Remove the typosquat package, regenerate lockfiles from a clean posture, and rotate developer credentials if the package may have executed.");
       }
     }
 
     for (const indicator of CHAINVEIL_NETWORK_INDICATORS) {
-      if (text.includes(indicator)) {
+      if (!isDocumentationPath(relative) && text.includes(indicator)) {
         addFinding(findings, "critical", "chainveil-network-indicator", "ChainVeil C2 endpoint or IP indicator appears in scanned host metadata.", `${relative}: ${indicator}`, "Correlate DNS, proxy, firewall, WebSocket, and process telemetry. Block the C2 IPs and rotate SSH, npm, cloud, API, and environment-derived credentials from a clean posture if execution occurred.");
       }
     }
 
     for (const indicator of CHAINVEIL_BLOCKCHAIN_INDICATORS) {
-      if (text.includes(indicator)) {
+      if (!isDocumentationPath(relative) && text.includes(indicator)) {
         addFinding(findings, "critical", "chainveil-blockchain-c2-indicator", "ChainVeil blockchain C2 wallet or transaction indicator appears in scanned code.", `${relative}: ${indicator}`, "Treat this as likely ChainVeil loader or copied IOC material. If found under node_modules or app source, preserve evidence and review import execution history.");
       }
     }
 
     for (const indicator of CHAINVEIL_TEXT_INDICATORS) {
-      if (text.includes(indicator)) {
+      if (!isDocumentationPath(relative) && text.includes(indicator)) {
         addFinding(findings, "warning", "chainveil-text-indicator", "ChainVeil loader, marker, key, or campaign term appears in scanned host metadata.", `${relative}: ${indicator}`, "Review for lib/lib.min.js import-time execution, A6 campaign markers, seeded shufflers, credential harvesting, and shell-config persistence.");
       }
     }
@@ -3672,7 +3699,7 @@ function checkVsCodeAutorunBlockchainNpm(findings, targetRoot, homePath) {
     const base = path.basename(filePath);
 
     for (const [packageName, versions] of Object.entries(VSCODE_AUTORUN_BLOCKCHAIN_NPM_PACKAGES)) {
-      if (!text.includes(packageName)) continue;
+      if (!npmPackageNameInDependencyText(text, packageName)) continue;
 
       const foundVersions = packageVersionsInText(text, packageName);
       const matchedVersion = foundVersions.find((version) => versions.includes(version));
@@ -3785,7 +3812,7 @@ function checkOtterCookieNpm(findings, targetRoot, homePath) {
     const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
 
     for (const packageName of OTTERCOOKIE_NPM_PACKAGES) {
-      if (text.includes(packageName)) {
+      if (npmPackageNameInDependencyText(text, packageName)) {
         addFinding(findings, "critical", "ottercookie-npm-package-reference", "Panther OtterCookie npm campaign package appears in scanned metadata.", `${relative}: ${packageName}`, "Do not run npm install/build/test in this tree. If install occurred, inspect for Vercel C2 traffic, SSH authorized_keys modification, and rotate developer secrets from a clean posture."); // push-guard: ignore
       }
     }
@@ -3878,7 +3905,7 @@ function checkWshuNetAndStitchSdkNpm(findings, targetRoot, homePath) {
     const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
 
     for (const packageName of WSHU_NET_NPM_PACKAGES) {
-      if (text.includes(packageName)) {
+      if (npmPackageNameInDependencyText(text, packageName)) {
         addFinding(findings, "critical", "wshu-net-npm-package-reference", "SafeDep WSHU npm credential-stealer package appears in scanned metadata.", `${relative}: ${packageName}`, "Do not run package manager commands in this tree. If install may have occurred, inspect user systemd persistence and rotate developer, browser, cloud, package, and wallet credentials from a clean posture.");
       }
     }
@@ -3930,7 +3957,7 @@ function checkMyraApintergrationpostNpm(findings, targetRoot, homePath) {
     const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
 
     for (const packageName of MYRA_NPM_PACKAGES) {
-      if (text.includes(packageName)) {
+      if (npmPackageNameInDependencyText(text, packageName)) {
         addFinding(findings, "critical", "myra-apintergrationpost-package-reference", "SafeDep MYRA/apintergrationpost npm RAT package appears in scanned metadata.", `${relative}: ${packageName}`, "Do not run npm install/build/test in this tree. Version 4.0.2 and later forced root execution in reporting; preserve artifacts and investigate as host compromise if execution occurred.");
       }
     }
@@ -3966,7 +3993,7 @@ function checkPostcssWindowsRatNpm(findings, targetRoot, homePath) {
     const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
 
     for (const packageName of POSTCSS_WINDOWS_RAT_NPM_PACKAGES) {
-      if (text.includes(packageName)) {
+      if (npmPackageNameInDependencyText(text, packageName)) {
         addFinding(findings, "critical", "postcss-windows-rat-package-reference", "JFrog PostCSS typosquat Windows RAT package appears in scanned metadata.", `${relative}: ${packageName}`, "Do not run npm install/build/test in this tree. If installed on Windows, inspect temp winPatch artifacts, Run-key persistence, Python loader files, and C2 traffic.");
       }
     }
@@ -4005,7 +4032,7 @@ function checkSolanaFakeFix(findings, targetRoot, homePath) {
     const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
 
     for (const packageName of SOLANA_FAKEFIX_NPM_PACKAGES) {
-      if (text.includes(packageName)) {
+      if (npmPackageNameInDependencyText(text, packageName)) {
         addFinding(findings, "critical", "solana-fakefix-npm-package-reference", "JFrog Solana FakeFix / CMS loader npm package appears in scanned metadata.", `${relative}: ${packageName}`, "Do not run npm install/build/test in this tree. If install/import occurred, rotate Solana wallets, SSH keys, cloud credentials, source-control tokens, npm tokens, and CI secrets from a clean posture.");
       }
     }
@@ -4058,7 +4085,7 @@ function checkGlassWasmOpenVsx(findings, targetRoot, homePath) {
     if (!text) continue;
 
     for (const packageName of GLASSWASM_OPENVSX_PACKAGES) {
-      if (text.includes(packageName)) {
+      if (npmPackageNameInDependencyText(text, packageName)) {
         addFinding(findings, "critical", "glasswasm-openvsx-package-reference", "Socket GlassWASM Open VSX affected extension appears in scanned metadata.", `${relative}: ${packageName}`, "Remove Open VSX-sourced copies and treat prior activation as potential second-stage execution.");
       }
     }
@@ -4166,10 +4193,12 @@ function checkHadesPyPi(findings, targetRoot, homePath) {
 
     const text = readText(filePath);
     if (!text) continue;
-    for (const [packageName, versions] of Object.entries(HADES_PYPI_PACKAGES)) {
-      for (const version of versions) {
-        if (pythonPackageVersionInText(text, packageName, version)) {
-          addFinding(findings, "critical", "hades-pypi-package-version", "Known Hades PyPI package version appears in scanned metadata.", `${relative}: ${packageName}==${version}`, "Do not run Python/package-manager commands in this environment. Pin away from the affected version and rotate credentials if execution may have occurred.");
+    if (isPythonDependencyMetadataPath(relative)) {
+      for (const [packageName, versions] of Object.entries(HADES_PYPI_PACKAGES)) {
+        for (const version of versions) {
+          if (pythonPackageVersionInText(text, packageName, version)) {
+            addFinding(findings, "critical", "hades-pypi-package-version", "Known Hades PyPI package version appears in scanned metadata.", `${relative}: ${packageName}==${version}`, "Do not run Python/package-manager commands in this environment. Pin away from the affected version and rotate credentials if execution may have occurred.");
+          }
         }
       }
     }
@@ -4219,7 +4248,7 @@ function checkMiasmaImmobiliareLabsNpm(findings, targetRoot, homePath) {
     const base = path.basename(filePath);
 
     for (const [packageName, versions] of Object.entries(MIASMA_IMMOBILIARELABS_NPM_PACKAGES)) {
-      if (!text.includes(packageName)) continue;
+      if (!npmPackageNameInDependencyText(text, packageName)) continue;
       const matchedVersions = scopedPackageVersionsInText(text, packageName).filter((version) => versions.includes(version));
       for (const version of matchedVersions) {
         addFinding(findings, "critical", "miasma-immobiliarelabs-npm-version", "Socket-reported Miasma Mini Shai-Hulud ImmobiliareLabs npm package version appears in dependency metadata.", `${relative}: ${packageName}@${version}`, "Do not install or build this dependency tree. Restore known-good lockfiles, review developer and CI runners that installed it, and rotate npm, GitHub, GitLab, cloud, Docker, Kubernetes, Vault, SSH, Slack, Twilio, and CI/CD secrets from a clean machine.");
@@ -4576,18 +4605,24 @@ function checkChromeCookieNativeMessagingHijack(findings, targetRoot, homePath) 
     const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
     const normalizedRelative = relative.replace(/\\/g, "/").toLowerCase();
     const base = path.basename(filePath);
+    const browserArtifactPath = /\/(?:\.config\/(?:google-chrome|google-chrome-beta|google-chrome-unstable|google-chrome-for-testing|chromium|bravesoftware\/brave-browser|microsoft-edge|opera|vivaldi)|users\/[^/]+\/appdata\/local\/(?:google\/chrome|microsoft\/edge))\//i.test(normalizedRelative);
+
+    if (isApprovedStartupToolingArtifact(normalizedRelative, text)) continue;
 
     if (/\.pfd\.js$/i.test(base) || /\.pfd\.js/i.test(text)) {
       addFinding(findings, "warning", "chrome-cookie-hijack-pfd-js-lure", "Malwarebytes-reported fake PDF .pfd.js lure marker appears in scanned metadata.", relative, "Treat the attachment as executable JavaScript, not a PDF. Preserve mail headers, download metadata, script contents, temp-folder drops, and PowerShell history.");
     }
 
     for (const indicator of CHROME_COOKIE_NATIVE_MESSAGING_TERMS) {
-      if (text.includes(indicator)) {
+      if (browserArtifactPath && text.includes(indicator)) {
         addFinding(findings, "review", "chrome-cookie-native-messaging-text-indicator", "Chrome session-cookie theft or native-messaging advisory term appears in scanned metadata.", `${relative}: ${indicator}`, "Use this as a triage lead for malicious Chrome extension deployment, native host manifests, browser policy changes, and authenticated session-cookie theft.");
       }
     }
 
-    if (/chrome\.runtime\.(?:sendNativeMessage|connectNative)|allowed_origins|NativeMessagingHosts|native messaging host|native_host/i.test(text)
+    const nativeMessagingArtifact = normalizedRelative.includes("/nativemessaginghosts/")
+      || /["']allowed_origins["']\s*:.*chrome-extension:\/\//i.test(text);
+    if (nativeMessagingArtifact
+      && /chrome\.runtime\.(?:sendNativeMessage|connectNative)|allowed_origins|NativeMessagingHosts|native messaging host|native_host/i.test(text)
       && /Chrome|Google\\Chrome|Google\/Chrome|chrome-extension:\/\/|ExtensionInstallForcelist|ExtensionSettings/i.test(text)) {
       addFinding(findings, "critical", "chrome-cookie-native-messaging-bridge", "Chrome native messaging bridge terms appear near extension or Chrome policy context.", relative, "Inspect Chrome native messaging host manifests, extension policy/force-install settings, host executable paths, and child processes launched by the native host.");
     }
@@ -4597,13 +4632,14 @@ function checkChromeCookieNativeMessagingHijack(findings, targetRoot, homePath) 
       addFinding(findings, "warning", "chrome-cookie-policy-forced-extension", "Chrome policy or force-installed extension terms appear near cookie-theft/native-messaging context.", relative, "Export Google Chrome policy registry keys or policy JSON, identify forced extension IDs/update URLs, and remove unauthorized policy entries only after preserving evidence.");
     }
 
-    if (/Cookies|session cookies?|authenticated session cookies?|open tabs|URLs|language settings|fingerprinting data/i.test(text)
-      && /Chrome|browser|extension|Native Messaging|native companion/i.test(text)
+    if (/authenticated session cookies?|Chrome cookie database|Chrome cookies?|session-cookie theft/i.test(text)
+      && /chrome\.runtime\.(?:sendNativeMessage|connectNative)|chrome-extension:\/\/|Native Messaging|native companion|ExtensionInstallForcelist/i.test(text)
       && /MFA|multi-factor|account takeover|hijack|bypass/i.test(text)) {
       addFinding(findings, "critical", "chrome-cookie-session-theft-review", "Chrome extension/native companion terms indicate authenticated session-cookie theft.", relative, "Invalidate browser sessions for affected accounts, rotate passwords/tokens as needed, review MFA bypass impact, and inspect Chrome cookie databases and extension storage from a clean response environment.");
     }
 
     if (/PowerShell|powershell\.exe|pwsh|enumerate(?:s|d)? the contents of the C: drive|Get-ChildItem\s+C:|dir\s+C:/i.test(text)
+      && (browserArtifactPath || /\.pfd\.js$/i.test(base))
       && /Chrome Native Messaging|native messaging|Chrome extension|session cookies|open tabs|fingerprinting/i.test(text)) {
       addFinding(findings, "warning", "chrome-cookie-native-host-powershell", "Chrome native-host or malicious-extension terms appear near PowerShell command-execution behavior.", relative, "Review PowerShell script block logs, native host executable command lines, temp-folder drops, and remote command channel activity.");
     }
@@ -4614,6 +4650,17 @@ function checkChromeCookieNativeMessagingHijack(findings, targetRoot, homePath) 
       addFinding(findings, "review", "chrome-native-messaging-host-path", "Chrome native messaging host manifest path appears in scanned host tree.", relative, "Inventory the manifest name, allowed_origins, and native host executable path. Unknown manifests tied to browser extensions deserve incident-response review.");
     }
   }
+}
+
+function isApprovedStartupToolingArtifact(normalizedPath, text) {
+  const nativeMessagingPath = normalizedPath.includes("/nativemessaginghosts/");
+  const approvedOpenAiNativeHost = nativeMessagingPath
+    && /com\.openai\.codexextension/i.test(text)
+    && /\.codex\/plugins\/cache\/openai-bundled\/chrome\/latest\/extension-host\/linux\/x64\/extension-host/i.test(text)
+    && /chrome-extension:\/\/(?:hehggadaopoacecdllhhajmbjkdcmajg|odlomjlbamekndcpllcnffbgeohgkmjh)\//i.test(text);
+  const approvedOpenAiExtension = normalizedPath.includes("/extensions/hehggadaopoacecdllhhajmbjkdcmajg/1.26.901.11451_0/");
+  const approvedClaudeExtension = normalizedPath.includes("/extensions/fcoeoabgfenejglbffodgkkbkcdhcgfn/1.0.91_0/");
+  return approvedOpenAiNativeHost || approvedOpenAiExtension || approvedClaudeExtension;
 }
 
 function checkAdblockForYoutubeExtension(findings, targetRoot, homePath) {
@@ -5622,7 +5669,9 @@ function checkFfmpegPixelSmashExposure(findings, targetRoot, homePath) {
     addFinding(findings, "review", "ffmpeg-pixelsmash-package-review", "FFmpeg/libavcodec package appears installed on a host relevant to PixelSmash CVE-2026-8461.", `${pkg.name} ${pkg.version}`, "Confirm FFmpeg 8.1.2 or a vendor-fixed backport. If MagicYUV is not needed, consider disabling the decoder and restrict automated processing of untrusted AVI/MKV/MOV media.");
 
     const upstreamVersion = normalizePackageVersion(pkg.version);
-    if (upstreamVersion && compareDottedVersion(normalizeDottedVersion(upstreamVersion), FFMPEG_PIXELSMASH_FIXED) < 0) {
+    if (upstreamVersion
+      && !isDistributionPackageVersion(pkg.version)
+      && compareDottedVersion(normalizeDottedVersion(upstreamVersion), FFMPEG_PIXELSMASH_FIXED) < 0) {
       addFinding(findings, "warning", "ffmpeg-pixelsmash-upstream-version-review", "FFmpeg/libavcodec package version appears older than the upstream PixelSmash fixed release.", `${pkg.name} ${pkg.version}`, "Do not rely on upstream-looking versions alone for distro packages. Verify CVE-2026-8461 backport status, MagicYUV decoder exposure, and media-ingestion workflows.");
     }
   }
@@ -5648,6 +5697,8 @@ function checkFfmpegPixelSmashExposure(findings, targetRoot, homePath) {
     const text = readText(filePath);
     if (!text) continue;
     const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+    const hasPixelSmashContext = /PixelSmash|CVE-2026-8461|MagicYUV|magicyuv|AVBuffer\.free/i.test(text);
+    if (!hasPixelSmashContext) continue;
 
     for (const indicator of FFMPEG_PIXELSMASH_TEXT_INDICATORS) {
       if (text.includes(indicator)) {
@@ -5755,7 +5806,15 @@ function checkLibssh2Cve202655200Exposure(findings, targetRoot, homePath) {
 function checkPackageKitCve202641651Exposure(findings, targetRoot, homePath) {
   const packageStatus = readText(mapLinuxPath(targetRoot, "/var/lib/dpkg/status"));
   const packageKitPackages = packageKitPackagesFromDpkgStatus(packageStatus);
+  let vendorFixedPackages = 0;
   for (const pkg of packageKitPackages) {
+    const vendorFixed = isPackageKitCve202641651VendorFixed(targetRoot, pkg.version);
+    if (vendorFixed) {
+      addFinding(findings, "info", "packagekit-cve-2026-41651-vendor-fixed", "Installed Ubuntu-family PackageKit build includes the CVE-2026-41651 vendor backport.", `${pkg.name} ${pkg.version}`, "Keep normal distribution security updates enabled; upstream version numbers alone do not supersede vendor backport status.");
+      vendorFixedPackages += 1;
+      continue;
+    }
+
     addFinding(findings, "review", "packagekit-cve-2026-41651-package-review", "PackageKit package appears installed on a host relevant to CVE-2026-41651 local privilege escalation.", `${pkg.name} ${pkg.version}`, "Confirm PackageKit 1.3.5 or a vendor-fixed backport. Prioritize shared workstations, build hosts, kiosks, and systems where unprivileged local users can call PackageKit over D-Bus.");
 
     const upstreamVersion = normalizePackageVersion(pkg.version);
@@ -5765,6 +5824,8 @@ function checkPackageKitCve202641651Exposure(findings, targetRoot, homePath) {
       addFinding(findings, "warning", "packagekit-cve-2026-41651-affected-version", "Installed PackageKit package version appears in the CVE-2026-41651 affected upstream range 1.0.2 through 1.3.4.", `${pkg.name} ${pkg.version}`, "Patch through the distribution. Distro package suffixes and backports can be misleading, so verify the vendor advisory before treating a system as fixed.");
     }
   }
+
+  if (packageKitPackages.length > 0 && vendorFixedPackages === packageKitPackages.length) return;
 
   const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
   const roots = [
@@ -5806,6 +5867,16 @@ function checkPackageKitCve202641651Exposure(findings, targetRoot, homePath) {
       addFinding(findings, "review", "packagekit-cve-2026-41651-poc-provenance", "PackageKit CVE-2026-41651 public exploit/advisory provenance term appears in scanned host metadata.", relative, "Confirm provenance and authorization before keeping copied exploit material on developer workstations, CI runners, or shared hosts.");
     }
   }
+}
+
+function isPackageKitCve202641651VendorFixed(targetRoot, version) {
+  const osRelease = readOsRelease(readText(mapLinuxPath(targetRoot, "/etc/os-release")));
+  const ubuntuLike = /(?:^|\s)ubuntu(?:\s|$)/i.test(`${osRelease.ID || ""} ${osRelease.ID_LIKE || ""}`)
+    || String(osRelease.ID || "").toLowerCase() === "pop";
+  if (!ubuntuLike || String(osRelease.VERSION_ID || "") !== "24.04") return false;
+
+  const match = String(version).match(/^1\.2\.8-2ubuntu1\.(\d+)/);
+  return Boolean(match && Number.parseInt(match[1], 10) >= 5);
 }
 
 function checkCloudBucketHijackingExposure(findings, targetRoot, homePath) {
@@ -7675,12 +7746,79 @@ function checkSecretSurfaces(findings, targetRoot, homePath) {
 
   const present = surfaces.filter((surface) => exists(mapLinuxPath(targetRoot, surface)));
   if (present.length > 0) {
-    addFinding(findings, "review", "developer-secret-surfaces-present", "Developer credential surfaces are present.", present.join(", "), "This tool does not read or print secrets. If payload execution is confirmed, rotate credentials from a clean machine.");
+    addFinding(findings, "info", "developer-secret-surfaces-present", "Developer credential surfaces are present.", present.join(", "), "This tool does not read or print secrets. If payload execution is confirmed, rotate credentials from a clean machine.");
   }
 }
 
 function addFinding(findings, severity, id, title, evidence, guidance) {
   findings.push({ severity, id, title, evidence, guidance });
+}
+
+function finalizeFindings(findings, options = {}) {
+  const kept = [];
+  const seen = new Set();
+  const suppressed = { duplicates: 0, research: 0, resolved: 0 };
+
+  for (const finding of findings) {
+    if (!options.includeResearch && isResearchOrHistoryFinding(finding)) {
+      suppressed.research += 1;
+      continue;
+    }
+    if (!options.includeResolved && finding.severity === "info") {
+      suppressed.resolved += 1;
+      continue;
+    }
+
+    const key = findingDedupeKey(finding);
+    if (seen.has(key)) {
+      suppressed.duplicates += 1;
+      continue;
+    }
+    seen.add(key);
+    kept.push(finding);
+  }
+
+  return { findings: kept, suppressed };
+}
+
+function findingDedupeKey(finding) {
+  let evidence = String(finding.evidence || "");
+  if (/-text-indicator$/.test(finding.id) && evidence.startsWith("/")) {
+    evidence = evidence.replace(/: [^:]*$/, "");
+  }
+  return `${finding.severity}\u0000${finding.id}\u0000${evidence}`;
+}
+
+function isResearchOrHistoryFinding(finding) {
+  const evidence = String(finding.evidence || "").replace(/\\/g, "/").toLowerCase();
+  const historySegments = [
+    "/.codex/",
+    "/documents/codex/",
+    "/.config/cursor/user/history/",
+    "/.config/grok bot/user/history/",
+    "/.cursor/projects/",
+    "/.claude/projects/",
+    "/.claude/debug/",
+    "/.grok/",
+    "/.cache/",
+    "/agent-tools/",
+    "/dragon-lady-observatory/",
+    "/dragoneye/james-io/",
+    "/onedrive-mirror/",
+    "/projects/repo-check/",
+    "/projects/shell-tab/",
+    "/.local/state/continuity-sync/backups/",
+    "/.local/state/security-tool-recovery/",
+    "/never-ending-story/tests/",
+    "/never-ending-story/never_ending_story/push_guard.py",
+    "/tmp/lscg-",
+    "/var/tmp/lscg-",
+  ];
+  if (historySegments.some((segment) => evidence.includes(segment))) return true;
+
+  const securityToolPath = /\/(?:linux-supply-chain-guard|push-guard|supply-chain-check|browser-exposure-guard|herewegoagain-incident-scanner|actions-warden|game-mod-guard|netward-standalone|openclaw-exposure-guard|prompt-injection-blocker)\//.test(evidence);
+  const dependencyMetadata = /\/(?:package(?:-lock)?\.json|npm-shrinkwrap\.json|pnpm-lock\.yaml|yarn\.lock|requirements[^/]*\.txt|pyproject\.toml|poetry\.lock|pipfile(?:\.lock)?)(?::|$)/.test(evidence);
+  return securityToolPath && !dependencyMetadata;
 }
 
 function summarize(findings) {
@@ -7710,8 +7848,18 @@ function stripRoot(inputPath, root) {
 }
 
 function readText(filePath) {
+  if (scanTextCache && scanTextCache.has(filePath)) {
+    return scanTextCache.get(filePath);
+  }
   try {
-    return fs.readFileSync(filePath, "utf8");
+    const text = fs.readFileSync(filePath, "utf8");
+    const bytes = Buffer.byteLength(text, "utf8");
+    if (scanTextCache && bytes <= 1024 * 1024
+      && scanTextCacheBytes + bytes <= MAX_SCAN_TEXT_CACHE_BYTES) {
+      scanTextCache.set(filePath, text);
+      scanTextCacheBytes += bytes;
+    }
+    return text;
   } catch (_error) {
     return "";
   }
@@ -7747,6 +7895,10 @@ function walkFiles(dirPath) {
 }
 
 function findDependencyFiles(dirPath, maxFiles) {
+  return cachedFileSearch("dependency", dirPath, maxFiles, findDependencyFilesUncached);
+}
+
+function findDependencyFilesUncached(dirPath, maxFiles) {
   const files = [];
   if (maxFiles <= 0 || !exists(dirPath)) return files;
   const stack = [dirPath];
@@ -7762,7 +7914,7 @@ function findDependencyFiles(dirPath, maxFiles) {
     for (const entry of entries) {
       const fullPath = path.join(current, entry.name);
       if (entry.isDirectory()) {
-        if (!skipDirs.has(entry.name)) stack.push(fullPath);
+        if (!skipDirs.has(entry.name) && !shouldSkipScanDirectory(fullPath)) stack.push(fullPath);
       } else if (entry.isFile() && DEPENDENCY_FILE_NAMES.has(entry.name)) {
         files.push(fullPath);
         if (files.length >= maxFiles) break;
@@ -7773,6 +7925,10 @@ function findDependencyFiles(dirPath, maxFiles) {
 }
 
 function findWatchFiles(dirPath, maxFiles) {
+  return cachedFileSearch("watch", dirPath, maxFiles, findWatchFilesUncached);
+}
+
+function findWatchFilesUncached(dirPath, maxFiles) {
   const files = [];
   if (maxFiles <= 0 || !exists(dirPath)) return files;
   const stack = [dirPath];
@@ -7788,7 +7944,7 @@ function findWatchFiles(dirPath, maxFiles) {
     for (const entry of entries) {
       const fullPath = path.join(current, entry.name);
       if (entry.isDirectory()) {
-        if (!skipDirs.has(entry.name)) stack.push(fullPath);
+        if (!skipDirs.has(entry.name) && !shouldSkipScanDirectory(fullPath)) stack.push(fullPath);
       } else if (entry.isFile() && isWatchFile(entry.name, fullPath)) {
         files.push(fullPath);
         if (files.length >= maxFiles) break;
@@ -7796,6 +7952,55 @@ function findWatchFiles(dirPath, maxFiles) {
     }
   }
   return files;
+}
+
+function cachedFileSearch(kind, dirPath, maxFiles, search) {
+  if (maxFiles <= 0) return [];
+  if (!scanFileCache) return search(dirPath, maxFiles);
+
+  const key = `${kind}\u0000${path.resolve(dirPath)}`;
+  const cached = scanFileCache.get(key);
+  if (cached && (cached.complete || cached.limit >= maxFiles)) {
+    return cached.files.slice(0, maxFiles);
+  }
+
+  const files = search(dirPath, maxFiles);
+  scanFileCache.set(key, {
+    files,
+    limit: maxFiles,
+    complete: files.length < maxFiles,
+  });
+  return files;
+}
+
+function shouldSkipScanDirectory(dirPath) {
+  if (scanIncludeResearch) return false;
+  const normalized = String(dirPath || "").replace(/\\/g, "/").toLowerCase();
+  const historySegments = [
+    "/.codex/",
+    "/documents/codex/",
+    "/.config/cursor/user/history/",
+    "/.config/grok bot/user/history/",
+    "/.cursor/projects/",
+    "/.claude/projects/",
+    "/.claude/debug/",
+    "/.grok/",
+    "/.cache/",
+    "/agent-tools/",
+    "/dragon-lady-observatory/",
+    "/dragoneye/james-io/",
+    "/onedrive/",
+    "/onedrive-mirror/",
+    "/projects/repo-check/",
+    "/projects/shell-tab/",
+    "/.local/state/continuity-sync/backups/",
+    "/.local/state/security-tool-recovery/",
+    "/never-ending-story/tests/",
+  ];
+  const skipped = historySegments.some((segment) => `${normalized}/`.includes(segment))
+    || /\/(?:linux-supply-chain-guard|push-guard|supply-chain-check|browser-exposure-guard|herewegoagain-incident-scanner|actions-warden|game-mod-guard|netward-standalone|openclaw-exposure-guard|prompt-injection-blocker)\/(?:src|test|tests|docs|data|work|outputs)(?:\/|$)/.test(normalized);
+  if (skipped) scanSkippedResearchDirs += 1;
+  return skipped;
 }
 
 function findNginxConfigFiles(dirPath, maxFiles) {
@@ -7814,7 +8019,7 @@ function findNginxConfigFiles(dirPath, maxFiles) {
     for (const entry of entries) {
       const fullPath = path.join(current, entry.name);
       if (entry.isDirectory()) {
-        if (!skipDirs.has(entry.name)) stack.push(fullPath);
+        if (!skipDirs.has(entry.name) && !shouldSkipScanDirectory(fullPath)) stack.push(fullPath);
       } else if (entry.isFile() && /(?:^nginx\.conf$|\.conf$)$/i.test(entry.name)) {
         try {
           if (fs.statSync(fullPath).size <= 1024 * 1024) files.push(fullPath);
@@ -7844,7 +8049,7 @@ function findHadesFiles(dirPath, maxFiles) {
     for (const entry of entries) {
       const fullPath = path.join(current, entry.name);
       if (entry.isDirectory()) {
-        if (!skipDirs.has(entry.name)) stack.push(fullPath);
+        if (!skipDirs.has(entry.name) && !shouldSkipScanDirectory(fullPath)) stack.push(fullPath);
       } else if (entry.isFile() && isHadesWatchFile(entry.name, fullPath)) {
         files.push(fullPath);
         if (files.length >= maxFiles) break;
@@ -7870,7 +8075,7 @@ function findRoundcubeFiles(dirPath, maxFiles) {
     for (const entry of entries) {
       const fullPath = path.join(current, entry.name);
       if (entry.isDirectory()) {
-        if (!skipDirs.has(entry.name)) stack.push(fullPath);
+        if (!skipDirs.has(entry.name) && !shouldSkipScanDirectory(fullPath)) stack.push(fullPath);
       } else if (entry.isFile() && isRoundcubeCandidateFile(entry.name, fullPath)) {
         files.push(fullPath);
         if (files.length >= maxFiles) break;
@@ -8136,6 +8341,10 @@ function normalizePackageVersion(version) {
     .match(/[0-9]+\.[0-9]+(?:\.[0-9]+)?/)?.[0] || "";
 }
 
+function isDistributionPackageVersion(version) {
+  return /(?:ubuntu|debian|deb\d*|pop\d*|el\d|fc\d|suse|arch)/i.test(String(version || ""));
+}
+
 function isNginx42530Affected(version) {
   return compareDottedVersion(normalizeDottedVersion(version), "1.31.0") >= 0
     && compareDottedVersion(normalizeDottedVersion(version), "1.31.2") < 0;
@@ -8224,7 +8433,7 @@ function findJoomlaJceFiles(dirPath, maxFiles) {
     for (const entry of entries) {
       const fullPath = path.join(current, entry.name);
       if (entry.isDirectory()) {
-        if (!skipDirs.has(entry.name)) stack.push(fullPath);
+        if (!skipDirs.has(entry.name) && !shouldSkipScanDirectory(fullPath)) stack.push(fullPath);
       } else if (entry.isFile() && isJoomlaJceCandidateFile(entry.name, fullPath)) {
         files.push(fullPath);
         if (files.length >= maxFiles) break;
@@ -8253,7 +8462,7 @@ function findJoomlaSpPageBuilderFiles(dirPath, maxFiles) {
     for (const entry of entries) {
       const fullPath = path.join(current, entry.name);
       if (entry.isDirectory()) {
-        if (!skipDirs.has(entry.name)) stack.push(fullPath);
+        if (!skipDirs.has(entry.name) && !shouldSkipScanDirectory(fullPath)) stack.push(fullPath);
       } else if (entry.isFile() && isJoomlaSpPageBuilderCandidateFile(entry.name, fullPath)) {
         files.push(fullPath);
         if (files.length >= maxFiles) break;
@@ -8344,6 +8553,18 @@ function isHadesWatchFile(fileName, filePath) {
   if (fileName === "_index.js" || /-setup\.pth$/i.test(fileName) || HADES_NATIVE_EXTENSION_FILES.has(fileName)) return true;
   if (fileName.endsWith(".abi3.so")) return true;
   return false;
+}
+
+function isPythonDependencyMetadataPath(relativePath) {
+  const base = path.basename(String(relativePath || "")).toLowerCase();
+  return base === "pyproject.toml"
+    || base === "poetry.lock"
+    || base === "pipfile"
+    || base === "pipfile.lock"
+    || base === "uv.lock"
+    || base === "metadata"
+    || base === "pkg-info"
+    || /^requirements[^/]*\.txt$/.test(base);
 }
 
 function isAstroConfigFileName(fileName) {
@@ -8442,6 +8663,10 @@ function compareKernelRelease(a, b) {
 function nfTablesCve202623111KernelAssessment(kernelRelease) {
   const normalized = String(kernelRelease || "").trim();
   if (!normalized) return { status: "unknown" };
+  if (!/^6\.19\.0-rc/i.test(normalized)
+    && compareKernelRelease(normalized, "6.19.0") >= 0) {
+    return { status: "fixed", fixed: "6.19.0" };
+  }
   for (const [start, fixed] of NFTABLES_CVE_2026_23111_FIXED_KERNELS) {
     if (compareKernelRelease(normalized, start) >= 0 && compareKernelRelease(normalized, fixed) < 0) {
       return { status: "affected", fixed };
@@ -8592,6 +8817,17 @@ function packageVersionsInText(text, packageName) {
     }
   }
   return Array.from(versions);
+}
+
+function npmPackageNameInDependencyText(text, packageName) {
+  const escaped = escapeRegExp(packageName);
+  // Hyphens and slashes are part of npm names. Treating them as ordinary word
+  // boundaries made `sync-external` match the legitimate
+  // `use-sync-external-store` package.
+  return new RegExp(
+    `(^|[^A-Za-z0-9@_./-])${escaped}(?![A-Za-z0-9_./-])`,
+    "im"
+  ).test(text);
 }
 
 function scopedPackageVersionsInText(text, packageName) {

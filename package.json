@@ -1,6 +1,6 @@
 {
   "name": "linux-supply-chain-guard",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Read-only Linux host checker for supply-chain incident response, including vulnerable kernel posture, risky module state, and known developer-tooling persistence indicators.",
   "bin": {
     "linux-supply-chain-guard": "bin/linux-supply-chain-guard.js"
@@ -10,6 +10,7 @@
     "src/",
     "data/",
     "docs/advisory.md",
+    "docs/expected-tooling.md",
     "docs/recovery-playbook.md",
     "docs/sources.md"
   ],

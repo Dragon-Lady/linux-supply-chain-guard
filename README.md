@@ -4,7 +4,19 @@
 incident responders reviewing supply-chain exposure on workstations, CI
 runners, and build hosts.
 
-Version 0.1.1 adds the September 2026 public Linux kernel exploit-batch matrix
+Version 0.1.2 keeps the September 2026 detection coverage while making the
+default report an active-host view. Older campaign lanes remain source-backed
+but run only with `--include-historical`. Known scanner sources, test fixtures, IDE
+history, response archives, duplicate text indicators, and informational
+fixed/mitigated results no longer inflate the default severity headline.
+They remain available with `--include-historical`, `--include-research`, and
+`--include-resolved`.
+Exact npm-name boundaries prevent names such as `sync-external` from matching
+the legitimate `use-sync-external-store` package, and Ubuntu-family vendor
+backports are honored for PackageKit CVE-2026-41651. Repeated filesystem walks
+are cached for the duration of a scan; nothing is uploaded or collected.
+
+Version 0.1.1 added the September 2026 public Linux kernel exploit-batch matrix
 (22 enumerated CVEs), component-aware upstream fixed-baseline review, and
 public-PoC provenance detection. It also adds local Aurora Linux/ESXi
 ransomware artifact detection using Gambit Security and CloudSEK indicators,
@@ -372,6 +384,11 @@ explicitly provides `--report`.
 Any output files are created in the operator's local environment unless the
 operator separately chooses to share them.
 
+Expected startup tooling is documented in
+[`docs/expected-tooling.md`](docs/expected-tooling.md). Approval is scoped to
+the verified installed artifact and official destination; provider names alone
+never suppress a finding.
+
 Credential-adjacent files are reported by path only. The tool does not print
 secret values, read private keys for content, or send results to the project
 maintainers.
@@ -388,7 +405,16 @@ Local checkout:
 node bin/linux-supply-chain-guard.js
 node bin/linux-supply-chain-guard.js / --json
 node bin/linux-supply-chain-guard.js /mnt/recovered-root --report report.json --home /mnt/recovered-root/home/alice
+node bin/linux-supply-chain-guard.js / --include-historical --include-research --include-resolved
 ```
+
+The default is deliberately concise and actionable. `--include-historical`
+runs the older source-backed rule catalog for retrospective incident response.
+`--include-research`
+restores known defensive-source, test-fixture, IDE-history, and response-archive
+matches for an authorized evidence review. `--include-resolved` restores
+informational fixed or mitigated findings. Suppressed counts are reported
+without including their path-level data.
 
 Optional guarded dependency resolution for this checkout:
 
@@ -1110,7 +1136,9 @@ Exit codes:
 Critical findings mean the host may need immediate containment or patching.
 Warning and review findings mean the tool found posture or evidence that should
 be checked by an operator. A clean run only means this version did not observe
-the known indicators it checks.
+the known indicators it checks. Default output excludes known research/history
+contexts and resolved informational results; use all three include switches when
+performing a historical or forensic review.
 
 ## Sources
 

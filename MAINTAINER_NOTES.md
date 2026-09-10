@@ -20,6 +20,7 @@ Safety stance:
 cd C:\path\to\linux-supply-chain-guard
 npm test
 node bin\linux-supply-chain-guard.js --json
+node bin\linux-supply-chain-guard.js --include-historical --include-research --include-resolved --json
 npm run canary:socket-firewall
 npm run canary:socket-firewall:log
 ```
@@ -52,6 +53,9 @@ Windows scheduled canary task:
 
 - Do not ask users to paste secrets, `.env` files, private keys, tokens, or full logs.
 - Do not claim this tool proves a host is clean.
+- Keep default reports limited to active host findings. Historical/research
+  matches and fixed informational results are opt-in and must remain available
+  for authorized evidence review.
 - If critical findings are present, advise containment first.
 - Do not advise revoking tokens from the suspected infected machine.
 - Credential rotation should happen from a clean machine.

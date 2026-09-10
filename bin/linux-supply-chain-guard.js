@@ -12,11 +12,17 @@ Read-only Linux host checker for supply-chain incident response.
 
 Usage:
   linux-supply-chain-guard [target-root] [--json] [--report report.json] [--home /home/user]
+                           [--include-historical] [--include-research] [--include-resolved]
 
 Examples:
   linux-supply-chain-guard
   linux-supply-chain-guard / --json
   linux-supply-chain-guard /mnt/recovered-root --report report.json --home /mnt/recovered-root/home/alice
+
+Default reports run the current/core rule lanes only. Use --include-historical
+to run the older source-backed campaign catalog. Use --include-research to
+include known scanner, test-fixture, IDE-history, and response-archive paths.
+Use --include-resolved to include informational fixed/mitigated findings.
 `);
 }
 
@@ -26,6 +32,9 @@ function parseArgs(argv) {
     json: false,
     report: null,
     home: process.env.HOME || "",
+    includeHistorical: false,
+    includeResearch: false,
+    includeResolved: false,
   };
 
   for (let i = 0; i < argv.length; i += 1) {
@@ -40,6 +49,12 @@ function parseArgs(argv) {
     } else if (arg === "--home") {
       args.home = argv[i + 1] || "";
       i += 1;
+    } else if (arg === "--include-historical") {
+      args.includeHistorical = true;
+    } else if (arg === "--include-research") {
+      args.includeResearch = true;
+    } else if (arg === "--include-resolved") {
+      args.includeResolved = true;
     } else if (!arg.startsWith("-")) {
       args.targetRoot = arg;
     } else {
@@ -59,6 +74,10 @@ function formatText(report) {
   lines.push(`Overall: ${report.summary.overall}`);
   lines.push(
     `Findings: critical=${report.summary.critical}, warning=${report.summary.warning}, review=${report.summary.review}, info=${report.summary.info}`
+  );
+  const suppressed = report.summary.suppressed || {};
+  lines.push(
+    `Suppressed by default: research=${suppressed.research || 0}, resolved=${suppressed.resolved || 0}, duplicates=${suppressed.duplicates || 0}`
   );
   lines.push("");
 
@@ -86,6 +105,9 @@ function main() {
     const report = scanHost({
       targetRoot: args.targetRoot,
       homePath: args.home,
+      includeHistorical: args.includeHistorical,
+      includeResearch: args.includeResearch,
+      includeResolved: args.includeResolved,
     });
 
     if (args.report) {
