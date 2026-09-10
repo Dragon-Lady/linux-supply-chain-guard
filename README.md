@@ -4,6 +4,22 @@
 incident responders reviewing supply-chain exposure on workstations, CI
 runners, and build hosts.
 
+Version 0.1.1 adds the September 2026 public Linux kernel exploit-batch matrix
+(22 enumerated CVEs), component-aware upstream fixed-baseline review, and
+public-PoC provenance detection. It also adds local Aurora Linux/ESXi
+ransomware artifact detection using Gambit Security and CloudSEK indicators,
+including the exact `encrypt.out` hash, R2 download path, ESXi VM force-kill
+shape, SSH-banner/ransom-note artifacts, and ESXi discovery-tool context.
+Vendor backports still require confirmation; a version comparison alone is not
+a claim that a distribution kernel is vulnerable.
+
+The same release adds exact-version and campaign-marker detection for the
+August 28 Trinitite / Mini Shai-Hulud compromise of
+`@7nohe/openapi-react-query-codegen`, plus a review finding for unsafe
+comment-triggered npm Trusted Publishing workflows. GitHub's reviewed advisory
+lists ten malicious releases with no patched version; use a known-good release
+line instead of attempting to "patch" an affected tarball.
+
 It checks local host posture related to the May 2026 Linux supply-chain response
 lane, including Fragnesia / `CVE-2026-46300` kernel exposure, ITScape /
 `CVE-2026-46316` ARM64 KVM exposure, DirtyCBC/RxGK page-cache poisoning

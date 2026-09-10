@@ -5,6 +5,28 @@ incident response. It is meant for developer workstations, CI runners,
 container build hosts, and multi-tenant Linux systems where untrusted package
 payload execution could combine with local host weaknesses.
 
+The September 2026 lane covers all 22 CVE IDs enumerated in the oss-security
+public-exploit batch, even though the post's subject says "20 more." The guard
+compares the running kernel with official upstream fixed baselines, checks
+whether the associated kernel component is configured, and keeps the result as
+a vendor-backport review rather than a definitive distribution verdict. It
+also flags executable/configuration material carrying the public exploit-pack
+provenance without fetching or running any PoC.
+
+The Aurora lane covers the Linux/ESXi ransomware indicators and behaviors
+published by Gambit Security and independently contextualized by CloudSEK. It
+does not flag Cursor merely for being installed: the reporting describes an
+operator supplying Cursor Agent with credentials or an existing victim route,
+not a Cursor software vulnerability. Findings focus on the published
+`encrypt.out` hash, delivery/infrastructure IOCs, ESXi VM force-kill behavior,
+SSH-banner/ransom-note artifacts, and ESXi discovery tooling.
+
+The Trinitite lane covers GitHub's reviewed malware advisory for all ten
+affected `@7nohe/openapi-react-query-codegen` releases, JFrog/OX campaign
+markers, and the unauthenticated `issue_comment` publishing design that let an
+external pull request mint an npm OIDC publishing token. No package code or
+lifecycle hook is executed.
+
 The initial posture checks cover AlmaLinux's May 13, 2026 Fragnesia /
 `CVE-2026-46300` disclosure and known Linux persistence paths from public
 Shai-Hulud / Here We Go Again reporting.

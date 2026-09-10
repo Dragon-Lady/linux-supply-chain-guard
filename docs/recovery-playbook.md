@@ -17,8 +17,21 @@ when a Linux host may have executed compromised package payloads.
 - Preserve `/tmp/transformers.pyz` if present. Do not execute it.
 - Preserve suspicious service files and scripts such as `gh-token-monitor` and
   `pgsql-monitor` paths before removal.
+- For an Aurora match, preserve `encrypt.out`, the SSH banner, ransom notes,
+  shell history, R2/SCP download evidence, VM state, and ESXi management logs.
+  Isolate management access before investigating from clean infrastructure.
+- For a Trinitite match, treat any workstation or CI runner that executed an
+  affected lifecycle hook or `binding.gyp` as compromised. Isolate first, then
+  inventory every credential and package-publishing identity reachable from
+  that process before rotating from a clean machine.
 
 ## 3. Patch Host Risk
+
+- For the September 2026 Linux exploit batch, verify distro/vendor backports
+  for every reported review item. Apply the vendor kernel update and reboot
+  when a fix is absent. Do not treat an unloaded-but-autoloadable module as a
+  permanent mitigation and do not run public exploit repositories to test a
+  production host.
 
 - For Fragnesia / `CVE-2026-46300`, apply vendor patched kernels and reboot.
 - If reboot is not immediately possible, use only vendor-approved temporary

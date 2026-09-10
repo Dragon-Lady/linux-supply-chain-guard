@@ -204,6 +204,52 @@ const AUGUST_2026_KEYV_NPM_TEXT_INDICATORS = [
   "SNYK-JS-KEYV-18515941",
 ];
 
+// August 28, 2026 Trinitite / Mini Shai-Hulud wave. GitHub's reviewed
+// advisory treats all ten releases as malware; JFrog distinguishes the first
+// prerelease as a failed staging attempt without the full worm payload.
+const AUGUST_2026_TRINITITE_PACKAGE = "@7nohe/openapi-react-query-codegen";
+const AUGUST_2026_TRINITITE_VERSIONS = [
+  "0.5.4",
+  "0.5.5",
+  "1.6.3",
+  "1.6.4",
+  "2.2.1",
+  "2.2.2",
+  "3.0.3",
+  "3.0.4",
+  "0.0.0-365d4eb738d3146583431948d3ba6e27a32556be",
+  "0.0.0-ec7876d6c917dad516ba69bbfafc948b834bf0ab",
+];
+const AUGUST_2026_TRINITITE_INDICATORS = [
+  "Trinitite: Sponsored by Preview 2 Effects",
+  "3FWCvzduYZg.js",
+  "doubletrinnys-",
+  "GHSA-rg27-qr39-ch6w",
+  "SNYK-JS-7NOHEOPENAPIREACTQUERYCODEGEN-19424702",
+];
+
+const SEPTEMBER_2026_LINUX_LPE_PACK = loadJsonObjectFile("september-2026-linux-lpe-pack.json");
+
+// Gambit Security and CloudSEK Aurora Linux/ESXi ransomware indicators.
+// Strings are split where practical so another local Push Guard installation
+// does not mistake this read-only detector source for a live payload.
+const AURORA_LINUX_RANSOMWARE_SHA256 = joinParts(
+  "a4af136d159a8eb96b54924fa80355ca",
+  "52874913301300f55af7d67ae97edcfe"
+);
+const AURORA_LINUX_RANSOMWARE_MD5 = joinParts("a607384ce68144f2", "061a8b30cc65a6b8");
+const AURORA_RANSOMWARE_NETWORK_INDICATORS = [
+  joinParts("pub-c057b7d0b24944a29e381ce9ea22a2f1.r2", "[.]dev/xu4gid0t8er3.out"),
+  joinParts("pub-c057b7d0b24944a29e381ce9ea22a2f1.r2", ".dev/xu4gid0t8er3.out"),
+  joinParts("ijexszhscln27nl263lmcd7tx3jttkhm4wjhd4e3y6r4csdbfyeprvid", "[.]onion"),
+  joinParts("ijexszhscln27nl263lmcd7tx3jttkhm4wjhd4e3y6r4csdbfyeprvid", ".onion"),
+  "exposedrecords[.]io",
+  "exposedrecords.io",
+  "172.86.113.245",
+  "172.86.90.75",
+  "146.19.125.36",
+];
+
 const ATOMIC_ARCH_AUR_PACKAGE = "atomic-lockfile";
 
 const CHAINVEIL_NPM_PACKAGES = [
@@ -1511,6 +1557,10 @@ const WATCH_FILE_NAMES = new Set([
   "psappsrv.cfg",
   "config.xml",
   "binding.gyp",
+  "encrypt.out",
+  "!!!README!!!DO_NOT_DELETE.txt",
+  "sshd-banner",
+  "esxi_finder.py",
   "Review Past Due Doc.zip",
   "LicenseLoader.php",
   "install-persistent.php",
@@ -2661,10 +2711,12 @@ function scanHost(options = {}) {
   checkDirtyCbcRxgk(findings, targetRoot, homePath);
   checkDirtyClone(findings, targetRoot, homePath);
   checkNfTablesCve202623111(findings, targetRoot, homePath, kernelRelease);
+  checkSeptember2026LinuxLpePack(findings, targetRoot, homePath, kernelRelease);
   checkPersistence(findings, targetRoot, homePath);
   checkCompromisedNpmPackages(findings, targetRoot, homePath);
   checkJuly2026NpmCampaigns(findings, targetRoot, homePath);
   checkAugust2026KeyvNpmCampaign(findings, targetRoot, homePath);
+  checkAugust2026TrinititeNpm(findings, targetRoot, homePath);
   checkChainVeilNpmCampaign(findings, targetRoot, homePath);
   checkVsCodeAutorunBlockchainNpm(findings, targetRoot, homePath);
   checkAtomicArchAurCompromise(findings, targetRoot, homePath);
@@ -2685,6 +2737,7 @@ function scanHost(options = {}) {
   checkDynatraceTeamPcpWatch(findings, targetRoot, homePath);
   checkPcpJackRelayArtifacts(findings, targetRoot, homePath);
   checkGentlemenRansomware(findings, targetRoot, homePath);
+  checkAuroraLinuxRansomware(findings, targetRoot, homePath);
   checkEdgecutionPayoutsKing(findings, targetRoot, homePath);
   checkChromeCookieNativeMessagingHijack(findings, targetRoot, homePath);
   checkAdblockForYoutubeExtension(findings, targetRoot, homePath);
@@ -2744,7 +2797,7 @@ function scanHost(options = {}) {
 
   return {
     tool: "linux-supply-chain-guard",
-    version: "0.1.0",
+    version: "0.1.1",
     generatedAt: new Date().toISOString(),
     targetRoot,
     host: {
@@ -3118,6 +3171,110 @@ function checkDirtyClone(findings, targetRoot, homePath) {
   }
 }
 
+function checkSeptember2026LinuxLpePack(findings, targetRoot, homePath, kernelRelease) {
+  const vulnerabilities = Array.isArray(SEPTEMBER_2026_LINUX_LPE_PACK.vulnerabilities)
+    ? SEPTEMBER_2026_LINUX_LPE_PACK.vulnerabilities
+    : [];
+  if (vulnerabilities.length === 0) return;
+
+  const kernelConfig = readKernelConfig(targetRoot, kernelRelease);
+  const review = [];
+  const fixed = [];
+  const unavailable = [];
+
+  for (const vulnerability of vulnerabilities) {
+    const exposure = kernelConfigExposure(vulnerability, kernelConfig);
+    const assessment = september2026KernelAssessment(vulnerability, kernelRelease);
+    if (exposure === "unavailable") {
+      unavailable.push(vulnerability.id);
+      continue;
+    }
+    if (assessment.status === "review") {
+      review.push(`${vulnerability.id} (${vulnerability.component}; upstream fixed ${assessment.fixed}; feature ${exposure})`);
+    } else if (assessment.status === "fixed") {
+      fixed.push(`${vulnerability.id} (${assessment.fixed})`);
+    }
+  }
+
+  if (review.length > 0) {
+    addFinding(
+      findings,
+      "warning",
+      "september-2026-public-kernel-exploit-pack-review",
+      "Running kernel is below upstream fixed baselines for enabled or unknown components in the September 2026 public Linux exploit batch.",
+      `${kernelRelease}: ${review.join(", ")}`,
+      "Verify distribution backports first, then apply the vendor kernel update and reboot if any fix is absent. An upstream version comparison is a review lead, not proof that a vendor kernel is vulnerable. Do not run public exploit code on production or credential-bearing hosts."
+    );
+  }
+
+  if (fixed.length > 0) {
+    addFinding(
+      findings,
+      "info",
+      "september-2026-public-kernel-exploit-pack-fixed-baseline",
+      "Running kernel is at or above tracked upstream fixed baselines for part of the September 2026 public Linux exploit batch.",
+      `${kernelRelease}: ${fixed.join(", ")}`,
+      "Keep vendor security metadata with the scan record because distribution backports and kernel flavor suffixes can change the final assessment."
+    );
+  }
+
+  if (unavailable.length > 0) {
+    addFinding(
+      findings,
+      "info",
+      "september-2026-public-kernel-exploit-pack-components-unavailable",
+      "Some September 2026 exploit-batch components are disabled in the scanned kernel configuration.",
+      unavailable.join(", "),
+      "Retain the configuration evidence with the kernel assessment and re-evaluate after kernel or flavor changes."
+    );
+  }
+
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const roots = [homeRelative, "/opt", "/srv", "/tmp", "/var/tmp"].filter(Boolean);
+  const files = [];
+  for (const root of roots) {
+    files.push(...findWatchFiles(mapLinuxPath(targetRoot, root), 25000 - files.length));
+    if (files.length >= 25000) break;
+  }
+  const listedIds = new Set(vulnerabilities.map((item) => item.id));
+  for (const filePath of files) {
+    const text = readText(filePath);
+    if (!text || !/(?:NebuSec\/CyberMeowfia|Linux-CVE-2026-|ZcopyReaper)/i.test(text)) continue;
+    const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+    if (isDocumentationPath(relative)) continue;
+    const matches = Array.from(new Set(text.match(/CVE-2026-\d{5}/g) || []))
+      .filter((id) => listedIds.has(id));
+    if (matches.length > 0) {
+      addFinding(findings, "review", "september-2026-public-kernel-exploit-artifact", "Public September 2026 Linux kernel exploit-batch provenance appears in executable or configuration metadata.", `${relative}: ${matches.join(", ")}`, "Verify this is authorized research. Keep it isolated from production, shared runners, agent auto-execution, and developer credential contexts; do not compile or execute it during review.");
+    }
+  }
+}
+
+function september2026KernelAssessment(vulnerability, kernelRelease) {
+  const trainMatch = String(kernelRelease || "").match(/^(\d+\.\d+)/);
+  if (!trainMatch) return { status: "unknown" };
+  const baseline = vulnerability.fixedByTrain && vulnerability.fixedByTrain[trainMatch[1]];
+  if (baseline) {
+    return compareKernelRelease(kernelRelease, baseline) >= 0
+      ? { status: "fixed", fixed: baseline }
+      : { status: "review", fixed: baseline };
+  }
+  if (vulnerability.mainlineFixed && compareKernelRelease(kernelRelease, vulnerability.mainlineFixed) >= 0) {
+    return { status: "fixed", fixed: vulnerability.mainlineFixed };
+  }
+  return { status: "unknown" };
+}
+
+function kernelConfigExposure(vulnerability, kernelConfig) {
+  const any = Array.isArray(vulnerability.configsAny) ? vulnerability.configsAny : [];
+  const all = Array.isArray(vulnerability.configsAll) ? vulnerability.configsAll : [];
+  if (any.length === 0 && all.length === 0) return "core";
+  if (!kernelConfig) return "unknown";
+  const configured = (symbol) => new RegExp(`^${escapeRegExp(symbol)}=(?:y|m)$`, "m").test(kernelConfig);
+  if (all.length > 0) return all.every(configured) ? "configured" : "unavailable";
+  return any.some(configured) ? "configured" : "unavailable";
+}
+
 function checkNfTablesCve202623111(findings, targetRoot, homePath, kernelRelease) {
   const modulesText = readText(mapLinuxPath(targetRoot, "/proc/modules"));
   const kernelConfig = readKernelConfig(targetRoot, kernelRelease);
@@ -3398,6 +3555,40 @@ function checkAugust2026KeyvNpmCampaign(findings, targetRoot, homePath) {
           "This campaign is npm-wide, not Linux-only. Hunt for setup.mjs / Math_Symbol.js / math_init.js, Bun download staging, IDE/Claude hooks, and GitHub credential-monitor artifacts without executing package code on the install OS. Follow vendor IR guidance from Snyk, Wiz, JFrog, Aikido, and StepSecurity. This tool is notification-only."
         );
       }
+    }
+  }
+}
+
+function checkAugust2026TrinititeNpm(findings, targetRoot, homePath) {
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const roots = [homeRelative, "/opt", "/srv", "/var/www", "/usr/local/lib/node_modules", "/tmp", "/var/tmp"].filter(Boolean);
+  const files = [];
+  for (const root of roots) {
+    files.push(...findWatchFiles(mapLinuxPath(targetRoot, root), 30000 - files.length));
+    if (files.length >= 30000) break;
+  }
+
+  for (const filePath of files) {
+    const text = readText(filePath);
+    if (!text) continue;
+    const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+    for (const version of trinititeVersionsInText(text)) {
+      if (AUGUST_2026_TRINITITE_VERSIONS.includes(version)) {
+        addFinding(findings, "critical", "trinitite-compromised-npm-version", "Trinitite / Mini Shai-Hulud compromised npm package version appears in scanned metadata.", `${relative}: ${AUGUST_2026_TRINITITE_PACKAGE}@${version}`, "Do not run install or build commands in this tree. If lifecycle scripts or node-gyp may have run, isolate the host or runner and rotate GitHub, npm, PyPI, RubyGems, cloud, Kubernetes, Vault, SSH, and CI credentials from a separate clean machine.");
+      }
+    }
+
+    for (const indicator of AUGUST_2026_TRINITITE_INDICATORS) {
+      if (text.includes(indicator)) {
+        addFinding(findings, "critical", "trinitite-campaign-indicator", "Trinitite / Mini Shai-Hulud payload or exfiltration marker appears in scanned metadata.", `${relative}: ${indicator}`, "Preserve evidence without executing it. Correlate with August 28, 2026 install history, unexpected public GitHub repositories, package publication, and credential use; rotate exposed credentials from a clean machine.");
+      }
+    }
+
+    const riskyCommentPublish = /issue_comment[\s\S]{0,1600}npm publish|npm publish[\s\S]{0,1600}issue_comment/i.test(text);
+    const trustedPublish = /id-token\s*:\s*write/i.test(text);
+    const authorGate = /author_association|MEMBER|OWNER|COLLABORATOR/i.test(text);
+    if (riskyCommentPublish && trustedPublish && !authorGate) {
+      addFinding(findings, "warning", "trinitite-comment-publish-workflow", "Comment-triggered npm publishing workflow can mint an OIDC token without an author-association gate.", relative, "Require an explicit trusted author association or environment approval before checking out pull-request code, installing dependencies, or minting a trusted-publishing token. Keep publish permissions out of untrusted pull-request execution.");
     }
   }
 }
@@ -7402,6 +7593,59 @@ function checkExchangeCve202645504(findings, targetRoot, homePath) {
   }
 }
 
+function checkAuroraLinuxRansomware(findings, targetRoot, homePath) {
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const roots = [homeRelative, "/etc", "/opt", "/srv", "/var/log", "/root", "/mnt", "/media", "/tmp", "/var/tmp"].filter(Boolean);
+  const files = [];
+  for (const root of roots) {
+    files.push(...findWatchFiles(mapLinuxPath(targetRoot, root), 30000 - files.length));
+    if (files.length >= 30000) break;
+  }
+
+  for (const filePath of files) {
+    const base = path.basename(filePath);
+    const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+    if (base === "encrypt.out" && fileSizeBytes(filePath) <= 2 * 1024 * 1024) {
+      try {
+        const digest = sha256File(filePath);
+        if (digest === AURORA_LINUX_RANSOMWARE_SHA256) {
+          addFinding(findings, "critical", "aurora-linux-ransomware-hash", "Aurora Linux/ESXi ransomware encryptor matches the Gambit Security SHA-256.", `${relative}: sha256=${digest}`, "Isolate the host, preserve the file and volatile evidence, and begin incident response. Rotate credentials from a separate clean system; do not execute or delete the sample before evidence capture.");
+        } else {
+          addFinding(findings, "review", "aurora-encrypt-out-review", "An encrypt.out file is present but does not match the published Aurora ransomware SHA-256.", `${relative}: sha256=${digest}`, "Review provenance and behavior before execution. A filename alone is not a malware verdict.");
+        }
+      } catch (_error) {
+        // Unreadable candidates remain covered by the filename/text checks below.
+      }
+    }
+
+    const text = readText(filePath);
+    if (!text) continue;
+    const isIncidentDocumentation = isDocumentationPath(relative) && base !== "!!!README!!!DO_NOT_DELETE.txt";
+    if (isIncidentDocumentation) continue;
+
+    if (text.includes(AURORA_LINUX_RANSOMWARE_SHA256) || text.includes(AURORA_LINUX_RANSOMWARE_MD5)) {
+      addFinding(findings, "review", "aurora-linux-ransomware-hash-reference", "Aurora Linux/ESXi ransomware hash appears in scanned host metadata.", relative, "Correlate the reference with filesystem, EDR, process, download, and SSH/SCP telemetry before deciding whether it is intelligence-only or evidence of staging.");
+    }
+    for (const indicator of AURORA_RANSOMWARE_NETWORK_INDICATORS) {
+      if (text.includes(indicator)) {
+        addFinding(findings, "warning", "aurora-ransomware-network-indicator", "Aurora ransomware infrastructure indicator appears in scanned host metadata.", `${relative}: ${indicator}`, "Correlate with DNS, proxy, firewall, shell-history, download, and exfiltration telemetry. Preserve evidence and isolate the system if contact or payload retrieval is confirmed.");
+      }
+    }
+    if (/esxcli\s+vm\s+process\s+kill\s+--type=force\s+--world-id/i.test(text)) {
+      addFinding(findings, "warning", "aurora-esxi-vm-kill-command", "Aurora-reported ESXi force-kill command shape appears in scanned metadata.", relative, "Determine whether this was authorized administration or ransomware preparation. Correlate with encrypt.out, VM shutdowns, R2 downloads, SSH/SCP activity, and ransom-note artifacts.");
+    }
+    if (base === "!!!README!!!DO_NOT_DELETE.txt" || /!!!README!!!DO_NOT_DELETE\.txt/i.test(text)) {
+      addFinding(findings, "warning", "aurora-ransom-note-artifact", "Aurora-reported ransom-note filename appears on the scanned host.", relative, "Preserve the note and surrounding metadata, isolate affected systems, and follow the incident-response plan. Do not contact infrastructure from the affected host.");
+    }
+    if ((base === "sshd-banner" || /\/etc\/ssh\/sshd-banner/i.test(text)) && /(?:files are encrypted|confidential information|tor browser|access key)/i.test(text)) {
+      addFinding(findings, "critical", "aurora-esxi-ssh-banner", "SSH banner contains an Aurora-style extortion message.", relative, "Treat this as likely ransomware impact. Isolate the ESXi/Linux host, preserve evidence, and validate VM and backup integrity from clean management infrastructure.");
+    }
+    if ((base === "esxi_finder.py" || /esxi_finder\.py/i.test(text)) && /(?:NetExec|LDAP|ports?\s+443|ports?\s+902|\/sdk)/i.test(text)) {
+      addFinding(findings, "review", "aurora-esxi-finder-artifact", "Aurora-reported custom ESXi discovery-tool shape appears in scanned metadata.", relative, "Verify authorization and provenance. Correlate with NetExec, LDAP discovery, ports 443/902 scanning, Cursor session logs, proxychains, and ransomware staging.");
+    }
+  }
+}
+
 function checkTransformersPayload(findings, targetRoot) {
   const payloadPath = mapLinuxPath(targetRoot, "/tmp/transformers.pyz");
   if (!exists(payloadPath) || !isFile(payloadPath)) {
@@ -8252,6 +8496,16 @@ function loadHashSet(fileName) {
   }
 }
 
+function loadJsonObjectFile(fileName) {
+  try {
+    const raw = fs.readFileSync(path.join(__dirname, "..", "data", fileName), "utf8");
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : {};
+  } catch (_error) {
+    return {};
+  }
+}
+
 function exists(filePath) {
   try {
     fs.accessSync(filePath);
@@ -8367,6 +8621,21 @@ function scopedPackageVersionsInText(text, packageName) {
     for (const match of text.matchAll(pattern)) {
       versions.add(match[2] || match[1]);
     }
+  }
+  return Array.from(versions);
+}
+
+function trinititeVersionsInText(text) {
+  const versions = new Set(scopedPackageVersionsInText(text, AUGUST_2026_TRINITITE_PACKAGE));
+  const packageName = escapeRegExp(AUGUST_2026_TRINITITE_PACKAGE);
+  const prerelease = "0\\.0\\.0-(?:365d4eb738d3146583431948d3ba6e27a32556be|ec7876d6c917dad516ba69bbfafc948b834bf0ab)";
+  const patterns = [
+    new RegExp(`["']${packageName}["']\\s*:\\s*["'](${prerelease})["']`, "gi"),
+    new RegExp(`${packageName}@(${prerelease})`, "gi"),
+    new RegExp(`["']node_modules/${packageName}["']\\s*:\\s*\\{[\\s\\S]{0,500}?["']version["']\\s*:\\s*["'](${prerelease})["']`, "gi"),
+  ];
+  for (const pattern of patterns) {
+    for (const match of text.matchAll(pattern)) versions.add(match[1]);
   }
   return Array.from(versions);
 }
