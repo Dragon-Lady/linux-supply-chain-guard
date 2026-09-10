@@ -1145,9 +1145,16 @@ function run() {
     "Triage notes: review Cobalt Strike, Impacket, AnyDesk, Splashtop, ScreenConnect, remote monitoring, process injection, CreateRemoteThread, VirtualAllocEx, WriteProcessMemory, cmd.exe, powershell.exe, and schtasks telemetry.",
   ].join("\n"));
 
-  const report = scanHost({ targetRoot: root, homePath: home, architecture: "aarch64" });
+  const report = scanHost({
+    targetRoot: root,
+    homePath: home,
+    architecture: "aarch64",
+    includeHistorical: true,
+    includeResearch: true,
+    includeResolved: true,
+  });
   const ids = new Set(report.findings.map((finding) => finding.id));
-  assert.strictEqual(report.version, "0.1.1");
+  assert.strictEqual(report.version, "0.1.2");
   assert.strictEqual(report.summary.overall, "critical");
   assert(ids.has("alma-fragnesia-vulnerable-kernel"));
   assert(ids.has("itscape-arm64-kvm-exposure"));
@@ -1612,7 +1619,7 @@ function run() {
   write(path.join(patched, "proc", "sys", "kernel", "osrelease"), "5.14.0-611.54.4.el9_7\n");
   write(path.join(patched, "proc", "modules"), "\n");
   write(path.join(patched, "etc", "modprobe.d", "fragnesia.conf"), "install esp4 /bin/false\ninstall esp6 /bin/false\ninstall rxrpc /bin/false\n");
-  const patchedReport = scanHost({ targetRoot: patched, homePath: path.join(patched, "home", "alice") });
+  const patchedReport = scanHost({ targetRoot: patched, homePath: path.join(patched, "home", "alice"), includeResolved: true });
   assert(patchedReport.findings.some((finding) => finding.id === "alma-fragnesia-kernel-patched"));
   assert(!patchedReport.findings.some((finding) => finding.id === "fragnesia-risk-modules-loaded"));
 
@@ -1620,7 +1627,7 @@ function run() {
   write(path.join(patchedArm, "etc", "os-release"), 'ID="debian"\nVERSION_ID="13"\n');
   write(path.join(patchedArm, "proc", "sys", "kernel", "osrelease"), "6.15.0\n");
   write(path.join(patchedArm, "proc", "modules"), "kvm 1048576 0 - Live 0x0\n");
-  const patchedArmReport = scanHost({ targetRoot: patchedArm, homePath: path.join(patchedArm, "home", "alice"), architecture: "arm64" });
+  const patchedArmReport = scanHost({ targetRoot: patchedArm, homePath: path.join(patchedArm, "home", "alice"), architecture: "arm64", includeResolved: true });
   assert(patchedArmReport.findings.some((finding) => finding.id === "itscape-arm64-kvm-exposure"));
   assert(patchedArmReport.findings.some((finding) => finding.id === "itscape-arm64-kvm-upstream-patched"));
   assert(!patchedArmReport.findings.some((finding) => finding.id === "itscape-arm64-kvm-kernel-review"));
@@ -1648,7 +1655,7 @@ function run() {
     "CONFIG_EPOLL=y",
   ].join("\n"));
   write(path.join(septemberHome, "research", "review.sh"), "# authorized-review URL: NebuSec/CyberMeowfia/Linux-CVE-2026-52924\n");
-  const septemberReport = scanHost({ targetRoot: septemberKernel, homePath: septemberHome });
+  const septemberReport = scanHost({ targetRoot: septemberKernel, homePath: septemberHome, includeResearch: true, includeResolved: true });
   const septemberReview = septemberReport.findings.find((finding) => finding.id === "september-2026-public-kernel-exploit-pack-review");
   const septemberFixed = septemberReport.findings.find((finding) => finding.id === "september-2026-public-kernel-exploit-pack-fixed-baseline");
   assert(septemberReview.evidence.includes("CVE-2026-80714"));
@@ -1672,6 +1679,70 @@ function run() {
   }));
   const trinititeSafeReport = scanHost({ targetRoot: trinititeSafe, homePath: trinititeSafeHome });
   assert(!trinititeSafeReport.findings.some((finding) => finding.id === "trinitite-compromised-npm-version"));
+
+  const packageBoundary = makeFixture();
+  const packageBoundaryHome = path.join(packageBoundary, "home", "alice");
+  write(path.join(packageBoundaryHome, "project", "package.json"), JSON.stringify({
+    dependencies: {
+      "use-sync-external-store": "1.6.0",
+    },
+  }));
+  const packageBoundaryReport = scanHost({ targetRoot: packageBoundary, homePath: packageBoundaryHome });
+  assert(!packageBoundaryReport.findings.some((finding) => finding.id === "compromised-npm-package-reference"));
+
+  const researchRoot = makeFixture();
+  const researchHome = path.join(researchRoot, "home", "alice");
+  write(path.join(researchHome, "Documents", "Codex", "research", "package.json"), JSON.stringify({
+    dependencies: { "atomic-lockfile": "1.0.0" },
+  }));
+  const researchDefault = scanHost({ targetRoot: researchRoot, homePath: researchHome });
+  assert(!researchDefault.findings.some((finding) => finding.id === "compromised-npm-package-reference"));
+  assert(researchDefault.summary.suppressed.research > 0);
+  const researchIncluded = scanHost({ targetRoot: researchRoot, homePath: researchHome, includeResearch: true });
+  assert(researchIncluded.findings.some((finding) => finding.id === "compromised-npm-package-reference"));
+
+  const popPackageKit = makeFixture();
+  write(path.join(popPackageKit, "etc", "os-release"), 'ID="pop"\nID_LIKE="ubuntu debian"\nVERSION_ID="24.04"\n');
+  write(path.join(popPackageKit, "var", "lib", "dpkg", "status"), [
+    "Package: packagekit",
+    "Status: install ok installed",
+    "Version: 1.2.8-2ubuntu1.5",
+    "",
+  ].join("\n"));
+  const popPackageKitReport = scanHost({
+    targetRoot: popPackageKit,
+    homePath: path.join(popPackageKit, "home", "alice"),
+    includeResolved: true,
+  });
+  assert(popPackageKitReport.findings.some((finding) => finding.id === "packagekit-cve-2026-41651-vendor-fixed"));
+  assert(!popPackageKitReport.findings.some((finding) => finding.id === "packagekit-cve-2026-41651-affected-version"));
+
+  const modernNfTables = makeFixture();
+  write(path.join(modernNfTables, "proc", "sys", "kernel", "osrelease"), "7.1.5-generic\n");
+  write(path.join(modernNfTables, "proc", "modules"), "nf_tables 380928 0 - Live 0x0\n");
+  write(path.join(modernNfTables, "proc", "sys", "kernel", "unprivileged_userns_clone"), "1\n");
+  const modernNfTablesReport = scanHost({
+    targetRoot: modernNfTables,
+    homePath: path.join(modernNfTables, "home", "alice"),
+    includeResolved: true,
+  });
+  assert(modernNfTablesReport.findings.some((finding) => finding.id === "nftables-cve-2026-23111-kernel-fixed-baseline"));
+  assert(!modernNfTablesReport.findings.some((finding) => finding.id === "nftables-cve-2026-23111-nftables-present"));
+  assert(!modernNfTablesReport.findings.some((finding) => finding.id === "nftables-cve-2026-23111-userns-exposure"));
+
+  const approvedTooling = makeFixture();
+  const approvedToolingHome = path.join(approvedTooling, "home", "alice");
+  write(
+    path.join(approvedToolingHome, ".config", "google-chrome", "NativeMessagingHosts", "com.openai.codexextension.json"),
+    JSON.stringify({
+      name: "com.openai.codexextension",
+      path: "/home/alice/.codex/plugins/cache/openai-bundled/chrome/latest/extension-host/linux/x64/extension-host",
+      type: "stdio",
+      allowed_origins: ["chrome-extension://hehggadaopoacecdllhhajmbjkdcmajg/"],
+    })
+  );
+  const approvedToolingReport = scanHost({ targetRoot: approvedTooling, homePath: approvedToolingHome });
+  assert(!approvedToolingReport.findings.some((finding) => finding.id === "chrome-cookie-native-messaging-bridge"));
 
   console.log("smoke tests passed");
 }
