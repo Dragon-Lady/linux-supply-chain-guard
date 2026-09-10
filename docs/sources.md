@@ -1,5 +1,14 @@
 # Sources
 
+- Openwall oss-security, Linux kernel LPEs: ZcopyReaper and 20 more (22 CVEs enumerated): https://www.openwall.com/lists/oss-security/2026/09/08/1
+- Ubuntu Security, CVE-2026-52924: https://ubuntu.com/security/CVE-2026-52924
+- OSG Security, CVE-2026-72137: https://osg-htc.org/security/vulns/OSG-SEC-2026-09-02/
+- Gambit Security, Aurora ransomware targets ESXi and abuses Cursor Agent: https://gambit.security/blog-posts/aurora-ransomware-targets-esxi-abuses-cursor-agent-for-exploitation
+- CloudSEK, Caught in 4K: The Aurora Files: https://www.cloudsek.com/blog/aurora-ransomware-affiliate-ai-attack-planning-crypto-payments
+- GitHub Advisory Database, Trinitite malware in @7nohe/openapi-react-query-codegen: https://github.com/advisories/GHSA-rg27-qr39-ch6w
+- JFrog Security Research, Shai-Hulud Trinitite: https://research.jfrog.com/post/shai-hulud-trinitite/
+- OX Security, Shai-Hulud Trinitite: https://www.ox.security/blog/shai-hulud-trinitite-sponsored-by-preview-2-effects/
+
 - AlmaLinux Fragnesia / CVE-2026-46300 disclosure: https://almalinux.org/blog/2026-05-13-fragnesia-cve-2026-46300/
 - NVD CVE-2026-46300 record: https://nvd.nist.gov/vuln/detail/CVE-2026-46300
 - Delphos Labs DirtyCBC / Linux RxGK decrypt-before-MAC analysis: https://delphoslabs.com/blog/36142374-e1fe-80a9-9456-d3c64df81bd5/%20linux-rxgk-decrypt-mac

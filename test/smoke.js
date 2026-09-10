@@ -66,14 +66,32 @@ function run() {
       "@cacheable/node-cache": "3.1.2",
       "@cacheable/utils": "2.5.1",
       "@cacheable/net": "2.1.1",
-      "ecto": "5.0.1"
+      "ecto": "5.0.1",
+      "@7nohe/openapi-react-query-codegen": "3.0.4"
     },
     scripts: {
       postinstall: "node utils.cjs",
       preinstall: "node setup.mjs"
     },
-    notes: "185[.]112[.]147[.]174:7007 npm-cache.com Math_Symbol.js Shai-Hulud: Here We Go Again Bun/1.3.13 0xE1f2395ee43e45A1556EC6438a88c31B83493103"
+    notes: "185[.]112[.]147[.]174:7007 npm-cache.com Math_Symbol.js Shai-Hulud: Here We Go Again Bun/1.3.13 0xE1f2395ee43e45A1556EC6438a88c31B83493103 Trinitite: Sponsored by Preview 2 Effects 3FWCvzduYZg.js"
   }));
+  write(path.join(home, "trinitite", ".github", "workflows", "release.yml"), [
+    "on: issue_comment",
+    "permissions:",
+    "  id-token: write",
+    "jobs:",
+    "  release:",
+    "    if: github.event.comment.body == 'npm publish'",
+    "    steps:",
+    "      - uses: actions/checkout@v4",
+    "      - run: npm publish",
+  ].join("\n"));
+  write(path.join(root, "var", "log", "aurora-esxi.log"), [
+    "Downloaded pub-c057b7d0b24944a29e381ce9ea22a2f1.r2[.]dev/xu4gid0t8er3.out",
+    "sha256 a4af136d159a8eb96b54924fa80355ca52874913301300f55af7d67ae97edcfe",
+    "esxcli vm process kill --type=force --world-id=42",
+  ].join("\n"));
+  write(path.join(root, "etc", "ssh", "sshd-banner"), "We have downloaded confidential information. Your files are encrypted. Contact us via tor browser. Your access key: example\n");
   // package-lock v3 path-only resolved versions (no package.json pin of the bad versions)
   write(
     path.join(home, "keyv-lock-only", "package.json"),
@@ -1129,6 +1147,7 @@ function run() {
 
   const report = scanHost({ targetRoot: root, homePath: home, architecture: "aarch64" });
   const ids = new Set(report.findings.map((finding) => finding.id));
+  assert.strictEqual(report.version, "0.1.1");
   assert.strictEqual(report.summary.overall, "critical");
   assert(ids.has("alma-fragnesia-vulnerable-kernel"));
   assert(ids.has("itscape-arm64-kvm-exposure"));
@@ -1159,6 +1178,13 @@ function run() {
   assert(ids.has("august-2026-keyv-compromised-npm-version"));
   assert(ids.has("august-2026-keyv-npm-network-indicator"));
   assert(ids.has("august-2026-keyv-npm-text-indicator"));
+  assert(ids.has("trinitite-compromised-npm-version"));
+  assert(ids.has("trinitite-campaign-indicator"));
+  assert(ids.has("trinitite-comment-publish-workflow"));
+  assert(ids.has("aurora-ransomware-network-indicator"));
+  assert(ids.has("aurora-linux-ransomware-hash-reference"));
+  assert(ids.has("aurora-esxi-vm-kill-command"));
+  assert(ids.has("aurora-esxi-ssh-banner"));
   assert(report.findings.some((finding) => finding.id === "august-2026-keyv-compromised-npm-version" && finding.evidence.includes("keyv@6.0.0")));
   assert(report.findings.some((finding) => finding.id === "august-2026-keyv-compromised-npm-version" && finding.evidence.includes("ecto@5.0.1")));
   assert(
@@ -1598,6 +1624,54 @@ function run() {
   assert(patchedArmReport.findings.some((finding) => finding.id === "itscape-arm64-kvm-exposure"));
   assert(patchedArmReport.findings.some((finding) => finding.id === "itscape-arm64-kvm-upstream-patched"));
   assert(!patchedArmReport.findings.some((finding) => finding.id === "itscape-arm64-kvm-kernel-review"));
+
+  const septemberKernel = makeFixture();
+  const septemberHome = path.join(septemberKernel, "home", "alice");
+  write(path.join(septemberKernel, "etc", "os-release"), 'ID="pop"\nVERSION_ID="24.04"\n');
+  write(path.join(septemberKernel, "proc", "sys", "kernel", "osrelease"), "7.1.5-76070105-generic\n");
+  write(path.join(septemberKernel, "boot", "config-7.1.5-76070105-generic"), [
+    "CONFIG_INET=y",
+    "CONFIG_AIO=y",
+    "CONFIG_IP_VS=m",
+    "CONFIG_INET6_TUNNEL=m",
+    "CONFIG_IPV6_MULTIPLE_TABLES=y",
+    "CONFIG_BRIDGE=m",
+    "CONFIG_BRIDGE_IGMP_SNOOPING=y",
+    "CONFIG_IP_SCTP=m",
+    "CONFIG_RDS=m",
+    "CONFIG_RDS_TCP=m",
+    "CONFIG_NETFILTER_NETLINK_QUEUE=m",
+    "CONFIG_BRIDGE_NETFILTER=m",
+    "CONFIG_XFRM=y",
+    "CONFIG_IO_URING=y",
+    "CONFIG_SYSVIPC=y",
+    "CONFIG_EPOLL=y",
+  ].join("\n"));
+  write(path.join(septemberHome, "research", "review.sh"), "# authorized-review URL: NebuSec/CyberMeowfia/Linux-CVE-2026-52924\n");
+  const septemberReport = scanHost({ targetRoot: septemberKernel, homePath: septemberHome });
+  const septemberReview = septemberReport.findings.find((finding) => finding.id === "september-2026-public-kernel-exploit-pack-review");
+  const septemberFixed = septemberReport.findings.find((finding) => finding.id === "september-2026-public-kernel-exploit-pack-fixed-baseline");
+  assert(septemberReview.evidence.includes("CVE-2026-80714"));
+  assert(septemberReview.evidence.includes("CVE-2026-74597"));
+  assert(septemberReview.evidence.includes("CVE-2026-74581"));
+  assert(septemberReview.evidence.includes("CVE-2026-74480"));
+  assert(septemberReview.evidence.includes("CVE-2026-68376"));
+  assert(septemberReview.evidence.includes("CVE-2026-68162"));
+  assert(septemberFixed.evidence.includes("CVE-2026-52924"));
+  assert(septemberFixed.evidence.includes("CVE-2026-43502"));
+  assert(septemberFixed.evidence.includes("CVE-2026-72137"));
+  assert(septemberReport.findings.some((finding) => finding.id === "september-2026-public-kernel-exploit-artifact"));
+
+  const trinititeSafe = makeFixture();
+  const trinititeSafeHome = path.join(trinititeSafe, "home", "alice");
+  write(path.join(trinititeSafeHome, "project", "package.json"), JSON.stringify({
+    dependencies: {
+      "@7nohe/openapi-react-query-codegen": "3.0.2",
+      "unrelated-package": "3.0.4",
+    },
+  }));
+  const trinititeSafeReport = scanHost({ targetRoot: trinititeSafe, homePath: trinititeSafeHome });
+  assert(!trinititeSafeReport.findings.some((finding) => finding.id === "trinitite-compromised-npm-version"));
 
   console.log("smoke tests passed");
 }

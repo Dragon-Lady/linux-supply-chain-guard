@@ -1,9 +1,12 @@
 {
   "incident": "Linux supply-chain host exposure guard",
-  "lastUpdated": "2026-08-04",
+  "lastUpdated": "2026-09-10",
   "scope": {
     "postureChecks": "Read-only Linux host checks for vulnerable kernel posture, risky module state, Trend Micro Deep Security Agent hook reload indicators, System Register Hijacking / ret2entry research indicators, ITScape ARM64 KVM exposure, DirtyCBC/RxGK and DirtyClone page-cache poisoning research-artifact leads, PackageKit CVE-2026-41651 local-privilege-escalation posture and advisory-provenance indicators, cloud bucket hijacking storage-data-stream posture indicators, MCP Python SDK CVE-2026-52869 HTTP transport principal-confusion indicators, CPython tarfile CVE-2026-11940 archive-extraction filter-bypass indicators, HackedAlert Django cache-deserialization review indicators, Amazon Q Developer / AWS Language Servers workspace MCP auto-execution and symlink-boundary indicators, Langflow CVE-2026-33017 public-flow RCE and cryptominer campaign indicators, known supply-chain persistence paths, selected compromised npm package references, AtomicArch/IronWorm AUR indicators, DPRK npm RAT dependency indicators, OtterCookie npm indicators, Hades PyPI/Miasma indicators, Miasma ImmobiliareLabs npm indicators, Impacket secretsdump Windows/AD credential-dump artifacts, DAEMON Tools Lite supply-chain installer indicators, macOS.Gaslight mounted-root indicators, Agentjacking\nSentry exposure indicators, 0DIN clean-repo DNS TXT agent-setup indicators, Solana FakeFix/CMS loader indicators, GlassWASM/Open VSX extension indicators, Chrome Native Messaging session-cookie theft indicators, Adblock for YouTube browser-extension review indicators, VS Code folder-open npm autorun indicators, TonRAT Photo ZIP phishing indicators, FFmpeg PixelSmash/MagicYUV media-processing exposure, Heaven's Gate WOW64 evasion review indicators, nf_tables CVE-2026-23111 local-privilege-escalation posture and PoC-provenance indicators, Palo Alto GlobalProtect CVE-2026-0257 log-hunting indicators, Cisco Catalyst SD-WAN Manager 2026 zero-day log-hunting indicators, Operation Highland / Velvet Ant auth-stack indicators, and TeamPCP/Dynatrace weak-signal exposure indicators. August 2026 keyv/cacheable ChainDrop (Shai-Hulud Here We Go Again) exact-version npm package indicators (keyv@6.0.0 and ten related jaredwray-family releases), campaign network markers, and payload/persistence text indicators as read-only operator notifications. This npm compromise is cross-platform (any npm-using OS/lane), not Linux-only; this Linux host tool only reports matches found under the scanned root or mounted workspace. Credits: Snyk, StepSecurity, Aikido, Wiz, JFrog.",
-    "notInScope": "No exploit testing, malware execution, automatic cleanup, token revocation, or claims that a host is clean.",
+    "notInScope": "No exploit testing, malware execution, automatic cleanup, token revocation, network collection, telemetry upload, or claims that a host is clean.",
+    "september2026LinuxLpePack": "Checks all 22 CVE IDs enumerated in the September 8 oss-security public Linux exploit batch, compares official upstream fixed baselines by kernel train, correlates configured kernel components, and flags public exploit-pack provenance as an authorized-research review lead. Distribution backports must be verified separately.",
+    "auroraLinuxEsxiRansomware": "Checks local and mounted-root metadata for Gambit Security and CloudSEK Aurora Linux/ESXi ransomware indicators, including the exact encrypt.out SHA-256, R2 delivery path, C2 markers, ESXi VM force-kill command shape, SSH-banner and ransom-note artifacts, and ESXi discovery-tool context. Cursor installation alone is not an indicator and is not flagged.",
+    "trinititeNpm": "Checks all ten GitHub-reviewed malicious @7nohe/openapi-react-query-codegen releases, Trinitite campaign and payload markers, and comment-triggered npm OIDC publishing workflows without an author-association gate. The guard does not run lifecycle scripts, node-gyp, package managers, or network requests.",
     "fragnesia": "CVE-2026-46300 affects supported AlmaLinux releases through esp4, esp6, and in some AlmaLinux 9/10 cases rxrpc. Built-in patched kernel thresholds follow AlmaLinux's May 13, 2026 disclosure.",
     "itscapeArm64Kvm": "CVE-2026-46316 / ITScape affects ARM64 KVM hosts through a vGIC-ITS race condition. The guard flags ARM64 KVM exposure and asks operators to verify vendor-fixed kernels or backports, with upstream 6.15.0 used as a review baseline.",
     "trendMicroHookReloadBypass": "Checks local and mounted-root metadata for MatheuZ-reported Trend Micro Deep Security Agent BMHook/TMHook reload-bypass evidence, including bmhook/tmhook/dsa_filter modules, ds_am.init module reload behavior, livepatch unpatch/patch transitions, LKM DOWN breadcrumbs, and event-storm or telemetry-drop terms.",
@@ -189,6 +192,14 @@
     "https://github.com/wiz-sec-public/wiz-research-iocs/blob/main/reports/keyv-packages.csv",
     "https://www.aikido.dev/blog/keyv-and-friends-compromised-in-npm-supply-chain-attack",
     "https://research.jfrog.com/post/shai-hulud-is-back-august/",
-    "https://www.stepsecurity.io/blog/chaindrop-npm-worm"
+    "https://www.stepsecurity.io/blog/chaindrop-npm-worm",
+    "https://www.openwall.com/lists/oss-security/2026/09/08/1",
+    "https://ubuntu.com/security/CVE-2026-52924",
+    "https://osg-htc.org/security/vulns/OSG-SEC-2026-09-02/",
+    "https://gambit.security/blog-posts/aurora-ransomware-targets-esxi-abuses-cursor-agent-for-exploitation",
+    "https://www.cloudsek.com/blog/aurora-ransomware-affiliate-ai-attack-planning-crypto-payments",
+    "https://github.com/advisories/GHSA-rg27-qr39-ch6w",
+    "https://research.jfrog.com/post/shai-hulud-trinitite/",
+    "https://www.ox.security/blog/shai-hulud-trinitite-sponsored-by-preview-2-effects/"
   ]
 }
