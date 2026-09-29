@@ -1154,7 +1154,7 @@ function run() {
     includeResolved: true,
   });
   const ids = new Set(report.findings.map((finding) => finding.id));
-  assert.strictEqual(report.version, "0.1.2");
+  assert.strictEqual(report.version, "0.1.3");
   assert.strictEqual(report.summary.overall, "critical");
   assert(ids.has("alma-fragnesia-vulnerable-kernel"));
   assert(ids.has("itscape-arm64-kvm-exposure"));
@@ -1743,6 +1743,75 @@ function run() {
   );
   const approvedToolingReport = scanHost({ targetRoot: approvedTooling, homePath: approvedToolingHome });
   assert(!approvedToolingReport.findings.some((finding) => finding.id === "chrome-cookie-native-messaging-bridge"));
+
+  const memtensor = makeFixture();
+  const memtensorHome = path.join(memtensor, "home", "alice");
+  write(path.join(memtensorHome, "npm", "package.json"), JSON.stringify({
+    dependencies: { "@memtensor/memos-cloud-openclaw-plugin": "0.1.21" }
+  }));
+  write(path.join(memtensorHome, "npm", "package-lock.json"), JSON.stringify({
+    packages: { "node_modules/@memtensor/memos-cloud-openclaw-plugin": { version: "0.1.23" } }
+  }));
+  write(path.join(memtensorHome, "npm-latest", "package.json"), JSON.stringify({
+    dependencies: { "@memtensor/memos-cloud-openclaw-plugin": "0.1.25" }
+  }));
+  write(path.join(memtensorHome, "python", "requirements.txt"), "MemoryOS==2.0.34\n");
+  write(path.join(memtensorHome, ".venv", "lib", "python3.12", "site-packages", "memoryos-2.0.34.dist-info", "METADATA"), "Name: MemoryOS\nVersion: 2.0.34\n");
+  const memtensorReport = scanHost({ targetRoot: memtensor, homePath: memtensorHome });
+  assert(memtensorReport.findings.some((finding) => finding.id === "memtensor-sckit-compromised-npm-version" && finding.evidence.includes("0.1.21")));
+  assert(memtensorReport.findings.some((finding) => finding.id === "memtensor-sckit-compromised-npm-version" && finding.evidence.includes("0.1.23")));
+  assert(memtensorReport.findings.some((finding) => finding.id === "memtensor-sckit-compromised-npm-version" && finding.evidence.includes("0.1.25")));
+  assert(memtensorReport.findings.some((finding) => finding.id === "memtensor-sckit-compromised-pypi-version"));
+
+  const memtensorInstalled = makeFixture();
+  const memtensorInstalledHome = path.join(memtensorInstalled, "home", "alice");
+  write(path.join(memtensorInstalledHome, ".venv", "lib", "python3.12", "site-packages", "memoryos-2.0.34.dist-info", "METADATA"), "Name: MemoryOS\nVersion: 2.0.34\n");
+  const memtensorInstalledReport = scanHost({ targetRoot: memtensorInstalled, homePath: memtensorInstalledHome });
+  assert(memtensorInstalledReport.findings.some((finding) => finding.id === "memtensor-sckit-compromised-pypi-version"));
+
+  const memtensorSafe = makeFixture();
+  const memtensorSafeHome = path.join(memtensorSafe, "home", "alice");
+  write(path.join(memtensorSafeHome, "npm", "package.json"), JSON.stringify({
+    dependencies: { "@memtensor/memos-cloud-openclaw-plugin": "0.1.22", "unrelated": "0.1.25" }
+  }));
+  write(path.join(memtensorSafeHome, "npm-clean", "package.json"), JSON.stringify({
+    dependencies: { "@memtensor/memos-cloud-openclaw-plugin": "0.1.24" }
+  }));
+  write(path.join(memtensorSafeHome, "npm-range", "package.json"), JSON.stringify({
+    dependencies: { "@memtensor/memos-cloud-openclaw-plugin": "^0.1.21" }
+  }));
+  write(path.join(memtensorSafeHome, "python", "requirements.txt"), "MemoryOS==2.0.33\nMemoryOS>=2.0.34\nunrelated==2.0.34\n");
+  const memtensorSafeReport = scanHost({ targetRoot: memtensorSafe, homePath: memtensorSafeHome });
+  assert(!memtensorSafeReport.findings.some((finding) => finding.id.startsWith("memtensor-sckit-")));
+
+  const septemberThreats = makeFixture();
+  const weeklyHome = path.join(septemberThreats, "home", "alice");
+  write(path.join(weeklyHome, "dirtyblanket", "package.json"), JSON.stringify({
+    dependencies: { "express-javascript": "5.2.1", "react-nodejs": "19.3.0" }
+  }));
+  write(path.join(weeklyHome, "repo", ".github", "workflows", "issues.yml"),
+    "steps:\n  - uses: actions-cool/issues-helper@v2.2.1\n  - uses: actions-cool/maintain-one-comment@v1\n");
+  write(path.join(weeklyHome, "gateway", "requirements.txt"), "litellm==1.100.1\n");
+  write(path.join(weeklyHome, ".config", "systemd", "user", "systemd-fontcached.service"), "[Service]\nExecStart=/home/alice/.config/systemd/systemd-fontcached\n");
+  const weeklyReport = scanHost({ targetRoot: septemberThreats, homePath: weeklyHome });
+  assert(weeklyReport.findings.some((finding) => finding.id === "dirtyblanket-npm-package-reference" && finding.evidence.includes("express-javascript")));
+  assert(weeklyReport.findings.some((finding) => finding.id === "dirtyblanket-systemd-persistence"));
+  assert(weeklyReport.findings.filter((finding) => finding.id === "mini-shai-hulud-hijacked-action-tag").length === 2);
+  assert(weeklyReport.findings.some((finding) => finding.id === "litellm-cve-2026-93355-jwt-email-fallback-review"));
+
+  const septemberSafe = makeFixture();
+  const septemberSafeHome = path.join(septemberSafe, "home", "alice");
+  write(path.join(septemberSafeHome, "repo", "package.json"), JSON.stringify({
+    dependencies: { "express": "5.2.1", "express-javascript-extra": "5.2.1" }
+  }));
+  write(path.join(septemberSafeHome, "repo", ".github", "workflows", "issues.yml"),
+    "steps:\n  - uses: actions-cool/issues-helper@200c78641dbf33838311e5a1e0c31bbdb92d7cf0\n");
+  write(path.join(septemberSafeHome, "gateway", "requirements.txt"), "litellm>=1.100.1\n");
+  const septemberSafeReport = scanHost({ targetRoot: septemberSafe, homePath: septemberSafeHome });
+  assert(!septemberSafeReport.findings.some((finding) => [
+    "dirtyblanket-npm-package-reference", "dirtyblanket-systemd-persistence",
+    "mini-shai-hulud-hijacked-action-tag", "litellm-cve-2026-93355-jwt-email-fallback-review"
+  ].includes(finding.id)));
 
   console.log("smoke tests passed");
 }

@@ -697,3 +697,41 @@ remediation.
 
 This project intentionally avoids exploit reproduction steps, cleanup
 automation, and secret disclosure. It cannot prove a host is clean.
+
+## September 23, 2026: MemTensor sckit worm
+
+Aikido, StepSecurity, and SafeDep identified malicious npm releases of
+`@memtensor/memos-cloud-openclaw-plugin` (0.1.21, 0.1.23, 0.1.25) and PyPI
+`MemoryOS` 2.0.34. The plugin and Python library can launch a bundled Go
+payload when loaded, without an install hook. The scanner reports only exact
+affected versions in local dependency or installed-package metadata, and does
+not flag the intervening clean npm artifacts 0.1.22 and 0.1.24. A version
+match is an exposure lead; confirm whether it was installed and loaded before
+drawing host-compromise conclusions. If it ran, preserve evidence and treat
+credentials accessible to that environment as exposed.
+
+## September 29, 2026: DirtyBlanket, actions-cool tags, and LiteLLM
+
+SafeDep reports nine fake Express/React npm packages published by `dirtyblanket`
+on September 29. Their install hook starts a Linux worm that can spread via SSH,
+AUR, and npm tokens, and can create `systemd-fontrenderd` or
+`systemd-fontcached` persistence. The guard checks the exact package names in
+dependency metadata and reported persistence paths without executing anything.
+A package reference means possible exposure; a persistence file needs direct
+forensic review.
+
+Socket and SafeDep found that release tags for
+`actions-cool/issues-helper` and `actions-cool/maintain-one-comment` still
+pointed to malicious Mini Shai-Hulud content when GitHub re-enabled the actions
+on September 16. Socket updated its report on September 25 to say GitHub had
+disabled both again. The guard flags tag references in workflow files so
+owners can inspect the September 16–25 run window. A clean, full commit pin is
+not flagged.
+
+OX Security disclosed CVE-2026-93355 in LiteLLM's JWT email fallback on
+September 29, confirmed through 1.100.1 with no fix reported that day. The
+guard flags exact dependency pins through that version as a review lead. Risk
+depends on JWT authentication and whether a trusted issuer can provide an
+unverified email claim matching an existing user. OX recommends enforcing
+verified email claims at the IdP/proxy and binding accounts to stable subject
+identifiers while awaiting a vendor fix.

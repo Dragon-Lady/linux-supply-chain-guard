@@ -234,6 +234,18 @@ const AUGUST_2026_TRINITITE_INDICATORS = [
   "SNYK-JS-7NOHEOPENAPIREACTQUERYCODEGEN-19424702",
 ];
 
+// September 23, 2026 MemTensor sckit worm. The npm releases alternated
+// between malicious and clean, so only these exact published versions match.
+const MEMTENSOR_SCKIT_NPM_PACKAGE = "@memtensor/memos-cloud-openclaw-plugin";
+const MEMTENSOR_SCKIT_NPM_VERSIONS = ["0.1.21", "0.1.23", "0.1.25"];
+const MEMTENSOR_SCKIT_PYPI_VERSION = "2.0.34";
+
+// SafeDep reported all nine DirtyBlanket releases on September 29, 2026.
+const DIRTYBLANKET_NPM_PACKAGES = [
+  "xeprews", "express-javascript", "express-nodejs", "react-nodejs",
+  "exprdd", "exprrdd", "exptrdd", "exptred", "exptredd",
+];
+
 const SEPTEMBER_2026_LINUX_LPE_PACK = loadJsonObjectFile("september-2026-linux-lpe-pack.json");
 
 // Gambit Security and CloudSEK Aurora Linux/ESXi ransomware indicators.
@@ -2705,6 +2717,9 @@ function scanHost(options = {}) {
   checkSeptember2026LinuxLpePack(findings, targetRoot, homePath, kernelRelease);
   checkPersistence(findings, targetRoot, homePath);
   checkCompromisedNpmPackages(findings, targetRoot, homePath);
+  checkDirtyBlanketPersistence(findings, targetRoot, homePath);
+  checkHijackedActionsCoolTags(findings, targetRoot, homePath);
+  checkLiteLlmJwtEmailFallback(findings, targetRoot, homePath);
   checkAugust2026KeyvNpmCampaign(findings, targetRoot, homePath);
   checkAugust2026TrinititeNpm(findings, targetRoot, homePath);
   checkChainVeilNpmCampaign(findings, targetRoot, homePath);
@@ -2806,7 +2821,7 @@ function scanHost(options = {}) {
 
   return {
     tool: "linux-supply-chain-guard",
-    version: "0.1.2",
+    version: "0.1.3",
     generatedAt: new Date().toISOString(),
     targetRoot,
     options: {
@@ -3463,9 +3478,79 @@ function checkCompromisedNpmPackages(findings, targetRoot, homePath) {
     const text = readText(filePath);
     if (!text) continue;
     const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+    for (const version of exactMemtensorNpmVersionsInText(text)) {
+      if (MEMTENSOR_SCKIT_NPM_VERSIONS.includes(version)) {
+        addFinding(findings, "critical", "memtensor-sckit-compromised-npm-version", "MemTensor sckit worm npm release appears in dependency metadata.", `${relative}: ${MEMTENSOR_SCKIT_NPM_PACKAGE}@${version}`, "Do not load this plugin. If it ran, preserve evidence and treat credentials reachable from the host or CI runner as exposed; rotate them from a clean machine. Check publication and repository activity.");
+      }
+    }
+    for (const packageName of DIRTYBLANKET_NPM_PACKAGES) {
+      if (npmPackageNameInDependencyText(text, packageName)) {
+        addFinding(findings, "critical", "dirtyblanket-npm-package-reference", "DirtyBlanket Linux worm package appears in dependency metadata.", `${relative}: ${packageName}`, "Do not run npm install in this tree. If the package was installed on Linux, preserve evidence and treat SSH keys and npm tokens reachable from that machine as exposed.");
+      }
+    }
     for (const packageName of KNOWN_COMPROMISED_NPM_PACKAGES) {
       if (npmPackageNameInDependencyText(text, packageName)) {
         addFinding(findings, "critical", "compromised-npm-package-reference", "Known compromised npm package appears in dependency metadata.", `${relative}: ${packageName}`, "Do not run npm install/build/test in this tree. Isolate affected systems if execution is suspected and rotate secrets from a clean posture.");
+      }
+    }
+  }
+}
+
+function checkDirtyBlanketPersistence(findings, targetRoot, homePath) {
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const paths = [
+    "/usr/lib/systemd/systemd-fontrenderd",
+    "/etc/systemd/system/systemd-fontrenderd.service",
+    ...(homeRelative ? [
+      `${homeRelative}/.config/systemd/systemd-fontcached`,
+      `${homeRelative}/.config/systemd/user/systemd-fontrenderd.service`,
+      `${homeRelative}/.config/systemd/user/systemd-fontcached.service`,
+    ] : []),
+  ];
+  for (const relative of paths) {
+    if (exists(mapLinuxPath(targetRoot, relative))) {
+      addFinding(findings, "critical", "dirtyblanket-systemd-persistence", "DirtyBlanket-reported systemd persistence path exists.", relative, "Preserve the file and service state for review. If tied to DirtyBlanket, isolate the host and rotate reachable SSH keys and npm tokens from a clean machine. Do not run the file.");
+    }
+  }
+}
+
+function checkHijackedActionsCoolTags(findings, targetRoot, homePath) {
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const roots = [homeRelative, "/opt", "/srv", "/var/www"].filter(Boolean);
+  const files = [];
+  for (const root of roots) {
+    files.push(...findWatchFiles(mapLinuxPath(targetRoot, root), 25000 - files.length));
+    if (files.length >= 25000) break;
+  }
+  for (const filePath of files) {
+    const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+    if (!/\/\.github\/workflows\/[^/]+\.ya?ml$/i.test(relative)) continue;
+    const text = readText(filePath);
+    const matches = text.match(/^\s*-?\s*uses\s*:\s*["']?actions-cool\/(?:issues-helper|maintain-one-comment)@v[0-9][\w.-]*\b/gim) || [];
+    for (const match of matches) {
+      addFinding(findings, "warning", "mini-shai-hulud-hijacked-action-tag", "Workflow references a reported hijacked actions-cool release tag.", `${relative}: ${match.trim()}`, "Remove the action or pin a verified clean commit. Review runs from September 16-25, 2026 and rotate secrets accessible to any run that executed the malicious tag.");
+    }
+  }
+}
+
+function checkLiteLlmJwtEmailFallback(findings, targetRoot, homePath) {
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const roots = [homeRelative, "/opt", "/srv", "/var/www"].filter(Boolean);
+  const files = [];
+  for (const root of roots) {
+    files.push(...findWatchFiles(mapLinuxPath(targetRoot, root), 25000 - files.length));
+    if (files.length >= 25000) break;
+  }
+  for (const filePath of files) {
+    const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+    if (!isPythonDependencyMetadataPath(relative)) continue;
+    const text = readText(filePath);
+    const versions = new Set();
+    for (const match of text.matchAll(/(?:^|\n)\s*litellm\s*(?:==|===)\s*([0-9]+\.[0-9]+\.[0-9]+)\b/gim)) versions.add(match[1]);
+    for (const match of text.matchAll(/(?:^|\n)\s*name\s*=\s*["']litellm["']\s*\r?\n\s*version\s*=\s*["']([0-9]+\.[0-9]+\.[0-9]+)["']/gim)) versions.add(match[1]);
+    for (const version of versions) {
+      if (compareDottedVersion(version, "1.100.1") <= 0) {
+        addFinding(findings, "warning", "litellm-cve-2026-93355-jwt-email-fallback-review", "LiteLLM version needs CVE-2026-93355 JWT authentication review.", `${relative}: litellm ${version}`, "OX confirmed an unverified-email account takeover through 1.100.1 and reported no fix on September 29. If JWT authentication is enabled, require verified email claims at the IdP or proxy and bind accounts to stable subjects; check vendor updates before changing versions.");
       }
     }
   }
@@ -4194,6 +4279,9 @@ function checkHadesPyPi(findings, targetRoot, homePath) {
     const text = readText(filePath);
     if (!text) continue;
     if (isPythonDependencyMetadataPath(relative)) {
+      if (isMemtensorMemoryOsVersion(text, relative)) {
+        addFinding(findings, "critical", "memtensor-sckit-compromised-pypi-version", "MemTensor sckit worm PyPI release appears in dependency or installed-package metadata.", `${relative}: MemoryOS==${MEMTENSOR_SCKIT_PYPI_VERSION}`, "Do not import this package. If it ran, preserve evidence and treat credentials reachable from the host or CI runner as exposed; rotate them from a clean machine. Check publication and repository activity.");
+      }
       for (const [packageName, versions] of Object.entries(HADES_PYPI_PACKAGES)) {
         for (const version of versions) {
           if (pythonPackageVersionInText(text, packageName, version)) {
@@ -8533,6 +8621,7 @@ function hasJoomlaSpPageBuilder48908ExploitShape(text, relativePath) {
 
 function isHadesWatchFile(fileName, filePath) {
   if (isWatchFile(fileName, filePath)) return true;
+  if (fileName === "METADATA" && /\/memoryos-2\.0\.34\.dist-info\/METADATA$/i.test(filePath.replace(/\\/g, "/"))) return true;
   if (fileName === "_index.js" || /-setup\.pth$/i.test(fileName) || HADES_NATIVE_EXTENSION_FILES.has(fileName)) return true;
   if (fileName.endsWith(".abi3.so")) return true;
   return false;
@@ -8844,6 +8933,26 @@ function scopedPackageVersionsInText(text, packageName) {
   return Array.from(versions);
 }
 
+function exactMemtensorNpmVersionsInText(text) {
+  const packageName = escapeRegExp(MEMTENSOR_SCKIT_NPM_PACKAGE);
+  const versions = new Set();
+  const patterns = [
+    // An exact package.json dependency, not a range such as ^0.1.21.
+    new RegExp(`["']${packageName}["']\\s*:\\s*["']([0-9]+\\.[0-9]+\\.[0-9]+)["']`, "gi"),
+    // npm package-lock entries identify the resolved version.
+    new RegExp(`["']node_modules/${packageName}["']\\s*:\\s*\\{\\s*["']version["']\\s*:\\s*["']([0-9]+\\.[0-9]+\\.[0-9]+)["']`, "gi"),
+    // pnpm/yarn lockfile keys and installed-package metadata.
+    new RegExp(`(?:^|[^A-Za-z0-9_./-])${packageName}@(npm:)?([0-9]+\\.[0-9]+\\.[0-9]+)(?![0-9.])`, "gim"),
+    new RegExp(`["']name["']\\s*:\\s*["']${packageName}["']\\s*,\\s*["']version["']\\s*:\\s*["']([0-9]+\\.[0-9]+\\.[0-9]+)["']`, "gi"),
+  ];
+  for (const pattern of patterns) {
+    for (const match of text.matchAll(pattern)) {
+      versions.add(match[2] || match[1]);
+    }
+  }
+  return Array.from(versions);
+}
+
 function trinititeVersionsInText(text) {
   const versions = new Set(scopedPackageVersionsInText(text, AUGUST_2026_TRINITITE_PACKAGE));
   const packageName = escapeRegExp(AUGUST_2026_TRINITITE_PACKAGE);
@@ -8933,6 +9042,15 @@ function pythonPackageVersionInText(text, packageName, version) {
     new RegExp(`${escapedPkg}[^\\n\\r]{0,200}${escapedVersion}`, "i"),
   ];
   return patterns.some((pattern) => pattern.test(normalized));
+}
+
+function isMemtensorMemoryOsVersion(text, relativePath) {
+  if (/\/memoryos-2\.0\.34\.dist-info\/METADATA$/i.test(relativePath)) {
+    return /^Name:\s*MemoryOS\s*$/im.test(text) && /^Version:\s*2\.0\.34\s*$/im.test(text);
+  }
+  return /\bMemoryOS\s*(?:==|===|=)\s*2\.0\.34(?![0-9.])/i.test(text)
+    || /^Name:\s*MemoryOS\s*\r?\nVersion:\s*2\.0\.34\s*$/im.test(text)
+    || /(?:^|\n)name\s*=\s*["']MemoryOS["']\s*\r?\nversion\s*=\s*["']2\.0\.34["']/im.test(text);
 }
 
 function pythonPackageNameInText(text, packageName) {

@@ -4,6 +4,21 @@
 incident responders reviewing supply-chain exposure on workstations, CI
 runners, and build hosts.
 
+Version 0.1.3 checks the nine SafeDep-reported DirtyBlanket
+npm package names and its Linux systemd persistence paths. It also flags
+workflow tag references to the two hijacked `actions-cool` actions reported by
+Socket and SafeDep. OX Security's LiteLLM CVE-2026-93355 disclosure adds a
+version review finding for exact LiteLLM pins through 1.100.1; the finding
+requires JWT/IdP configuration review because the issue had no vendor fix at
+disclosure. None of these matches proves the payload or exploit ran.
+
+The same release checks exact malicious MemTensor sckit worm
+releases in npm and Python dependency or installed-package metadata:
+`@memtensor/memos-cloud-openclaw-plugin` 0.1.21, 0.1.23, and 0.1.25, plus
+`MemoryOS` 2.0.34. The intervening npm releases 0.1.22 and 0.1.24 are not
+treated as malicious. A match calls for exposure review; it does not prove the
+package ran or that credentials were taken.
+
 Version 0.1.2 keeps the September 2026 detection coverage while making the
 default report an active-host view. Older campaign lanes remain source-backed
 but run only with `--include-historical`. Known scanner sources, test fixtures, IDE

@@ -1,5 +1,11 @@
 # Sources
 
+## September 23, 2026 MemTensor sckit worm
+
+- Aikido original analysis: https://www.aikido.dev/blog/supplychain-local-memtensor-npm-pypi
+- StepSecurity package and runtime analysis: https://www.stepsecurity.io/blog/sckit-supply-chain-worm-hits-memtensor-npm-pypi-scopes
+- SafeDep package comparison and indicators: https://safedep.io/memtensor-sckit-worm-npm-pypi/
+
 - Openwall oss-security, Linux kernel LPEs: ZcopyReaper and 20 more (22 CVEs enumerated): https://www.openwall.com/lists/oss-security/2026/09/08/1
 - Ubuntu Security, CVE-2026-52924: https://ubuntu.com/security/CVE-2026-52924
 - OSG Security, CVE-2026-72137: https://osg-htc.org/security/vulns/OSG-SEC-2026-09-02/
@@ -211,3 +217,11 @@ roots or mounted workspaces.
 - Aikido keyv / friends Shai-Hulud supply-chain attack: https://www.aikido.dev/blog/keyv-and-friends-compromised-in-npm-supply-chain-attack
 - JFrog Shai-Hulud August 2026 (keyv and 400+ packages): https://research.jfrog.com/post/shai-hulud-is-back-august/
 - StepSecurity ChainDrop npm worm analysis: https://www.stepsecurity.io/blog/chaindrop-npm-worm
+
+## September 29, 2026 weekly review
+
+- SafeDep DirtyBlanket npm/Linux worm analysis: https://safedep.io/dirtyblanket-express-impersonation-npm/
+- Socket actions-cool tag re-enablement and September 25 update: https://socket.dev/blog/mini-shai-hulud-actions
+- SafeDep downstream Mini Shai-Hulud infection analysis: https://safedep.io/mini-shai-hulud-reinfection-github-repositories/
+- OX Security LiteLLM CVE-2026-93355 disclosure: https://www.ox.security/blog/litellm-an-ordinary-login-token-can-become-someone-elses-admin-account/
+- OX Security PhantomSub package campaign (reviewed; no package-name rule added): https://www.ox.security/blog/phantomsub-malicious-npm-campaign-secretly-adds-users-to-whatsapp-spam-channels/
