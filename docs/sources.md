@@ -224,4 +224,10 @@ roots or mounted workspaces.
 - Socket actions-cool tag re-enablement and September 25 update: https://socket.dev/blog/mini-shai-hulud-actions
 - SafeDep downstream Mini Shai-Hulud infection analysis: https://safedep.io/mini-shai-hulud-reinfection-github-repositories/
 - OX Security LiteLLM CVE-2026-93355 disclosure: https://www.ox.security/blog/litellm-an-ordinary-login-token-can-become-someone-elses-admin-account/
-- OX Security PhantomSub package campaign (reviewed; no package-name rule added): https://www.ox.security/blog/phantomsub-malicious-npm-campaign-secretly-adds-users-to-whatsapp-spam-channels/
+- OX Security PhantomSub package campaign: https://www.ox.security/blog/phantomsub-malicious-npm-campaign-secretly-adds-users-to-whatsapp-spam-channels/
+
+## September 30, 2026 bookmark and blog review
+
+- Lodash upstream GHSA-r5fr-rjxr-66jc / CVE-2026-4800: https://github.com/lodash/lodash/security/advisories/GHSA-r5fr-rjxr-66jc
+- MCP Python SDK upstream GHSA-qx49-fqc8-xw99: https://github.com/modelcontextprotocol/python-sdk/security/advisories/GHSA-qx49-fqc8-xw99
+- OX Security PhantomSub package inventory: https://www.ox.security/blog/phantomsub-malicious-npm-campaign-secretly-adds-users-to-whatsapp-spam-channels/

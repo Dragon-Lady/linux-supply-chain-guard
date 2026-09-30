@@ -4,6 +4,16 @@
 incident responders reviewing supply-chain exposure on workstations, CI
 runners, and build hosts.
 
+Version 0.1.4 adds exact dependency checks for the lodash `_.template`
+imports-key advisory and the MCP Python SDK OAuth credential-routing advisory.
+It also recognizes 15 exact npm package names from OX Security's PhantomSub
+report. The MCP check reviews Python code that constructs unattended OAuth
+providers without a visible `issuer=` argument. Findings are exposure leads:
+lodash exploitation depends on an unsafe template call, MCP exposure depends on
+an HTTP OAuth client connecting to an untrusted server, and a PhantomSub
+dependency reference does not prove its WhatsApp behavior ran. The package
+checks use exact manifest pins or resolved lockfile entries where available.
+
 Version 0.1.3 checks the nine SafeDep-reported DirtyBlanket
 npm package names and its Linux systemd persistence paths. It also flags
 workflow tag references to the two hijacked `actions-cool` actions reported by

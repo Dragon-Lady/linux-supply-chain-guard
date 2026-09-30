@@ -1813,6 +1813,35 @@ function run() {
     "mini-shai-hulud-hijacked-action-tag", "litellm-cve-2026-93355-jwt-email-fallback-review"
   ].includes(finding.id)));
 
+  const advisoryFixture = makeFixture();
+  const advisoryHome = path.join(advisoryFixture, "home", "alice");
+  write(path.join(advisoryHome, "npm", "package-lock.json"), JSON.stringify({
+    packages: { "node_modules/lodash": { version: "4.17.23" }, "node_modules/lodash-es": { version: "4.18.0" } }
+  }));
+  write(path.join(advisoryHome, "npm", "pnpm-lock.yaml"), "  /lodash.template@4.17.21:\n    resolution: {}\n");
+  write(path.join(advisoryHome, "phantomsub", "package.json"), JSON.stringify({ dependencies: { "@nexustechpro/baileys": "1.2.3" } }));
+  write(path.join(advisoryHome, "oauth", "pyproject.toml"), 'dependencies = ["mcp==1.29.1"]\n');
+  write(path.join(advisoryHome, "oauth-next", "requirements.txt"), "mcp==2.0.0a1\n");
+  write(path.join(advisoryHome, "oauth", "client.py"), "provider = ClientCredentialsOAuthProvider(client_id='example')\n");
+  const advisoryFindings = scanHost({ targetRoot: advisoryFixture, homePath: advisoryHome }).findings;
+  assert(advisoryFindings.some((finding) => finding.id === "lodash-template-cve-2026-4800-affected-version" && finding.evidence.includes("lodash 4.17.23")));
+  assert(advisoryFindings.some((finding) => finding.id === "lodash-template-cve-2026-4800-affected-version" && finding.evidence.includes("lodash.template 4.17.21")));
+  assert(!advisoryFindings.some((finding) => finding.id === "lodash-template-cve-2026-4800-affected-version" && finding.evidence.includes("lodash-es 4.18.0")));
+  assert(advisoryFindings.some((finding) => finding.id === "mcp-oauth-credential-routing-affected-version" && finding.evidence.includes("mcp 1.29.1")));
+  assert(advisoryFindings.some((finding) => finding.id === "mcp-oauth-credential-routing-affected-version" && finding.evidence.includes("mcp 2.0.0a1")));
+  assert(advisoryFindings.some((finding) => finding.id === "mcp-oauth-provider-missing-issuer-review"));
+  assert(advisoryFindings.some((finding) => finding.id === "phantomsub-ox-npm-package-reference" && finding.evidence.includes("@nexustechpro/baileys")));
+
+  const advisorySafe = makeFixture();
+  const safeHome = path.join(advisorySafe, "home", "alice");
+  write(path.join(safeHome, "npm", "package.json"), JSON.stringify({ dependencies: {
+    lodash: "^4.17.21", "lodash-es": "4.18.0", "not-lodash": "4.17.21", "ourin-baileys-extra": "1.2.3"
+  } }));
+  write(path.join(safeHome, "oauth", "requirements.txt"), "mcp>=1.9.1\nmcp==1.30.0\nmcp-extra==1.29.1\n");
+  write(path.join(safeHome, "oauth", "client.py"), "provider = ClientCredentialsOAuthProvider(client_id='example', issuer='https://auth.example')\n");
+  const safeFindings = scanHost({ targetRoot: advisorySafe, homePath: safeHome }).findings;
+  assert(!safeFindings.some((finding) => finding.id.startsWith("lodash-template-cve-2026-4800") || finding.id.startsWith("mcp-oauth-") || finding.id.startsWith("phantomsub-")));
+
   console.log("smoke tests passed");
 }
 

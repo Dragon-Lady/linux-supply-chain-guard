@@ -2720,6 +2720,9 @@ function scanHost(options = {}) {
   checkDirtyBlanketPersistence(findings, targetRoot, homePath);
   checkHijackedActionsCoolTags(findings, targetRoot, homePath);
   checkLiteLlmJwtEmailFallback(findings, targetRoot, homePath);
+  checkLodashTemplateCve20264800(findings, targetRoot, homePath);
+  checkMcpOAuthCredentialRouting(findings, targetRoot, homePath);
+  checkPhantomSubNpmPackages(findings, targetRoot, homePath);
   checkAugust2026KeyvNpmCampaign(findings, targetRoot, homePath);
   checkAugust2026TrinititeNpm(findings, targetRoot, homePath);
   checkChainVeilNpmCampaign(findings, targetRoot, homePath);
@@ -6014,6 +6017,167 @@ function checkCloudBucketHijackingExposure(findings, targetRoot, homePath) {
     if (/VPC Service Controls|Service Control Policies|SCPs|account-regional S3 namespaces|trusted organizational boundary|data perimeter/i.test(text)
       && /bucket hijacking|external storage bucket|Cloud Logging|S3 bucket replication|Data Firehose|Azure Monitor diagnostic/i.test(text)) {
       addFinding(findings, "info", "cloud-bucket-hijacking-perimeter-mitigation-note", "Cloud bucket hijacking mitigation language appears in scanned host metadata.", relative, "Confirm the stated perimeter control is enforced in the relevant cloud accounts, projects, regions, subscriptions, and logging destinations.");
+    }
+  }
+}
+
+const PHANTOMSUB_OX_NPM_NAMES = new Set([
+  "ourin-baileys", "@nexustechpro/baileys", "@badzz88/baileys",
+  "@ostyado/baileys", "levvleys", "@vanzxy/baileys",
+  "@yudzxml/baileys", "@chatunity/baileys", "@kelvdra/baileys",
+  "neuralwhatsapp", "lilys-baileys", "@fyxzpediaa/baileys",
+  "noxleyss", "@xrelly-stack/bails", "alipclutch-baileys",
+]);
+
+function checkPhantomSubNpmPackages(findings, targetRoot, homePath) {
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const roots = [homeRelative, "/opt", "/srv", "/var/www", "/root", "/usr/local"].filter(Boolean);
+  const dependencyFiles = new Set(["package.json", "package-lock.json", "npm-shrinkwrap.json", "pnpm-lock.yaml", "yarn.lock"]);
+  const files = [];
+  for (const root of roots) {
+    files.push(...findWatchFiles(mapLinuxPath(targetRoot, root), 25000 - files.length));
+    if (files.length >= 25000) break;
+  }
+
+  for (const filePath of files) {
+    const name = path.basename(filePath);
+    if (!dependencyFiles.has(name)) continue;
+    const text = readText(filePath);
+    if (!text || text.length > 1024 * 1024) continue;
+    const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+    const found = new Set();
+    if (name.endsWith(".json")) {
+      const metadata = parseJsonObject(text);
+      if (!metadata) continue;
+      if (PHANTOMSUB_OX_NPM_NAMES.has(metadata.name)) found.add(metadata.name);
+      for (const section of ["dependencies", "devDependencies", "optionalDependencies", "peerDependencies"]) {
+        for (const packageName of Object.keys(metadata[section] || {})) {
+          if (PHANTOMSUB_OX_NPM_NAMES.has(packageName)) found.add(packageName);
+        }
+      }
+      for (const packagePath of Object.keys(metadata.packages || {})) {
+        if (packagePath.startsWith("node_modules/")) {
+          const packageName = packagePath.slice("node_modules/".length);
+          if (PHANTOMSUB_OX_NPM_NAMES.has(packageName)) found.add(packageName);
+        }
+      }
+    } else {
+      for (const packageName of PHANTOMSUB_OX_NPM_NAMES) {
+        const escaped = escapeRegExp(packageName);
+        if (new RegExp(`(?:^|[\\s"'])/?${escaped}@(?:npm:)?[0-9]`, "m").test(text)) found.add(packageName);
+      }
+    }
+    for (const packageName of found) {
+      addFinding(findings, "warning", "phantomsub-ox-npm-package-reference", "OX Security reported this npm package in the PhantomSub WhatsApp channel subscription campaign.", `${relative}: ${packageName}`, "Review the dependency and the account-connected application before removal. This package reference is a lead, not proof the WhatsApp follow behavior executed.");
+    }
+  }
+}
+
+function checkLodashTemplateCve20264800(findings, targetRoot, homePath) {
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const roots = [homeRelative, "/opt", "/srv", "/var/www", "/root", "/usr/local"].filter(Boolean);
+  const names = new Set(["lodash", "lodash-amd", "lodash-es", "lodash.template"]);
+  const dependencyFiles = new Set(["package.json", "package-lock.json", "npm-shrinkwrap.json", "pnpm-lock.yaml", "yarn.lock"]);
+  const files = [];
+  for (const root of roots) {
+    files.push(...findWatchFiles(mapLinuxPath(targetRoot, root), 25000 - files.length));
+    if (files.length >= 25000) break;
+  }
+
+  for (const filePath of files) {
+    const name = path.basename(filePath);
+    if (!dependencyFiles.has(name)) continue;
+    const text = readText(filePath);
+    if (!text || text.length > 1024 * 1024) continue;
+    const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+    const versions = new Map();
+    const addVersion = (packageName, version) => {
+      if (names.has(packageName) && /^\d+\.\d+\.\d+$/.test(version)) {
+        versions.set(`${packageName}@${version}`, [packageName, version]);
+      }
+    };
+
+    if (name.endsWith(".json")) {
+      const metadata = parseJsonObject(text);
+      if (!metadata) continue;
+      addVersion(metadata.name, metadata.version);
+      for (const section of ["dependencies", "devDependencies", "optionalDependencies", "peerDependencies"]) {
+        const entries = metadata[section];
+        if (entries && typeof entries === "object") {
+          for (const [packageName, value] of Object.entries(entries)) {
+            addVersion(packageName, typeof value === "string" ? value : value?.version);
+          }
+        }
+      }
+      if (metadata.packages && typeof metadata.packages === "object") {
+        for (const [packagePath, entry] of Object.entries(metadata.packages)) {
+          const packageName = packagePath.slice("node_modules/".length);
+          if (packagePath.startsWith("node_modules/")) addVersion(packageName, entry?.version);
+        }
+      }
+    } else {
+      // Lockfile keys name a resolved release; range-only manifest entries do not.
+      const pattern = /(?:^|[\s"'])\/?(lodash(?:-amd|-es|\.template)?)@(?:npm:)?(\d+\.\d+\.\d+)(?=\s|["':/]|$)/gm;
+      for (const match of text.matchAll(pattern)) addVersion(match[1], match[2]);
+    }
+
+    for (const [packageName, version] of versions.values()) {
+      const affected = compareDottedVersion(version, "4.0.0") >= 0
+        && compareDottedVersion(version, packageName === "lodash.template" ? "4.18.0" : "4.17.23") <= (packageName === "lodash.template" ? -1 : 0);
+      if (affected) {
+        addFinding(findings, "warning", "lodash-template-cve-2026-4800-affected-version", "Resolved lodash template package version falls in the GHSA-r5fr-rjxr-66jc affected range.", `${relative}: ${packageName} ${version}`, "Upgrade to 4.18.0 or newer. Exploitation depends on untrusted options.imports key names or prototype pollution reaching _.template; this version match does not prove a reachable code path.");
+      }
+    }
+  }
+}
+
+function checkMcpOAuthCredentialRouting(findings, targetRoot, homePath) {
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const roots = [homeRelative, "/opt", "/srv", "/var/www", "/root", "/usr/local"].filter(Boolean);
+  const dependencyFiles = new Set(["requirements.txt", "pyproject.toml", "poetry.lock", "Pipfile.lock", "uv.lock"]);
+  const files = [];
+  for (const root of roots) {
+    files.push(...findWatchFiles(mapLinuxPath(targetRoot, root), 25000 - files.length));
+    if (files.length >= 25000) break;
+  }
+
+  for (const filePath of files) {
+    const name = path.basename(filePath);
+    const isDependency = dependencyFiles.has(name);
+    const isPython = filePath.endsWith(".py");
+    if (!isDependency && !isPython) continue;
+    const text = readText(filePath);
+    if (!text || text.length > 1024 * 1024) continue;
+    const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+
+    if (isDependency) {
+      const versions = new Set();
+      for (const match of text.matchAll(/(?:^|[\s"'])mcp\s*==\s*([0-9]+\.[0-9]+\.[0-9]+(?:a[0-9]+)?)(?=[\s"'\]]|$)/gmi)) versions.add(match[1]);
+      for (const match of text.matchAll(/^\s*mcp\s*=\s*["'](?:==)?([0-9]+\.[0-9]+\.[0-9]+(?:a[0-9]+)?)["']\s*$/gmi)) versions.add(match[1]);
+      for (const match of text.matchAll(/(?:^|\n)name\s*=\s*["']mcp["']\s*\nversion\s*=\s*["']([0-9]+\.[0-9]+\.[0-9]+(?:a[0-9]+)?)["']/gmi)) versions.add(match[1]);
+      for (const match of text.matchAll(/["']mcp["']\s*:\s*\{[^{}]{0,200}?["']version["']\s*:\s*["']([0-9]+\.[0-9]+\.[0-9]+(?:a[0-9]+)?)["']/gmi)) versions.add(match[1]);
+      for (const version of versions) {
+        const base = version.replace(/a[0-9]+$/, "");
+        const prerelease = base !== version;
+        const firstLine = (compareDottedVersion(base, "1.9.1") > 0
+          || (base === "1.9.1" && !prerelease))
+          && (compareDottedVersion(base, "1.30.0") < 0 || (base === "1.30.0" && prerelease));
+        const secondLine = (compareDottedVersion(base, "2.0.0") > 0
+          || (base === "2.0.0" && (!prerelease || !/^2\.0\.0a0$/.test(version))))
+          && (compareDottedVersion(base, "2.2.0") < 0 || (base === "2.2.0" && prerelease));
+        const isAffected = firstLine || secondLine;
+        if (isAffected) {
+          addFinding(findings, "warning", "mcp-oauth-credential-routing-affected-version", "Pinned mcp Python SDK version falls in GHSA-qx49-fqc8-xw99 affected range.", `${relative}: mcp ${version}`, "Upgrade to 1.30.0 or 2.2.0. Review HTTP OAuth clients connecting to untrusted MCP servers; unattended credential providers also require issuer=, and old stored registrations need clearing/re-registration.");
+        }
+      }
+    }
+
+    if (isPython) {
+      for (const match of text.matchAll(/\b(ClientCredentialsOAuthProvider|PrivateKeyJWTOAuthProvider)\s*\(([^)]{0,500})\)/gs)) {
+        if (!/\bissuer\s*=/.test(match[2])) {
+          addFinding(findings, "review", "mcp-oauth-provider-missing-issuer-review", "MCP unattended OAuth provider construction does not visibly bind an issuer.", relative, "Pass issuer= for ClientCredentialsOAuthProvider or PrivateKeyJWTOAuthProvider after upgrading mcp. Confirm any wrapper-supplied issuer before treating this static review lead as exposed.");
+        }
+      }
     }
   }
 }
