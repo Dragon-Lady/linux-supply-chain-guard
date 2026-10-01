@@ -210,6 +210,13 @@ Cross-platform npm ecosystem compromise (not Linux-only). Indicators apply to
 any npm-using lane/OS; this guard only reports matches found on Linux host
 roots or mounted workspaces.
 
+- **Ox Security** / **Moshe Simon** (Moshe Siman Tov Bustan, @MosheTov) — primary
+  scale + IOCs + recommended actions; Moshe posted the findings on X with the Ox
+  blog link (~444 packages / 2B+ monthly downloads; extortion string; campaign RSA
+  public key; partial package table):
+  https://www.ox.security/blog/a-new-infostealer-worm-hits-npm-affecting-keyv-and-cacheable/
+- Ox Security TeamPCP copycats / Shai-Hulud clone context:
+  https://www.ox.security/blog/new-actors-deploy-shai-hulud-clones-teampcp-copycats-are-here/
 - Snyk keyv npm supply-chain compromise analysis: https://snyk.io/blog/inside-keyv-npm-compromise-preinstall-malware-trusted-provenance-ide-hooks/
 - Snyk advisory SNYK-JS-KEYV-18515941: https://security.snyk.io/vuln/SNYK-JS-KEYV-18515941
 - Wiz keyv / cacheable npm supply-chain attack: https://www.wiz.io/blog/keyv-and-cacheable-npm-supply-chain-attack
@@ -231,3 +238,4 @@ roots or mounted workspaces.
 - Lodash upstream GHSA-r5fr-rjxr-66jc / CVE-2026-4800: https://github.com/lodash/lodash/security/advisories/GHSA-r5fr-rjxr-66jc
 - MCP Python SDK upstream GHSA-qx49-fqc8-xw99: https://github.com/modelcontextprotocol/python-sdk/security/advisories/GHSA-qx49-fqc8-xw99
 - OX Security PhantomSub package inventory: https://www.ox.security/blog/phantomsub-malicious-npm-campaign-secretly-adds-users-to-whatsapp-spam-channels/
+- actions-warden (Dragon Lady PyPI read-only GitHub Actions workflow auditor): https://github.com/Dragon-Lady/actions-warden · https://pypi.org/project/actions-warden/

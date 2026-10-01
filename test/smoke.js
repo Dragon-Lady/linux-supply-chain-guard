@@ -187,6 +187,8 @@ function run() {
   write(path.join(root, "root", "excalibur", "smtp_proxies.csv"), "213.136.80.73,25,38.242.204.245\n");
   write(path.join(root, "root", "excalibur", "chisel_verifier.py"), "StrictHostKeyChecking=no\nchisel_verified.json\n");
   write(path.join(home, "ai-gateway", "requirements.txt"), "litellm==1.83.6\nstarlette==1.0.0\n");
+  write(path.join(home, "dirtyblanket", "package.json"), JSON.stringify({ dependencies: { xeprews: "5.2.1" } }));
+  write(path.join(home, ".config", "systemd", "user", "systemd-fontrenderd.service"), "[Unit]\nDescription=Font Rendering Service\n");
   write(path.join(home, "ottercookie", "package.json"), JSON.stringify({
     dependencies: {
       "bjs-biginteger": "5.0.6", // push-guard: ignore
@@ -1510,6 +1512,9 @@ function run() {
   assert(ids.has("hades-text-indicator"));
   assert(ids.has("hades-known-native-extension"));
   assert(ids.has("litellm-cve-2026-42271-vulnerable-version"));
+  assert(ids.has("litellm-cve-2026-93355-jwt-email-fallback-review"));
+  assert(ids.has("dirtyblanket-npm-package-reference"));
+  assert(ids.has("dirtyblanket-systemd-persistence"));
   assert(ids.has("litellm-starlette-host-header-chain"));
   assert(ids.has("litellm-public-bind"));
   assert(ids.has("litellm-mcp-test-route-reference"));

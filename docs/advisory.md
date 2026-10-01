@@ -118,18 +118,45 @@ The August 4, 2026 keyv / cacheable (ChainDrop / Shai-Hulud "Here We Go Again")
 campaign is included as a read-only dependency-metadata and host-marker
 notification lane. **The compromise is cross-platform npm ecosystem risk**
 (registry, lockfiles, CI, and workspaces on Linux, macOS, Windows, and other
-npm-using environments)—not a Linux-only host or kernel flaw. Snyk,
-StepSecurity, Aikido, Wiz, and JFrog independently confirmed an initial wave of
-eleven full-worm carriers starting with `keyv@6.0.0` and ten related
-jaredwray-family releases, with rapid worm propagation to hundreds of
-additional packages. This Linux host guard flags exact compromised versions,
-campaign network strings, and payload/persistence text only when they appear
-under the scanned Linux root or mounted workspace. Project-tree scanners in
-the same toolkit cover the same package set on any platform. The guard does
-not download packages, run install hooks, collect telemetry, or remediate.
-Operators should follow the security-vendor and npm Security guidance for
-isolation, evidence preservation, and credential rotation from a clean machine
-on whatever OS the install occurred.
+npm-using environments)—not a Linux-only host or kernel flaw.
+
+**Ox Security scale (2026-08-04; Moshe Simon / Moshe Siman Tov Bustan @MosheTov posted findings on X with the Ox blog link):** approximately **444 packages**, **1,600+
+versions**, and **over 2 billion monthly downloads** impacted, with the worm
+still spreading at publication. Ox documents the same credential-stealing,
+IDE/AI persistence (Claude, VS Code, and related agent hooks), GitHub
+exfiltration C2, and dead-man switch (reacts when a stolen GitHub token is
+revoked) pattern as prior Shai-Hulud waves. New campaign-specific signals
+include the production-crash **extortion string**
+`IfYouBlockThisAPIKeyItWillCrashTheLiveProductionServersOfAllThirdPartyClients`
+and a **new RSA public encryption key** published as an IOC (Ox: not yet
+attributed to a specific actor; operator framing treats it as a possible
+TeamPCP **copycat** signal rather than confirmed TeamPCP attribution).
+
+Snyk, StepSecurity, Aikido, Wiz, and JFrog independently confirmed an initial
+wave of eleven full-worm carriers starting with `keyv@6.0.0` and ten related
+jaredwray-family releases. This guard keeps exact-version coverage for that
+seed set and flags campaign network/text IOCs under the scanned Linux root or
+mounted workspace. Full package inventory is partial and growing—consult Ox
+Security's affected-package table and the Wiz Research keyv packages CSV
+rather than treating the seed set as complete. Project-tree scanners in the
+same toolkit cover the same package set on any platform.
+
+**Ox recommended actions (operator-owned; this tool remains read-only):**
+1. Rotate keys and enable 2FA from a clean device.
+2. Downgrade affected packages to known-safe versions.
+3. Search for infected GitHub accounts and repositories and revoke/remove them
+   if affected—**after** dead-man persistence is handled under IR direction
+   (notify-only: do not blindly revoke tokens while a monitor may still fire).
+
+Payload/file IOCs retained from Ox and peers include `math_init.js`,
+`Math_Symbol.js`, `router_runtime.js`, `Shai-Hulud: Here We Go Again`,
+`Thebeautifulmarchoftime` / `thebeautifulmarchoftime`, the extortion string
+above, the campaign RSA public-key fingerprint fragment, and the git pin
+`github:opensearch-project/opensearch-js#d446803f4c3bc116263faa3499a1d3f95b2825de`.
+
+The guard does not download packages, run install hooks, collect telemetry, or
+remediate. Credits: **Ox Security**, Snyk, StepSecurity, Aikido, Wiz, JFrog,
+and npm Security.
 
 JFrog's June 24, 2026 VS Code autorun / blockchain dead-drop report is included
 because the malicious npm versions avoid normal lifecycle-script execution and
@@ -729,9 +756,13 @@ owners can inspect the September 16–25 run window. A clean, full commit pin is
 not flagged.
 
 OX Security disclosed CVE-2026-93355 in LiteLLM's JWT email fallback on
-September 29, confirmed through 1.100.1 with no fix reported that day. The
-guard flags exact dependency pins through that version as a review lead. Risk
-depends on JWT authentication and whether a trusted issuer can provide an
-unverified email claim matching an existing user. OX recommends enforcing
-verified email claims at the IdP/proxy and binding accounts to stable subject
-identifiers while awaiting a vendor fix.
+September 29. OX reported it unpatched through 1.100.1. The CVE record covers
+versions through 1.102.1, and no upstream fix is confirmed. The guard flags
+exact dependency pins through 1.102.1 as a review lead. LiteLLM 1.83.7 fixes
+CVE-2026-42271 only. Risk depends on JWT authentication and whether a trusted
+issuer can provide an unverified email claim matching an existing user. Require
+a verified email before the proxy trusts a JWT.
+
+## Related read-only tooling
+
+Also check **actions-warden** (PyPI read-only auditor for risky or injected GitHub Actions workflow config) when reviewing repos that may have had tokens stolen or CI tampered with: `actions-warden /path/to/repo`. https://github.com/Dragon-Lady/actions-warden · https://pypi.org/project/actions-warden/. Read-only only.

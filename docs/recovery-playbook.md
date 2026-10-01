@@ -81,3 +81,14 @@ Rotate credentials from a separate trusted device:
 If payload execution, persistence, privilege escalation, or secret access is
 confirmed, rebuild or reimage from a clean baseline. Reinstall dependencies from
 reviewed lockfiles pinned away from known-bad package versions.
+
+## Review GitHub Actions workflows (read-only)
+
+When tokens or publish access may have been stolen, also check **actions-warden**, the PyPI read-only auditor for risky or injected GitHub Actions workflow config:
+
+```sh
+pipx install actions-warden
+actions-warden /path/to/repo
+```
+
+Read-only: no workflow execution, no GitHub API calls, no file changes. https://github.com/Dragon-Lady/actions-warden · https://pypi.org/project/actions-warden/

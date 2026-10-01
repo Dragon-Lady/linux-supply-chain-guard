@@ -198,15 +198,23 @@ const AUGUST_2026_KEYV_NPM_NETWORK_INDICATORS = [
 const AUGUST_2026_KEYV_NPM_TEXT_INDICATORS = [
   "Math_Symbol.js",
   "math_init.js",
+  "router_runtime.js",
   // Covers package.json preinstall hooks that run node setup.mjs
   "node setup.mjs",
   "Bun/1.3.13",
   // Split so push-guard does not treat scanner IOCs as live payload markers.
   joinParts("bun-v1.3.", "13"),
   "tmp.dpkg_14527.lock",
+  // Ox Security extortion string (threatens production crash if token blocked).
   "IfYouBlockThisAPIKeyItWillCrashTheLiveProductionServersOfAllThirdPartyClients",
   joinParts("thebeautiful", "marchoftime"),
+  joinParts("Thebeautiful", "marchoftime"),
   joinParts("thebeautiful", "snadsoftime"),
+  // Ox Security campaign RSA public-key fingerprint fragment (unattributed; TeamPCP-copycat hypothesis only).
+  joinParts("Am1ThuFsx+", "rWD5RFI8A7B"),
+  // Ox-listed git dependency pin used as worm carrier / reinfection surface.
+  "github:opensearch-project/opensearch-js#d446803f4c3bc116263faa3499a1d3f95b2825de",
+  "opensearch-js#d446803f4c3bc116263faa3499a1d3f95b2825de",
   "SNYK-JS-KEYV-18515941",
 ];
 
@@ -1624,6 +1632,7 @@ const WATCH_FILE_EXTENSIONS = new Set([
   ".cmd",
   ".vsix",
   ".wasm",
+  ".service",
   ".bmp",
   ".env",
   ".tf",
@@ -3531,7 +3540,7 @@ function checkHijackedActionsCoolTags(findings, targetRoot, homePath) {
     const text = readText(filePath);
     const matches = text.match(/^\s*-?\s*uses\s*:\s*["']?actions-cool\/(?:issues-helper|maintain-one-comment)@v[0-9][\w.-]*\b/gim) || [];
     for (const match of matches) {
-      addFinding(findings, "warning", "mini-shai-hulud-hijacked-action-tag", "Workflow references a reported hijacked actions-cool release tag.", `${relative}: ${match.trim()}`, "Remove the action or pin a verified clean commit. Review runs from September 16-25, 2026 and rotate secrets accessible to any run that executed the malicious tag.");
+      addFinding(findings, "warning", "mini-shai-hulud-hijacked-action-tag", "Workflow references a reported hijacked actions-cool release tag.", `${relative}: ${match.trim()}`, "Stop using the tag and pin only a reviewed pre-hijack commit. Do not revoke tokens until the monitor and wiper are understood. Review runs from September 16-25, 2026. Treat runners and stolen workflow tokens as exposed. Notify-only: this checker does not edit the workflow or revoke tokens.");
     }
   }
 }
@@ -3552,8 +3561,8 @@ function checkLiteLlmJwtEmailFallback(findings, targetRoot, homePath) {
     for (const match of text.matchAll(/(?:^|\n)\s*litellm\s*(?:==|===)\s*([0-9]+\.[0-9]+\.[0-9]+)\b/gim)) versions.add(match[1]);
     for (const match of text.matchAll(/(?:^|\n)\s*name\s*=\s*["']litellm["']\s*\r?\n\s*version\s*=\s*["']([0-9]+\.[0-9]+\.[0-9]+)["']/gim)) versions.add(match[1]);
     for (const version of versions) {
-      if (compareDottedVersion(version, "1.100.1") <= 0) {
-        addFinding(findings, "warning", "litellm-cve-2026-93355-jwt-email-fallback-review", "LiteLLM version needs CVE-2026-93355 JWT authentication review.", `${relative}: litellm ${version}`, "OX confirmed an unverified-email account takeover through 1.100.1 and reported no fix on September 29. If JWT authentication is enabled, require verified email claims at the IdP or proxy and bind accounts to stable subjects; check vendor updates before changing versions.");
+      if (compareDottedVersion(version, "1.102.1") <= 0) {
+        addFinding(findings, "warning", "litellm-cve-2026-93355-jwt-email-fallback-review", "LiteLLM version needs CVE-2026-93355 JWT authentication review.", `${relative}: litellm ${version}`, "CVE-2026-93355 is a JWT email-fallback account takeover, including admin. OX reported it unpatched through 1.100.1. The CVE record covers versions through 1.102.1. No upstream fix is confirmed. Require a verified email before the proxy trusts a JWT. LiteLLM 1.83.7 fixes CVE-2026-42271 only. Notify-only.");
       }
     }
   }
@@ -3636,7 +3645,7 @@ function checkAugust2026KeyvNpmCampaign(findings, targetRoot, homePath) {
               "august-2026-keyv-compromised-npm-version",
               "August 2026 keyv/cacheable (ChainDrop / Shai-Hulud) compromised npm package version appears in scanned metadata (cross-platform npm ecosystem risk).",
               `${relative}: ${packageName}@${version}`,
-              "Read-only notification only. This compromise is not Linux-specific—it affects any OS/lane that installed these npm versions. Do not run package-manager install/build commands in this tree. If this version may have been installed, treat the host/CI runner as potentially compromised: isolate, preserve evidence, rotate npm/GitHub/cloud/SSH/Vault/AI-tool credentials from a clean machine, and follow guidance from Snyk, Wiz, JFrog, Aikido, StepSecurity, and npm Security. This tool does not collect data, remediate packages, or prove a host is clean."
+              "Read-only notification only. This compromise is not Linux-specific. It affects any OS or lane that installed these npm versions. Do not run package-manager install or build commands in this tree. If this version may have been installed, isolate the host or CI runner and preserve evidence, then follow vendor incident response. Ox Security scale context is about 444 packages, 1,600+ versions, and 2B+ monthly downloads. After dead-man persistence is handled under incident-response direction: rotate keys and enable 2FA from a clean device, downgrade affected packages, and search for affected GitHub accounts. Credits: Ox Security and Moshe Simon (@MosheTov), Snyk, StepSecurity, Aikido, Wiz, JFrog, and npm Security. This tool does not collect data, remediate packages, or prove a host is clean."
             );
           }
         }
@@ -3651,7 +3660,7 @@ function checkAugust2026KeyvNpmCampaign(findings, targetRoot, homePath) {
           "august-2026-keyv-npm-network-indicator",
           "August 2026 keyv/cacheable campaign network indicator appears in scanned metadata (cross-platform npm ecosystem risk).",
           `${relative}: ${indicator}`,
-          "This campaign is npm-wide, not Linux-only. Correlate package install timing with DNS, proxy, process, Ethereum RPC, and credential-access telemetry on the install OS. Point operators to Snyk, Wiz, JFrog, Aikido, StepSecurity, and npm Security campaign reports. This tool does not phone home or collect telemetry."
+          "This campaign is npm-wide, not Linux-only. Correlate package install timing with DNS, proxy, process, Ethereum RPC, and credential-access telemetry on the install OS. Point operators to Ox Security / Moshe Simon (@MosheTov X post + Ox blog), Snyk, Wiz, JFrog, Aikido, StepSecurity, and npm Security campaign reports. This tool does not phone home or collect telemetry."
         );
       }
     }
@@ -3664,7 +3673,7 @@ function checkAugust2026KeyvNpmCampaign(findings, targetRoot, homePath) {
           "august-2026-keyv-npm-text-indicator",
           "August 2026 keyv/cacheable campaign payload or persistence marker appears in scanned metadata (cross-platform npm ecosystem risk).",
           `${relative}: ${indicator}`,
-          "This campaign is npm-wide, not Linux-only. Hunt for setup.mjs / Math_Symbol.js / math_init.js, Bun download staging, IDE/Claude hooks, and GitHub credential-monitor artifacts without executing package code on the install OS. Follow vendor IR guidance from Snyk, Wiz, JFrog, Aikido, and StepSecurity. This tool is notification-only."
+          "This campaign is npm-wide, not Linux-only. Same tradecraft as prior Shai-Hulud waves: credential theft, IDE/AI persistence (Claude/VS Code/Cursor), GitHub exfil, and gh-token-monitor-style dead-man switch. Ox Security also documents a production-crash extortion string and a campaign RSA public key (attribution unconfirmed; TeamPCP-copycat hypothesis only). Hunt for setup.mjs / Math_Symbol.js / math_init.js / router_runtime.js, Bun staging, IDE hooks, and GitHub credential-monitor artifacts without executing package code. NOTIFY ONLY on dead-man paths—do not blindly revoke tokens until IR directs order. Ox recommended actions after evidence preserve: rotate keys + 2FA, downgrade packages, search/revoke affected GitHub accounts. Credits: Ox Security and Moshe Simon (@MosheTov; X post → Ox blog), and peer researchers. This tool is notification-only."
         );
       }
     }
@@ -6705,7 +6714,7 @@ function checkLiteLlmGatewayExposure(findings, targetRoot, homePath) {
 
     for (const version of liteLlmVersions) {
       if (isVersionInRange(version, LITELLM_AFFECTED_MIN, LITELLM_FIXED)) {
-        addFinding(findings, "critical", "litellm-cve-2026-42271-vulnerable-version", "LiteLLM dependency is in the CVE-2026-42271 affected range.", `${relative}: litellm ${version}`, `Upgrade LiteLLM to ${LITELLM_FIXED} or newer, restrict admin/MCP routes, and rotate proxy/provider credentials if exposure is suspected.`);
+        addFinding(findings, "critical", "litellm-cve-2026-42271-vulnerable-version", "LiteLLM dependency is in the CVE-2026-42271 affected range.", `${relative}: litellm ${version}`, `Upgrade LiteLLM to ${LITELLM_FIXED} or newer, restrict admin/MCP routes, and rotate proxy/provider credentials if exposure is suspected. Version ${LITELLM_FIXED} does not fix CVE-2026-93355.`);
       }
     }
 

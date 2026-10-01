@@ -73,25 +73,21 @@ markers and IronWorm `pgmon.service` persistence paths.
 
 The August 4, 2026 keyv / cacheable (ChainDrop / Shai-Hulud "Here We Go Again")
 watch pack adds exact-version checks for the initial full-worm carriers
-verified by Snyk, StepSecurity, Aikido, Wiz, and JFrog: `keyv@6.0.0` and ten
-related jaredwray-family releases (`flat-cache@6.1.24`,
-`file-entry-cache@11.1.6`, `cacheable-request@13.0.20`, `cacheable@2.5.1`,
-`@cacheable/memory@2.2.1`, `cache-manager@7.2.10`,
-`@cacheable/node-cache@3.1.2`, `@cacheable/utils@2.5.1`, `@cacheable/net@2.1.1`,
-and `ecto@5.0.1`), plus campaign network markers (`npm-cache[.]com`, Ethereum
-C2 contract, public ETH RPC hosts) and payload/persistence text indicators
-(`setup.mjs` / `Math_Symbol.js` / `math_init.js`, Bun 1.3.13 staging, GitHub
-exfil description, and related strings). This is a **cross-platform npm
-ecosystem** compromise (registry installs, lockfiles, CI, and developer
-workspaces on Linux, macOS, Windows, and other npm-using lanes)—not a
-Linux-only kernel or distro issue. This guard only *observes* those npm
-indicators when they appear under a Linux host root or mounted workspace it
-scans. Sister project scanners (`HereWeGoAgain-incident-scanner`,
-`supply-chain-check`) cover the same package set as project-tree checks.
-Notifications are local only. This tool does not collect data, remediate
-packages, or prove a host is clean. Operators should follow Snyk, Wiz, JFrog,
-Aikido, StepSecurity, and npm Security guidance for containment and credential
-rotation on any affected platform.
+(`keyv@6.0.0` and ten related jaredwray-family releases), campaign network
+markers, and payload/persistence text. **Ox Security** reports the live wave at
+roughly **444 packages**, **1,600+ versions**, and **2B+ monthly downloads**,
+with the same credential theft, IDE/AI persistence, GitHub exfil, and dead-man
+switch tradecraft as prior waves, plus a new production-crash extortion string
+and campaign RSA public key (unattributed; TeamPCP-copycat hypothesis only).
+Seed carriers and peer confirmation: Snyk, StepSecurity, Aikido, Wiz, and
+JFrog. Full inventory is partial—use the Ox package table and Wiz CSV, not the
+seed set alone. This is a **cross-platform npm ecosystem** compromise—not a
+Linux-only issue. This guard only *observes* indicators under a Linux root or
+mounted workspace. Sister scanners cover the same package set as project-tree
+checks. **Read-only / notify-only** (including dead-man paths). Ox recommended
+actions for operators: rotate keys + 2FA, downgrade packages, search/revoke
+affected GitHub accounts under IR order. Credits: **Ox Security** and **Moshe Simon** (@MosheTov; X post → Ox blog), Snyk,
+StepSecurity, Aikido, Wiz, JFrog, and npm Security.
 
 The May 29, 2026 TeamPCP/Dynatrace watch pack adds weak-signal exposure checks
 for Dynatrace token-shaped credentials and repo/service names observed in
@@ -577,20 +573,28 @@ Exit codes:
   - `ts-grok`
 - August 4, 2026 keyv / cacheable (ChainDrop / Shai-Hulud) npm indicators
   (**cross-platform npm ecosystem**—not Linux-only):
-  - exact compromised versions: `keyv@6.0.0`, `flat-cache@6.1.24`,
+  - Ox Security scale: ~444 packages, 1,600+ versions, 2B+ monthly downloads
+  - exact seed compromised versions: `keyv@6.0.0`, `flat-cache@6.1.24`,
     `file-entry-cache@11.1.6`, `cacheable-request@13.0.20`, `cacheable@2.5.1`,
     `@cacheable/memory@2.2.1`, `cache-manager@7.2.10`,
     `@cacheable/node-cache@3.1.2`, `@cacheable/utils@2.5.1`,
-    `@cacheable/net@2.1.1`, `ecto@5.0.1`
+    `@cacheable/net@2.1.1`, `ecto@5.0.1` (full inventory via Ox table / Wiz CSV)
+  - same tradecraft: credential theft, IDE/AI persistence, GitHub exfil,
+    dead-man switch (notify-only before revoke)
+  - new Ox signals: production-crash extortion string, campaign RSA public key
+    (TeamPCP-copycat hypothesis; attribution unconfirmed), `router_runtime.js`,
+    opensearch-js git pin
   - network markers: `npm-cache[.]com`, Ethereum contract
     `0xE1f2395ee43e45A1556EC6438a88c31B83493103`, and public ETH RPC hosts used
     for C2 resolution
   - payload/persistence text: `setup.mjs` / `Math_Symbol.js` / `math_init.js`,
     `preinstall` → `node setup.mjs`, Bun 1.3.13 staging, GitHub description
     `Shai-Hulud: Here We Go Again`, and related campaign strings
+  - Ox recommended actions (operator-owned): rotate keys + 2FA, downgrade
+    packages, search/revoke affected GitHub accounts under IR order
   - scope note: risk follows npm install/lockfile use on any OS; this tool
     reports matches found on Linux host roots / mounted workspaces only
-  - notification only: point operators to Snyk, Wiz, JFrog, Aikido,
+  - notification only; credits **Ox Security** and **Moshe Simon** (@MosheTov; X post → Ox blog), Snyk, Wiz, JFrog, Aikido,
     StepSecurity, and npm Security; no data collection or auto-remediation
 - Checkmarx ChainVeil / SuccessKey npm indicators:
   - typosquat package names including `tailwindcss-merge`, `sass-format`,
@@ -1165,6 +1169,12 @@ the known indicators it checks. Default output excludes known research/history
 contexts and resolved informational results; use all three include switches when
 performing a historical or forensic review.
 
+## Related read-only tooling
+
+Complementary **read-only** tools in the same security kit:
+
+- **actions-warden** (PyPI, Dragon Lady) — read-only auditor for risky or injected GitHub Actions workflow config under `.github/workflows/`. After token theft, CI injection is a common next step. `pipx install actions-warden` then `actions-warden /path/to/repo`. Does not execute workflows or modify files. https://github.com/Dragon-Lady/actions-warden · https://pypi.org/project/actions-warden/
+
 ## Sources
 
 - AlmaLinux Fragnesia / CVE-2026-46300 disclosure:
@@ -1190,6 +1200,11 @@ performing a historical or forensic review.
   https://cybersecuritynews.com/poc-exploit-released-linux-kernel-vulnerability/
 - JFrog Shai-Hulud: Here We Go Again:
   https://research.jfrog.com/post/shai-hulud-here-we-go-again/
+- Ox Security / Moshe Simon (@MosheTov) keyv/cacheable Shai-Hulud wave
+  (Moshe posted findings on X with Ox blog link; ~444 packages / 2B+ downloads):
+  https://www.ox.security/blog/a-new-infostealer-worm-hits-npm-affecting-keyv-and-cacheable/
+- Ox Security TeamPCP copycats / Shai-Hulud clone context:
+  https://www.ox.security/blog/new-actors-deploy-shai-hulud-clones-teampcp-copycats-are-here/
 - Snyk keyv npm supply-chain compromise analysis:
   https://snyk.io/blog/inside-keyv-npm-compromise-preinstall-malware-trusted-provenance-ide-hooks/
 - Snyk advisory SNYK-JS-KEYV-18515941:
