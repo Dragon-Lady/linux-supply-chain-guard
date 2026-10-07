@@ -4,6 +4,12 @@
 incident responders reviewing supply-chain exposure on workstations, CI
 runners, and build hosts.
 
+Version 0.1.5 reviews exact editor-extension identities from Socket's October
+GlassWorm investigation. A matching identity prompts registry and artifact
+verification; a matching distributed VSIX or JavaScript hash is a
+high-confidence malicious-file finding. Cluster-linked theme identities remain review-only
+because Socket did not find an active payload in every analyzed version.
+
 Version 0.1.4 adds exact dependency checks for the lodash `_.template`
 imports-key advisory and the MCP Python SDK OAuth credential-routing advisory.
 It also recognizes 15 exact npm package names from OX Security's PhantomSub
@@ -573,7 +579,9 @@ Exit codes:
   - `ts-grok`
 - August 4, 2026 keyv / cacheable (ChainDrop / Shai-Hulud) npm indicators
   (**cross-platform npm ecosystem**—not Linux-only):
-  - Ox Security scale: ~444 packages, 1,600+ versions, 2B+ monthly downloads
+  - Ox Security's August 4 early estimate: ~444 packages, 1,600+ versions,
+    2B+ monthly downloads; this guard checks the seed carriers listed below,
+    not the complete later inventory
   - exact seed compromised versions: `keyv@6.0.0`, `flat-cache@6.1.24`,
     `file-entry-cache@11.1.6`, `cacheable-request@13.0.20`, `cacheable@2.5.1`,
     `@cacheable/memory@2.2.1`, `cache-manager@7.2.10`,
@@ -1032,6 +1040,9 @@ Exit codes:
   - reported SHA-256 values, `dodod.lat`, Solana memo dead-drop wallet and
     program IDs, and loader code that combines WASM with `child_process`,
     `curl | bash`, PowerShell `irm | iex`, or `windowsHide`
+- Socket October GlassWorm editor-extension identities, one confirmed malicious
+  VSIX hash, and two confirmed malicious distributed JavaScript hashes; identity matches require registry,
+  version, and artifact review before a malware verdict
 - Malwarebytes Chrome session-cookie theft indicators:
   - fake PDF attachment marker `.pfd.js`
   - Chrome policy force-install terms such as `ExtensionInstallForcelist`,
@@ -1249,6 +1260,8 @@ Complementary **read-only** tools in the same security kit:
   https://thehackernews.com/2026/06/malicious-npm-packages-pose-as-postcss.html
 - Socket GlassWASM Open VSX extension report:
   https://socket.dev/blog/glasswasm-malware-open-vsx-extensions
+- Socket GlassWorm editor-extension investigation (October 2, 2026):
+  https://www.socket.dev/blog/glassworm-vscode-themes
 - Island BadBlocker / Adblock for YouTube extension analysis:
   https://www.island.io/blog/badblocker-11-million-users-one-server-call-away-from-compromise
 - The Hacker News Adblock for YouTube extension summary:

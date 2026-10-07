@@ -1,5 +1,16 @@
 # Sources
 
+## GlassWorm editor extension cluster (October 2026)
+
+Socket confirmed malicious distributed builds under
+`microsoftvs.microsoftvs` and `cosmic-themes.theme-cosmic-nebula` in the Visual
+Studio Marketplace and linked `cosmic-themes.sql-formatter` to earlier malicious
+Open VSX activity. Other theme identities in this guard are cluster associations;
+not every analyzed version contained an active payload. Compare the installed
+VSIX against Socket's published hashes and confirm its source registry.
+
+- https://www.socket.dev/blog/glassworm-vscode-themes
+
 ## September 23, 2026 MemTensor sckit worm
 
 - Aikido original analysis: https://www.aikido.dev/blog/supplychain-local-memtensor-npm-pypi

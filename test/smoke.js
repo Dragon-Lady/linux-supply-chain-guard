@@ -35,6 +35,12 @@ function run() {
   write(path.join(root, "tmp", "transformers.pyz"), "payload");
   write(path.join(home, ".config", "systemd", "user", "gh-token-monitor.service"), "[Service]\n");
   write(path.join(home, ".config", "gh", "hosts.yml"), "github.com:\n");
+  write(path.join(home, ".vscode", "extensions", "cosmic-themes.theme-cosmic-nebula-1.0.0", "package.json"), JSON.stringify({
+    publisher: "cosmic-themes", name: "theme-cosmic-nebula", version: "1.0.0"
+  }));
+  write(path.join(home, ".vscode", "extensions", "holiday-themes.theme-coca-cola-christmas-1.0.2", "package.json"), JSON.stringify({
+    publisher: "holiday-themes", name: "theme-coca-cola-christmas", version: "1.0.2"
+  }));
   write(path.join(home, "repo", "package.json"), JSON.stringify({
     dependencies: {
       "terminal-logger-utils": "1.0.0",
@@ -1245,6 +1251,8 @@ function run() {
   assert(ids.has("glasswasm-openvsx-wasm-payload-file"));
   assert(ids.has("glasswasm-openvsx-loader-shape"));
   assert(ids.has("glasswasm-openvsx-text-indicator"));
+  assert(ids.has("glassworm-confirmed-build-identity-review"));
+  assert(ids.has("glassworm-cluster-identity-review"));
   assert(ids.has("jetbrains-marketplace-ai-key-plugin-reference"));
   assert(ids.has("jetbrains-marketplace-ai-key-exfil-indicator"));
   assert(report.findings.some((finding) => finding.id === "jetbrains-marketplace-ai-key-exfil-indicator" && finding.evidence.includes("F48D2AA7CF341F782C1D")));

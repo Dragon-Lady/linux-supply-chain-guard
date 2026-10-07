@@ -772,6 +772,23 @@ const GLASSWASM_TEXT_INDICATORS = [
   "Memo1UhkJRfHyvLMcVucJwxXeuD728EqVDDwQDxFM",
 ];
 
+const GLASSWORM_CONFIRMED_EXTENSION_IDS = new Set([
+  "microsoftvs.microsoftvs",
+  "cosmic-themes.theme-cosmic-nebula",
+  "cosmic-themes.sql-formatter",
+]);
+const GLASSWORM_CLUSTER_EXTENSION_IDS = new Set([
+  "holiday-themes.theme-coca-cola-christmas",
+  "lohsebhipolg2s.theme-aurora-borealis",
+  "aurora-them-creator.theme-aurora-nocturne",
+  "solidity-syntax.deep-focus",
+  "charcoal-mint-studio.theme-charcoal-mint",
+]);
+const GLASSWORM_DISTRIBUTED_FILE_HASHES = new Set([
+  "5e68ca8c2097caccdb74d2752b85b85595a4bf646b442b8431a2416e87dbf268", // Aurora out/extension.js
+  "684c877a52d226d50584cb886ca8ec5bec6355d4de853f406734c79d5b387804", // Cosmic app.js
+]);
+
 const JETBRAINS_AI_KEY_PLUGIN_IDS = [
   "org.sm.yms.toolkit",
   "com.json.simple.kit",
@@ -4170,6 +4187,36 @@ function checkGlassWasmOpenVsx(findings, targetRoot, homePath) {
   for (const filePath of files) {
     const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
     const base = path.basename(filePath);
+
+    if (base === "package.json") {
+      let manifest;
+      try { manifest = JSON.parse(readText(filePath) || ""); } catch (_error) { manifest = null; }
+      if (manifest && typeof manifest.publisher === "string" && typeof manifest.name === "string") {
+        const extensionId = `${manifest.publisher}.${manifest.name}`.toLowerCase();
+        if (GLASSWORM_CONFIRMED_EXTENSION_IDS.has(extensionId)) {
+          addFinding(findings, "warning", "glassworm-confirmed-build-identity-review", "Editor extension identity appears in a confirmed malicious distributed build.", `${relative}: ${extensionId}`, "Check registry, exact version, and installed artifact hash. If the reported malicious build ran, preserve editor-host and network evidence and review exposed developer credentials before removal.");
+        } else if (GLASSWORM_CLUSTER_EXTENSION_IDS.has(extensionId)) {
+          addFinding(findings, "review", "glassworm-cluster-identity-review", "Editor extension identity is linked to Socket's GlassWorm theme cluster.", `${relative}: ${extensionId}`, "Inspect this distributed extension version and its executable entrypoints. Cluster association alone does not prove this version carried malware.");
+        }
+      }
+    }
+
+    if (base === "app.js" || base === "extension.js") {
+      try {
+        const digest = sha256File(filePath);
+        if (GLASSWORM_DISTRIBUTED_FILE_HASHES.has(digest)) {
+          addFinding(findings, "critical", "glassworm-confirmed-malicious-file-hash", "Editor extension file matches a Socket-confirmed malicious distributed build.", `${relative}: sha256=${digest}`, "Preserve the artifact and editor-host evidence. If activated, review follow-on execution and exposed developer credentials before removal.");
+        }
+      } catch (_error) { /* Unreadable files are not evidence of a match. */ }
+    }
+
+    if (base.endsWith(".vsix")) {
+      try {
+        if (sha256File(filePath) === "a276b76d3b00f302bb4dfb3690125c85ff472b16049c3c37476ac5e51096df07") {
+          addFinding(findings, "critical", "glassworm-confirmed-malicious-vsix-hash", "VSIX matches Socket's confirmed malicious Aurora Nocturne Marketplace build.", relative, "Preserve the artifact and review whether this extension ran before removing it.");
+        }
+      } catch (_error) { /* Unreadable files are not evidence of a match. */ }
+    }
 
     if (base === "snqpkebiwrxmoivl.wasm" || base === "orybbbdsuqmaapel.wasm") {
       addFinding(findings, "critical", "glasswasm-openvsx-wasm-payload-file", "GlassWASM Open VSX WASM payload filename exists.", relative, "Remove the affected extension/source and treat any activated editor host as arbitrary code execution until reviewed.");
