@@ -5,6 +5,20 @@ const fs = require("fs");
 const path = require("path");
 const { scanHost } = require("../src/checker");
 
+function writeNewReport(destination, report) {
+  const data = `${JSON.stringify(report, null, 2)}\n`;
+  const flags = fs.constants.O_WRONLY | fs.constants.O_CREAT | fs.constants.O_EXCL | (fs.constants.O_NOFOLLOW || 0);
+  let descriptor;
+  try {
+    descriptor = fs.openSync(destination, flags, 0o600);
+  } catch (error) {
+    if (error.code === "EEXIST") throw new Error("Report destination already exists; choose a new file.");
+    throw error;
+  }
+  try { fs.writeFileSync(descriptor, data); }
+  finally { fs.closeSync(descriptor); }
+}
+
 function printHelp() {
   console.log(`linux-supply-chain-guard
 
@@ -111,7 +125,7 @@ function main() {
     });
 
     if (args.report) {
-      fs.writeFileSync(args.report, `${JSON.stringify(report, null, 2)}\n`);
+      writeNewReport(args.report, report);
     }
 
     if (args.json) {

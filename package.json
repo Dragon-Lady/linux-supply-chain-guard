@@ -15,7 +15,7 @@
     "docs/sources.md"
   ],
   "scripts": {
-    "test": "node --check bin/linux-supply-chain-guard.js && node --check src/checker.js && node test/smoke.js",
+    "test": "node --check bin/linux-supply-chain-guard.js && node --check src/checker.js && node test/smoke.js && node test/glassworm.js && node test/report-preservation.js",
     "canary:socket-firewall": "sfw npm install --package-lock-only --ignore-scripts --audit=false --fund=false",
     "canary:socket-firewall:log": "bash scripts/run-socket-firewall-canary.sh",
     "canary:socket-firewall:log:windows": "powershell -ExecutionPolicy Bypass -File scripts/run-socket-firewall-canary.ps1"

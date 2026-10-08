@@ -4,11 +4,27 @@
 incident responders reviewing supply-chain exposure on workstations, CI
 runners, and build hosts.
 
+`--report` creates a new private file (0600). Existing destinations, including
+symlink, hard-link, and parent-directory aliases of scanned files, are refused.
+Choose a new report filename for each run; its parent must already exist.
+
 Version 0.1.5 reviews exact editor-extension identities from Socket's October
 GlassWorm investigation. A matching identity prompts registry and artifact
 verification; a matching distributed VSIX or JavaScript hash is a
 high-confidence malicious-file finding. Cluster-linked theme identities remain review-only
 because Socket did not find an active payload in every analyzed version.
+These October checks run in the default scan. The older GlassWASM checks remain
+behind `--include-historical`.
+
+GlassWorm artifacts use a separate bounded binary inspection: up to 100 MiB per
+VSIX or `app.js`/`extension.js`, 1 MiB per `package.json`, 256 MiB total,
+30,000 candidates, and 100,000 directory entries. Reads use 64 KiB chunks.
+A cooperative 30-second budget is checked between directory entries and reads;
+an individual filesystem syscall can take longer. Symlinks and the existing
+excluded research/dependency directories are not followed. Oversized, malformed,
+changed, or unreadable candidates produce review findings; exhausted aggregate
+budgets produce an explicit incomplete-scan finding. No skipped artifact is
+reported as clean. JSON report versions come from `package.json`.
 
 Version 0.1.4 adds exact dependency checks for the lodash `_.template`
 imports-key advisory and the MCP Python SDK OAuth credential-routing advisory.

@@ -3,6 +3,7 @@
 const crypto = require("crypto");
 const fs = require("fs");
 const path = require("path");
+const PACKAGE_VERSION = require("../package.json").version;
 
 let scanFileCache = null;
 let scanTextCache = null;
@@ -2760,6 +2761,7 @@ function scanHost(options = {}) {
   checkPackageKitCve202641651Exposure(findings, targetRoot, homePath);
   checkOpenClawAgentExposure(findings, targetRoot, homePath);
   checkTransformersPayload(findings, targetRoot);
+  checkGlassWormExtensions(findings, targetRoot, homePath);
 
   if (options.includeHistorical) {
     checkTrendMicroHookReloadBypass(findings, targetRoot, homePath);
@@ -2850,7 +2852,7 @@ function scanHost(options = {}) {
 
   return {
     tool: "linux-supply-chain-guard",
-    version: "0.1.3",
+    version: PACKAGE_VERSION,
     generatedAt: new Date().toISOString(),
     targetRoot,
     options: {
@@ -4165,6 +4167,134 @@ function checkSolanaFakeFix(findings, targetRoot, homePath) {
   }
 }
 
+// The current GlassWorm lane runs by default. Keep the older GlassWASM lane
+// historical, and use binary-specific limits instead of the 1 MiB text filter.
+const GLASSWORM_LIMITS = Object.freeze({
+  artifactBytes: 100 * 1024 * 1024,
+  manifestBytes: 1024 * 1024,
+  totalBytes: 256 * 1024 * 1024,
+  entries: 100000,
+  candidates: 30000,
+  chunkBytes: 64 * 1024,
+  seconds: 30,
+});
+
+function glassWormCheckpoint(budget) {
+  if (process.hrtime.bigint() > budget.deadline) throw new Error("time-budget");
+}
+
+function* glassWormFiles(roots, budget) {
+  const seen = new Set();
+  const skipDirs = new Set([".git", ".hg", ".svn", ".next", "dist", "build", "coverage", "node_modules", ".venv", "venv"]);
+  const stack = [...roots];
+  while (stack.length) {
+    glassWormCheckpoint(budget);
+    const current = stack.pop();
+    if (seen.has(current)) continue;
+    seen.add(current);
+    let directory;
+    try {
+      if (!fs.lstatSync(current).isDirectory() || shouldSkipScanDirectory(current)) continue;
+      directory = fs.opendirSync(current);
+    } catch (error) {
+      if (error.code === "ENOENT") continue;
+      budget.incomplete = true;
+      continue;
+    }
+    try {
+      let entry;
+      while ((entry = directory.readSync()) !== null) {
+        glassWormCheckpoint(budget);
+        budget.entries += 1;
+        if (budget.entries > GLASSWORM_LIMITS.entries) throw new Error("entry-budget");
+        const fullPath = path.join(current, entry.name);
+        if (entry.isDirectory()) {
+          if (!skipDirs.has(entry.name)) stack.push(fullPath);
+        } else if (entry.isFile() && (entry.name === "package.json" || entry.name === "app.js" || entry.name === "extension.js" || entry.name.toLowerCase().endsWith(".vsix"))) {
+          budget.candidates += 1;
+          if (budget.candidates > GLASSWORM_LIMITS.candidates) throw new Error("candidate-budget");
+          yield fullPath;
+        }
+      }
+    } finally {
+      directory.closeSync();
+    }
+  }
+}
+
+function readGlassWormFile(filePath, limit, budget, hashOnly) {
+  glassWormCheckpoint(budget);
+  const fd = fs.openSync(filePath, fs.constants.O_RDONLY | (fs.constants.O_NOFOLLOW || 0) | (fs.constants.O_NONBLOCK || 0));
+  try {
+    const before = fs.fstatSync(fd);
+    if (!before.isFile() || before.size > limit) throw new Error("file-budget");
+    if (budget.bytes + before.size > GLASSWORM_LIMITS.totalBytes) throw new Error("byte-budget");
+    const hash = hashOnly ? crypto.createHash("sha256") : null;
+    const chunks = [];
+    const buffer = Buffer.alloc(GLASSWORM_LIMITS.chunkBytes);
+    let total = 0;
+    while (true) {
+      glassWormCheckpoint(budget);
+      const count = fs.readSync(fd, buffer, 0, buffer.length, null);
+      glassWormCheckpoint(budget);
+      if (!count) break;
+      total += count;
+      budget.bytes += count;
+      if (total > limit || budget.bytes > GLASSWORM_LIMITS.totalBytes) throw new Error("byte-budget");
+      if (hash) hash.update(buffer.subarray(0, count));
+      else chunks.push(Buffer.from(buffer.subarray(0, count)));
+    }
+    const after = fs.fstatSync(fd);
+    if (total !== before.size || ["dev", "ino", "size", "mtimeMs", "ctimeMs", "mode"].some((key) => before[key] !== after[key])) throw new Error("file-changed");
+    return hash ? hash.digest("hex") : Buffer.concat(chunks).toString("utf8");
+  } finally {
+    fs.closeSync(fd);
+  }
+}
+
+function checkGlassWormExtensions(findings, targetRoot, homePath) {
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const roots = [homeRelative, "/root", "/tmp", "/var/tmp", "/opt", "/srv", "/var/www", "/usr/local/lib/node_modules", "/usr/local/share"]
+    .filter(Boolean).map((root) => mapLinuxPath(targetRoot, root));
+  const budget = { bytes: 0, entries: 0, candidates: 0, incomplete: false,
+    deadline: process.hrtime.bigint() + BigInt(GLASSWORM_LIMITS.seconds) * 1000000000n };
+  try {
+    for (const filePath of glassWormFiles(roots, budget)) {
+      const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
+      const base = path.basename(filePath);
+      try {
+        if (base === "package.json") {
+          const manifest = JSON.parse(readGlassWormFile(filePath, GLASSWORM_LIMITS.manifestBytes, budget, false));
+          if (!manifest || typeof manifest.publisher !== "string" || typeof manifest.name !== "string") continue;
+          const extensionId = `${manifest.publisher}.${manifest.name}`.toLowerCase();
+          if (GLASSWORM_CONFIRMED_EXTENSION_IDS.has(extensionId)) {
+            addFinding(findings, "warning", "glassworm-confirmed-build-identity-review", "Editor extension identity appears in a confirmed malicious distributed build.", `${relative}: ${extensionId}`, "Check registry, exact version, and installed artifact hash. If the reported malicious build ran, preserve editor-host and network evidence and review exposed developer credentials before removal.");
+          } else if (GLASSWORM_CLUSTER_EXTENSION_IDS.has(extensionId)) {
+            addFinding(findings, "review", "glassworm-cluster-identity-review", "Editor extension identity is linked to Socket's GlassWorm theme cluster.", `${relative}: ${extensionId}`, "Inspect this distributed extension version and its executable entrypoints. Cluster association alone does not prove this version carried malware.");
+          }
+        } else {
+          const digest = readGlassWormFile(filePath, GLASSWORM_LIMITS.artifactBytes, budget, true);
+          if (base.toLowerCase().endsWith(".vsix") && digest === "a276b76d3b00f302bb4dfb3690125c85ff472b16049c3c37476ac5e51096df07") {
+            addFinding(findings, "critical", "glassworm-confirmed-malicious-vsix-hash", "VSIX matches Socket's confirmed malicious Aurora Nocturne Marketplace build.", relative, "Preserve the artifact and review whether this extension ran before removing it.");
+          } else if ((base === "app.js" || base === "extension.js") && GLASSWORM_DISTRIBUTED_FILE_HASHES.has(digest)) {
+            addFinding(findings, "critical", "glassworm-confirmed-malicious-file-hash", "Editor extension file matches a Socket-confirmed malicious distributed build.", `${relative}: sha256=${digest}`, "Preserve the artifact and editor-host evidence. If activated, review follow-on execution and exposed developer credentials before removal.");
+          }
+        }
+      } catch (error) {
+        // Report skipped candidates instead of claiming a clean artifact. Static
+        // messages avoid exposing source excerpts or system error details.
+        addFinding(findings, "review", "glassworm-artifact-not-inspected", "GlassWorm candidate could not be fully inspected.", relative, "Review the artifact separately: it may be unreadable, malformed, changed during inspection, or above the documented size/time budget. No malware verdict was made.");
+        if (error.message === "time-budget" || error.message === "byte-budget") throw error;
+      }
+    }
+  } catch (_error) {
+    budget.incomplete = true;
+  }
+  if (budget.incomplete) {
+    addFinding(findings, "review", "glassworm-scan-incomplete", "GlassWorm inspection did not cover every candidate.", "The bounded local inspection reached a resource limit or an unreadable directory.", "Review scan scope and remaining extension artifacts; absence of a hash finding is not a clean bill of health.");
+  }
+}
+
 function checkGlassWasmOpenVsx(findings, targetRoot, homePath) {
   const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
   const roots = [
@@ -4187,36 +4317,6 @@ function checkGlassWasmOpenVsx(findings, targetRoot, homePath) {
   for (const filePath of files) {
     const relative = `/${path.relative(targetRoot, filePath).replace(/\\/g, "/")}`;
     const base = path.basename(filePath);
-
-    if (base === "package.json") {
-      let manifest;
-      try { manifest = JSON.parse(readText(filePath) || ""); } catch (_error) { manifest = null; }
-      if (manifest && typeof manifest.publisher === "string" && typeof manifest.name === "string") {
-        const extensionId = `${manifest.publisher}.${manifest.name}`.toLowerCase();
-        if (GLASSWORM_CONFIRMED_EXTENSION_IDS.has(extensionId)) {
-          addFinding(findings, "warning", "glassworm-confirmed-build-identity-review", "Editor extension identity appears in a confirmed malicious distributed build.", `${relative}: ${extensionId}`, "Check registry, exact version, and installed artifact hash. If the reported malicious build ran, preserve editor-host and network evidence and review exposed developer credentials before removal.");
-        } else if (GLASSWORM_CLUSTER_EXTENSION_IDS.has(extensionId)) {
-          addFinding(findings, "review", "glassworm-cluster-identity-review", "Editor extension identity is linked to Socket's GlassWorm theme cluster.", `${relative}: ${extensionId}`, "Inspect this distributed extension version and its executable entrypoints. Cluster association alone does not prove this version carried malware.");
-        }
-      }
-    }
-
-    if (base === "app.js" || base === "extension.js") {
-      try {
-        const digest = sha256File(filePath);
-        if (GLASSWORM_DISTRIBUTED_FILE_HASHES.has(digest)) {
-          addFinding(findings, "critical", "glassworm-confirmed-malicious-file-hash", "Editor extension file matches a Socket-confirmed malicious distributed build.", `${relative}: sha256=${digest}`, "Preserve the artifact and editor-host evidence. If activated, review follow-on execution and exposed developer credentials before removal.");
-        }
-      } catch (_error) { /* Unreadable files are not evidence of a match. */ }
-    }
-
-    if (base.endsWith(".vsix")) {
-      try {
-        if (sha256File(filePath) === "a276b76d3b00f302bb4dfb3690125c85ff472b16049c3c37476ac5e51096df07") {
-          addFinding(findings, "critical", "glassworm-confirmed-malicious-vsix-hash", "VSIX matches Socket's confirmed malicious Aurora Nocturne Marketplace build.", relative, "Preserve the artifact and review whether this extension ran before removing it.");
-        }
-      } catch (_error) { /* Unreadable files are not evidence of a match. */ }
-    }
 
     if (base === "snqpkebiwrxmoivl.wasm" || base === "orybbbdsuqmaapel.wasm") {
       addFinding(findings, "critical", "glasswasm-openvsx-wasm-payload-file", "GlassWASM Open VSX WASM payload filename exists.", relative, "Remove the affected extension/source and treat any activated editor host as arbitrary code execution until reviewed.");

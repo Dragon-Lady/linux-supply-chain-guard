@@ -1162,7 +1162,7 @@ function run() {
     includeResolved: true,
   });
   const ids = new Set(report.findings.map((finding) => finding.id));
-  assert.strictEqual(report.version, "0.1.3");
+  assert.strictEqual(report.version, require("../package.json").version);
   assert.strictEqual(report.summary.overall, "critical");
   assert(ids.has("alma-fragnesia-vulnerable-kernel"));
   assert(ids.has("itscape-arm64-kvm-exposure"));
