@@ -153,22 +153,29 @@ fixture((root, home) => {
 fixture((root, home) => {
   write(path.join(home, "app.js"), "// harmless fixture\n");
   const artifact = path.join(home, "app.js");
-  const original = fs.readSync;
+  const originalRead = fs.readSync;
+  const originalOpen = fs.openSync;
+  let guardedDescriptor;
   let changed = false;
-  const targetStat = fs.statSync(artifact);
+  fs.openSync = function(file, flags, ...args) {
+    const fd = originalOpen(file, flags, ...args);
+    // Earlier text inventory may read this file too (including via readSync
+    // on Node 18). Inject only into the later guarded artifact read.
+    if (file === artifact && typeof flags === "number" && (flags & fs.constants.O_NONBLOCK)) guardedDescriptor = fd;
+    return fd;
+  };
   fs.readSync = function(...args) {
-    const reading = fs.fstatSync(args[0]);
-    const isTarget = reading.dev === targetStat.dev && reading.ino === targetStat.ino;
-    const n = original(...args);
-    // Node 18 also calls public readSync for unrelated UTF-8 reads. Mutate
-    // only during this artifact's hash read, after its initial stat.
-    if (n && isTarget && !changed) { changed = true; fs.appendFileSync(artifact, "// mutation\n"); }
+    const n = originalRead(...args);
+    if (n && args[0] === guardedDescriptor && !changed) { changed = true; fs.appendFileSync(artifact, "// mutation\n"); }
     return n;
   };
   try {
     const ids = rules(scanHost({ targetRoot: root, homePath: home }));
+    assert(changed, "mutation must occur during the guarded artifact read");
     assert(ids.includes("glassworm-artifact-not-inspected"));
-  } finally { fs.readSync = original; }
+    assert(!ids.includes("glassworm-confirmed-malicious-file-hash"));
+  } finally { fs.readSync = originalRead; fs.openSync = originalOpen; }
+
 });
 
 fixture((root, home) => {
