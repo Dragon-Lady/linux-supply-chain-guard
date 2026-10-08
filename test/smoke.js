@@ -1709,10 +1709,12 @@ function run() {
     dependencies: { "atomic-lockfile": "1.0.0" },
   }));
   const researchDefault = scanHost({ targetRoot: researchRoot, homePath: researchHome });
-  assert(!researchDefault.findings.some((finding) => finding.id === "compromised-npm-package-reference"));
-  assert(researchDefault.summary.suppressed.research > 0);
-  const researchIncluded = scanHost({ targetRoot: researchRoot, homePath: researchHome, includeResearch: true });
-  assert(researchIncluded.findings.some((finding) => finding.id === "compromised-npm-package-reference"));
+  assert(researchDefault.findings.some((finding) => finding.id === "compromised-npm-package-reference"));
+  assert.strictEqual(researchDefault.summary.suppressed.research, 0);
+  assert.strictEqual(researchDefault.summary.incomplete, false);
+  const researchExcluded = scanHost({ targetRoot: researchRoot, homePath: researchHome, excludePaths: [path.join(researchHome, "Documents")] });
+  assert(!researchExcluded.findings.some((finding) => finding.id === "compromised-npm-package-reference"));
+  assert.strictEqual(researchExcluded.summary.incomplete, true);
 
   const popPackageKit = makeFixture();
   write(path.join(popPackageKit, "etc", "os-release"), 'ID="pop"\nID_LIKE="ubuntu debian"\nVERSION_ID="24.04"\n');

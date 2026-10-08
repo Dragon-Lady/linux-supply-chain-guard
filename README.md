@@ -25,8 +25,8 @@ GlassWorm artifacts use a separate bounded binary inspection: up to 100 MiB per
 VSIX or `app.js`/`extension.js`, 1 MiB per `package.json`, 256 MiB total,
 30,000 candidates, and 100,000 directory entries. Reads use 64 KiB chunks.
 A cooperative 30-second budget is checked between directory entries and reads;
-an individual filesystem syscall can take longer. Symlinks and the existing
-excluded research/dependency directories are not followed. Oversized, malformed,
+an individual filesystem syscall can take longer. Symlinks, dependency/build directories,
+and any operator `--exclude` trees are not followed. Oversized, malformed,
 changed, or unreadable candidates produce review findings; exhausted aggregate
 budgets produce an explicit incomplete-scan finding. No skipped artifact is
 reported as clean. JSON report versions come from `package.json`.
@@ -61,8 +61,11 @@ default report an active-host view. Older campaign lanes remain source-backed
 but run only with `--include-historical`. Known scanner sources, test fixtures, IDE
 history, response archives, duplicate text indicators, and informational
 fixed/mitigated results no longer inflate the default severity headline.
-They remain available with `--include-historical`, `--include-research`, and
-`--include-resolved`.
+They remain available with `--include-historical` and `--include-resolved`.
+Directory coverage is never reduced by default: cache, IDE-history, agent,
+cloud-sync and security-tool checkout directories are scanned like any other
+directory. Use `--exclude DIR` to skip a tree; the report is then marked
+incomplete and the CLI exits 3.
 Exact npm-name boundaries prevent names such as `sync-external` from matching
 the legitimate `use-sync-external-store` package, and Ubuntu-family vendor
 backports are honored for PackageKit CVE-2026-41651. Repeated filesystem walks
@@ -453,14 +456,17 @@ Local checkout:
 node bin/linux-supply-chain-guard.js
 node bin/linux-supply-chain-guard.js / --json
 node bin/linux-supply-chain-guard.js /mnt/recovered-root --report report.json --home /mnt/recovered-root/home/alice
-node bin/linux-supply-chain-guard.js / --include-historical --include-research --include-resolved
+node bin/linux-supply-chain-guard.js / --include-historical --include-resolved
+node bin/linux-supply-chain-guard.js / --exclude /srv/mirror   # incomplete scan, exit 3
 ```
 
 The default is deliberately concise and actionable. `--include-historical`
 runs the older source-backed rule catalog for retrospective incident response.
-`--include-research`
-restores known defensive-source, test-fixture, IDE-history, and response-archive
-matches for an authorized evidence review. `--include-resolved` restores
+`--exclude DIR` (repeatable) skips a directory tree you name; skipped trees are
+listed under `coverage` in the JSON report, `summary.incomplete` is true, and
+the CLI exits 3 unless a critical (2) or token-monitor (4) result applies.
+`--include-research` is accepted for compatibility and has no effect: nothing
+is path-suppressed by default. `--include-resolved` restores
 informational fixed or mitigated findings. Suppressed counts are reported
 without including their path-level data.
 
@@ -1197,9 +1203,10 @@ Exit codes:
 Critical findings mean the host may need immediate containment or patching.
 Warning and review findings mean the tool found posture or evidence that should
 be checked by an operator. A clean run only means this version did not observe
-the known indicators it checks. Default output excludes known research/history
-contexts and resolved informational results; use all three include switches when
-performing a historical or forensic review.
+the known indicators it checks. Default output excludes resolved informational
+results and the historical rule catalog; use both include switches when
+performing a historical or forensic review. Exit code 3 means the scan was
+incomplete because directories were excluded with `--exclude`.
 
 ## Related read-only tooling
 

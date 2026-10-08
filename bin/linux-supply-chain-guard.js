@@ -26,7 +26,7 @@ Read-only Linux host checker for supply-chain incident response.
 
 Usage:
   linux-supply-chain-guard [target-root] [--json] [--report report.json] [--home /home/user]
-                           [--include-historical] [--include-research] [--include-resolved]
+                           [--include-historical] [--include-resolved] [--exclude DIR]...
 
 Examples:
   linux-supply-chain-guard
@@ -34,11 +34,15 @@ Examples:
   linux-supply-chain-guard /mnt/recovered-root --report report.json --home /mnt/recovered-root/home/alice
 
 Default reports run the current/core rule lanes only. Use --include-historical
-to run the older source-backed campaign catalog. Use --include-research to
-include known scanner, test-fixture, IDE-history, and response-archive paths.
-Use --include-resolved to include informational fixed/mitigated findings.
-Exit codes: 0 no findings; 1 review/warning; 2 critical; 4 token-monitor
-artifact (follow STOP guidance); 64 usage or report error.
+to run the older source-backed campaign catalog. Use --include-resolved to
+include informational fixed/mitigated findings. No directory is skipped by
+default (caches, IDE history, agent folders and security-tool checkouts are all
+scanned). --exclude DIR (repeatable) skips a directory tree you name; any
+excluded directory marks the report incomplete. --include-research is accepted
+for compatibility and has no effect.
+Exit codes: 0 no findings; 1 review/warning; 2 critical; 3 scan incomplete
+(--exclude skipped directories); 4 token-monitor artifact (follow STOP
+guidance); 64 usage or report error. Codes 4 and 2 take precedence over 3.
 `);
 }
 
@@ -49,8 +53,8 @@ function parseArgs(argv) {
     report: null,
     home: process.env.HOME || "",
     includeHistorical: false,
-    includeResearch: false,
     includeResolved: false,
+    excludePaths: [],
   };
 
   for (let i = 0; i < argv.length; i += 1) {
@@ -68,7 +72,16 @@ function parseArgs(argv) {
     } else if (arg === "--include-historical") {
       args.includeHistorical = true;
     } else if (arg === "--include-research") {
-      args.includeResearch = true;
+      // Retained for compatibility: nothing is suppressed by default any more.
+    } else if (arg === "--exclude") {
+      const value = argv[i + 1];
+      if (!value || value.startsWith("-")) throw new Error("--exclude requires a directory path");
+      args.excludePaths.push(value);
+      i += 1;
+    } else if (arg.startsWith("--exclude=")) {
+      const value = arg.slice("--exclude=".length);
+      if (!value) throw new Error("--exclude requires a directory path");
+      args.excludePaths.push(value);
     } else if (arg === "--include-resolved") {
       args.includeResolved = true;
     } else if (!arg.startsWith("-")) {
@@ -93,8 +106,13 @@ function formatText(report) {
   );
   const suppressed = report.summary.suppressed || {};
   lines.push(
-    `Suppressed by default: research=${suppressed.research || 0}, resolved=${suppressed.resolved || 0}, duplicates=${suppressed.duplicates || 0}`
+    `Suppressed by default: resolved=${suppressed.resolved || 0}, duplicates=${suppressed.duplicates || 0}`
   );
+  if (report.coverage && !report.coverage.complete) {
+    lines.push(
+      `Coverage: INCOMPLETE - ${report.coverage.skippedDirectories} director${report.coverage.skippedDirectories === 1 ? "y" : "ies"} skipped by --exclude (${report.coverage.excludedPaths.join(", ")})`
+    );
+  }
   lines.push("");
 
   if (report.safeRemovalGuidance?.required) lines.push(report.safeRemovalGuidance.firstAction, "");
@@ -124,8 +142,8 @@ function main() {
       targetRoot: args.targetRoot,
       homePath: args.home,
       includeHistorical: args.includeHistorical,
-      includeResearch: args.includeResearch,
       includeResolved: args.includeResolved,
+      excludePaths: args.excludePaths,
     });
 
     if (args.report) {
@@ -142,6 +160,8 @@ function main() {
       process.exitCode = 4;
     } else if (report.summary.critical > 0) {
       process.exitCode = 2;
+    } else if (report.summary.incomplete) {
+      process.exitCode = 3;
     } else if (report.summary.warning > 0 || report.summary.review > 0) {
       process.exitCode = 1;
     }

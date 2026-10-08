@@ -9,8 +9,8 @@ const PACKAGE_VERSION = require("../package.json").version;
 let scanFileCache = null;
 let scanTextCache = null;
 let scanTextCacheBytes = 0;
-let scanIncludeResearch = false;
-let scanSkippedResearchDirs = 0;
+let scanExcludePaths = [];
+let scanExcludedDirs = new Set();
 const MAX_SCAN_TEXT_CACHE_BYTES = 64 * 1024 * 1024;
 
 const PATCHED_KERNELS = {
@@ -2729,8 +2729,8 @@ function scanHost(options = {}) {
   scanFileCache = new Map();
   scanTextCache = new Map();
   scanTextCacheBytes = 0;
-  scanIncludeResearch = Boolean(options.includeResearch);
-  scanSkippedResearchDirs = 0;
+  scanExcludePaths = normalizeExcludePaths(options.excludePaths);
+  scanExcludedDirs = new Set();
   const osRelease = readOsRelease(readText(mapLinuxPath(targetRoot, "/etc/os-release")));
   const kernelRelease =
     options.kernelRelease ||
@@ -2842,15 +2842,18 @@ function scanHost(options = {}) {
   checkSecretSurfaces(findings, targetRoot, homePath);
 
   const finalized = finalizeFindings(findings, {
-    includeResearch: Boolean(options.includeResearch),
     includeResolved: Boolean(options.includeResolved),
   });
-  finalized.suppressed.research += scanSkippedResearchDirs;
+  const coverage = {
+    complete: scanExcludedDirs.size === 0,
+    excludedPaths: scanExcludePaths.slice(),
+    skippedDirectories: scanExcludedDirs.size,
+  };
   scanFileCache = null;
   scanTextCache = null;
   scanTextCacheBytes = 0;
-  scanIncludeResearch = false;
-  scanSkippedResearchDirs = 0;
+  scanExcludePaths = [];
+  scanExcludedDirs = new Set();
 
   return {
     tool: "linux-supply-chain-guard",
@@ -2860,9 +2863,10 @@ function scanHost(options = {}) {
     targetRoot,
     options: {
       includeHistorical: Boolean(options.includeHistorical),
-      includeResearch: Boolean(options.includeResearch),
       includeResolved: Boolean(options.includeResolved),
+      excludePaths: coverage.excludedPaths,
     },
+    coverage,
     host: {
       os: osRelease,
       kernelRelease,
@@ -2870,6 +2874,7 @@ function scanHost(options = {}) {
     },
     summary: {
       ...summarize(finalized.findings),
+      incomplete: !coverage.complete,
       suppressed: finalized.suppressed,
     },
     findings: finalized.findings,
@@ -8203,10 +8208,6 @@ function finalizeFindings(findings, options = {}) {
   const suppressed = { duplicates: 0, research: 0, resolved: 0 };
 
   for (const finding of findings) {
-    if (!options.includeResearch && isResearchOrHistoryFinding(finding)) {
-      suppressed.research += 1;
-      continue;
-    }
     if (!options.includeResolved && finding.severity === "info") {
       suppressed.resolved += 1;
       continue;
@@ -8230,29 +8231,6 @@ function findingDedupeKey(finding) {
     evidence = evidence.replace(/: [^:]*$/, "");
   }
   return `${finding.severity}\u0000${finding.id}\u0000${evidence}`;
-}
-
-function isResearchOrHistoryFinding(finding) {
-  const evidence = String(finding.evidence || "").replace(/\\/g, "/").toLowerCase();
-  const historySegments = [
-    "/.codex/",
-    "/documents/codex/",
-    "/.config/cursor/user/history/",
-    "/.config/grok bot/user/history/",
-    "/.cursor/projects/",
-    "/.claude/projects/",
-    "/.claude/debug/",
-    "/.grok/",
-    "/.cache/",
-    "/agent-tools/",
-    "/tmp/lscg-",
-    "/var/tmp/lscg-",
-  ];
-  if (historySegments.some((segment) => evidence.includes(segment))) return true;
-
-  const securityToolPath = /\/(?:linux-supply-chain-guard|push-guard|supply-chain-check|browser-exposure-guard|herewegoagain-incident-scanner|actions-warden|game-mod-guard|netward-standalone|openclaw-exposure-guard|prompt-injection-blocker)\//.test(evidence);
-  const dependencyMetadata = /\/(?:package(?:-lock)?\.json|npm-shrinkwrap\.json|pnpm-lock\.yaml|yarn\.lock|requirements[^/]*\.txt|pyproject\.toml|poetry\.lock|pipfile(?:\.lock)?)(?::|$)/.test(evidence);
-  return securityToolPath && !dependencyMetadata;
 }
 
 function summarize(findings) {
@@ -8407,26 +8385,32 @@ function cachedFileSearch(kind, dirPath, maxFiles, search) {
   return files;
 }
 
+function normalizeExcludePaths(excludePaths) {
+  if (excludePaths === undefined || excludePaths === null) return [];
+  if (!Array.isArray(excludePaths)) throw new Error("excludePaths must be an array of directory paths");
+  const result = [];
+  for (const item of excludePaths) {
+    if (typeof item !== "string" || item.trim() === "") throw new Error("--exclude requires a directory path");
+    const resolved = path.resolve(item);
+    if (resolved === path.parse(resolved).root) throw new Error("--exclude cannot exclude the filesystem root");
+    if (!result.includes(resolved)) result.push(resolved);
+  }
+  return result;
+}
+
+// Directories are only skipped when the operator names them with --exclude.
+// Every skip is recorded so the report is marked incomplete and the CLI exits
+// non-zero; nothing is silently left out of a default scan.
 function shouldSkipScanDirectory(dirPath) {
-  if (scanIncludeResearch) return false;
-  const normalized = String(dirPath || "").replace(/\\/g, "/").toLowerCase();
-  const historySegments = [
-    "/.codex/",
-    "/documents/codex/",
-    "/.config/cursor/user/history/",
-    "/.config/grok bot/user/history/",
-    "/.cursor/projects/",
-    "/.claude/projects/",
-    "/.claude/debug/",
-    "/.grok/",
-    "/.cache/",
-    "/agent-tools/",
-    "/onedrive/",
-  ];
-  const skipped = historySegments.some((segment) => `${normalized}/`.includes(segment))
-    || /\/(?:linux-supply-chain-guard|push-guard|supply-chain-check|browser-exposure-guard|herewegoagain-incident-scanner|actions-warden|game-mod-guard|netward-standalone|openclaw-exposure-guard|prompt-injection-blocker)\/(?:src|test|tests|docs|data|work|outputs)(?:\/|$)/.test(normalized);
-  if (skipped) scanSkippedResearchDirs += 1;
-  return skipped;
+  if (scanExcludePaths.length === 0) return false;
+  const resolved = path.resolve(String(dirPath || ""));
+  for (const excluded of scanExcludePaths) {
+    if (resolved === excluded || resolved.startsWith(excluded + path.sep)) {
+      scanExcludedDirs.add(resolved);
+      return true;
+    }
+  }
+  return false;
 }
 
 function findNginxConfigFiles(dirPath, maxFiles) {
