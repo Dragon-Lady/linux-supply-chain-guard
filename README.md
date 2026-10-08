@@ -471,6 +471,24 @@ default. It does not change the exit code. `--include-resolved` restores
 informational fixed or mitigated findings. Suppressed counts are reported
 without including their path-level data.
 
+### Excluding deliberate mounts
+
+The guard walks every directory under the scanned roots, including mounted
+filesystems. If a home directory contains a deliberate cloud-sync mount (for
+example a FUSE/rclone remote) or a tmpfs/in-memory mount that you do not want
+walked (slow, remote, or volatile content), exclude it explicitly:
+
+```bash
+node bin/linux-supply-chain-guard.js / --exclude /home/user/cloud-drive --exclude /home/user/ramdisk
+```
+
+Each `--exclude` is a real path (for a mounted root, use the path under that
+root, for example `/mnt/recovered-root/home/user/cloud-drive`). Excluded trees
+are never listed, are reported under `coverage.excludedPaths`, and make the
+scan incomplete: `summary.incomplete` is true and the CLI exits 3 unless a
+critical (2) or token-monitor (4) result applies. Treat exit 3 as "review what
+was skipped", not as a clean result.
+
 Optional guarded dependency resolution for this checkout:
 
 ```bash
