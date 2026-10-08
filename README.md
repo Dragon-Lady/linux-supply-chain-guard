@@ -465,8 +465,9 @@ runs the older source-backed rule catalog for retrospective incident response.
 `--exclude DIR` (repeatable) skips a directory tree you name; skipped trees are
 listed under `coverage` in the JSON report, `summary.incomplete` is true, and
 the CLI exits 3 unless a critical (2) or token-monitor (4) result applies.
-`--include-research` is accepted for compatibility and has no effect: nothing
-is path-suppressed by default. `--include-resolved` restores
+`--include-research` is deprecated: it is still accepted, prints a one-line
+warning to stderr, and has no effect, because nothing is path-suppressed by
+default. It does not change the exit code. `--include-resolved` restores
 informational fixed or mitigated findings. Suppressed counts are reported
 without including their path-level data.
 

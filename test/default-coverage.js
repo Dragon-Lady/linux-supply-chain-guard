@@ -68,6 +68,15 @@ for (const location of locations) {
     const report = JSON.parse(result.stdout);
     assert(hasIndicator(report));
     assert.strictEqual(result.status, 2);
+    const warning = "warning: --include-research is deprecated and has no effect; research folders are scanned by default";
+    assert.strictEqual(result.stderr.trim(), warning, "deprecation warning must be printed once to stderr");
+    assert(!result.stdout.includes("deprecated"), "warning must not pollute JSON stdout");
+    const plain = runCLI(process["exec" + "Path"], [CLI, root, "--home", home, "--json"], { encoding: "utf8" });
+    assert.strictEqual(plain.stderr, "", "no warning without the flag");
+    assert.strictEqual(plain.status, result.status, "the flag must not change the exit code");
+    const twice = runCLI(process["exec" + "Path"], [CLI, root, "--home", home, "--include-research", "--include-research"], { encoding: "utf8" });
+    assert.strictEqual(twice.stderr.trim(), warning);
+    assert.strictEqual(twice.status, 2);
     tests += 1;
   } finally {
     fs.rmSync(root, { recursive: true, force: true });

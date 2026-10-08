@@ -38,8 +38,8 @@ to run the older source-backed campaign catalog. Use --include-resolved to
 include informational fixed/mitigated findings. No directory is skipped by
 default (caches, IDE history, agent folders and security-tool checkouts are all
 scanned). --exclude DIR (repeatable) skips a directory tree you name; any
-excluded directory marks the report incomplete. --include-research is accepted
-for compatibility and has no effect.
+excluded directory marks the report incomplete. --include-research is
+deprecated: it is accepted, prints a warning to stderr, and has no effect.
 Exit codes: 0 no findings; 1 review/warning; 2 critical; 3 scan incomplete
 (--exclude skipped directories); 4 token-monitor artifact (follow STOP
 guidance); 64 usage or report error. Codes 4 and 2 take precedence over 3.
@@ -73,6 +73,10 @@ function parseArgs(argv) {
       args.includeHistorical = true;
     } else if (arg === "--include-research") {
       // Retained for compatibility: nothing is suppressed by default any more.
+      if (!args.warnedIncludeResearch) {
+        console.error("warning: --include-research is deprecated and has no effect; research folders are scanned by default");
+        args.warnedIncludeResearch = true;
+      }
     } else if (arg === "--exclude") {
       const value = argv[i + 1];
       if (!value || value.startsWith("-")) throw new Error("--exclude requires a directory path");
