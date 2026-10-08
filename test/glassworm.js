@@ -155,9 +155,14 @@ fixture((root, home) => {
   const artifact = path.join(home, "app.js");
   const original = fs.readSync;
   let changed = false;
+  const targetStat = fs.statSync(artifact);
   fs.readSync = function(...args) {
+    const reading = fs.fstatSync(args[0]);
+    const isTarget = reading.dev === targetStat.dev && reading.ino === targetStat.ino;
     const n = original(...args);
-    if (n && !changed) { changed = true; fs.appendFileSync(artifact, "// mutation\n"); }
+    // Node 18 also calls public readSync for unrelated UTF-8 reads. Mutate
+    // only during this artifact's hash read, after its initial stat.
+    if (n && isTarget && !changed) { changed = true; fs.appendFileSync(artifact, "// mutation\n"); }
     return n;
   };
   try {
