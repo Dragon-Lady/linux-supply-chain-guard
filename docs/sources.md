@@ -250,3 +250,10 @@ roots or mounted workspaces.
 - MCP Python SDK upstream GHSA-qx49-fqc8-xw99: https://github.com/modelcontextprotocol/python-sdk/security/advisories/GHSA-qx49-fqc8-xw99
 - OX Security PhantomSub package inventory: https://www.ox.security/blog/phantomsub-malicious-npm-campaign-secretly-adds-users-to-whatsapp-spam-channels/
 - actions-warden (Dragon Lady PyPI read-only GitHub Actions workflow auditor): https://github.com/Dragon-Lady/actions-warden · https://pypi.org/project/actions-warden/
+
+## Tensorlake, checked 2026-10-08
+
+- Discovery: https://x.com/MosheTov/status/2108048212724425206
+- Technical analysis: https://www.stepsecurity.io/blog/tensorlake-npm-compromised-hostage-token-worm
+- Source revision: https://github.com/tensorlakeai/tensorlake/tree/6386121c561e74fec143a138d5cc3d3bbabdfe8c/typescript
+- Upstream report (not a maintainer confirmation): https://github.com/tensorlakeai/tensorlake/issues/1014

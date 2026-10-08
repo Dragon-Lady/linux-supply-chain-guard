@@ -1,6 +1,6 @@
 {
   "name": "linux-supply-chain-guard",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Read-only Linux host checker for supply-chain incident response, including vulnerable kernel posture, risky module state, and known developer-tooling persistence indicators.",
   "bin": {
     "linux-supply-chain-guard": "bin/linux-supply-chain-guard.js"
@@ -15,7 +15,7 @@
     "docs/sources.md"
   ],
   "scripts": {
-    "test": "node --check bin/linux-supply-chain-guard.js && node --check src/checker.js && node test/smoke.js && node test/glassworm.js && node test/report-preservation.js",
+    "test": "node --check bin/linux-supply-chain-guard.js && node --check src/checker.js && node test/smoke.js && node test/glassworm.js && node test/report-preservation.js && node --check src/tensorlake.js && node test/tensorlake.js",
     "canary:socket-firewall": "sfw npm install --package-lock-only --ignore-scripts --audit=false --fund=false",
     "canary:socket-firewall:log": "bash scripts/run-socket-firewall-canary.sh",
     "canary:socket-firewall:log:windows": "powershell -ExecutionPolicy Bypass -File scripts/run-socket-firewall-canary.ps1"

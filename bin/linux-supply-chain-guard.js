@@ -37,6 +37,8 @@ Default reports run the current/core rule lanes only. Use --include-historical
 to run the older source-backed campaign catalog. Use --include-research to
 include known scanner, test-fixture, IDE-history, and response-archive paths.
 Use --include-resolved to include informational fixed/mitigated findings.
+Exit codes: 0 no findings; 1 review/warning; 2 critical; 4 token-monitor
+artifact (follow STOP guidance); 64 usage or report error.
 `);
 }
 
@@ -95,6 +97,8 @@ function formatText(report) {
   );
   lines.push("");
 
+  if (report.safeRemovalGuidance?.required) lines.push(report.safeRemovalGuidance.firstAction, "");
+
   for (const finding of report.findings) {
     lines.push(`[${finding.severity}] ${finding.id}`);
     lines.push(`  ${finding.title}`);
@@ -134,7 +138,9 @@ function main() {
       console.log(formatText(report));
     }
 
-    if (report.summary.critical > 0) {
+    if (report.safeRemovalGuidance.sequenceSensitive) {
+      process.exitCode = 4;
+    } else if (report.summary.critical > 0) {
       process.exitCode = 2;
     } else if (report.summary.warning > 0 || report.summary.review > 0) {
       process.exitCode = 1;

@@ -1,5 +1,10 @@
 # linux-supply-chain-guard
 
+October 8 update: exact Tensorlake 0.5.144 package/payload checks and ordered
+token-monitor warnings are in the default scan. See the
+[dated evidence, limitations and inert test instructions](docs/advisory.md#tensorlake-response-update--2026-10-08).
+
+
 `linux-supply-chain-guard` is a read-only Linux host checker for developers and
 incident responders reviewing supply-chain exposure on workstations, CI
 runners, and build hosts.

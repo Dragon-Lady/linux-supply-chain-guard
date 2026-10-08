@@ -2,6 +2,7 @@
 
 const crypto = require("crypto");
 const fs = require("fs");
+const tensorlake = require("./tensorlake");
 const path = require("path");
 const PACKAGE_VERSION = require("../package.json").version;
 
@@ -2743,6 +2744,7 @@ function scanHost(options = {}) {
   checkNfTablesCve202623111(findings, targetRoot, homePath, kernelRelease);
   checkSeptember2026LinuxLpePack(findings, targetRoot, homePath, kernelRelease);
   checkPersistence(findings, targetRoot, homePath);
+  checkTensorlake(findings, targetRoot, homePath);
   checkCompromisedNpmPackages(findings, targetRoot, homePath);
   checkDirtyBlanketPersistence(findings, targetRoot, homePath);
   checkHijackedActionsCoolTags(findings, targetRoot, homePath);
@@ -2854,6 +2856,7 @@ function scanHost(options = {}) {
     tool: "linux-supply-chain-guard",
     version: PACKAGE_VERSION,
     generatedAt: new Date().toISOString(),
+    safeRemovalGuidance: tensorlake.safeRemovalGuidance(finalized.findings),
     targetRoot,
     options: {
       includeHistorical: Boolean(options.includeHistorical),
@@ -3406,6 +3409,38 @@ function checkNfTablesCve202623111(findings, targetRoot, homePath, kernelRelease
         addFinding(findings, "review", "nftables-cve-2026-23111-text-indicator", "CVE-2026-23111 nf_tables advisory term appears in scanned metadata.", `${relative}: ${indicator}`, "Use this as an inventory and patch-verification lead for nf_tables local privilege-escalation exposure.");
       }
     }
+  }
+}
+
+function checkTensorlake(findings, targetRoot, homePath) {
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const roots = [homeRelative, "/opt", "/srv", "/var/www", "/usr/local/lib/node_modules"].filter(Boolean);
+  const files = new Set();
+  for (const root of roots) {
+    const location = mapLinuxPath(targetRoot, root);
+    const dependencies = findDependencyFiles(location, 25000);
+    const watched = findWatchFiles(location, 25000);
+    if (dependencies.length >= 25000 || watched.length >= 25000) addFinding(findings, "warning", "tensorlake-coverage-incomplete", "Tensorlake discovery reached its file limit.", root, "Coverage is incomplete; narrow the scan root before relying on a negative result.");
+    for (const f of [...dependencies, ...watched]) files.add(f);
+    // Generic watch traversal excludes node_modules; check lib candidates beside
+    // discovered installed manifests without executing the packages.
+    for (const f of dependencies) if (path.basename(f) === "package.json") {
+      for (const name of ["setup.mjs", "Math_Symbol.js"]) {
+        const candidate = path.join(path.dirname(f), "lib", name);
+        if (exists(candidate)) files.add(candidate);
+      }
+    }
+  }
+  if (homeRelative) {
+    const marker = ["gh-token", "monitor"].join("-");
+    for (const relative of [`.config/systemd/user/${marker}.service`, `.local/bin/${marker}.sh`]) {
+      const candidate = mapLinuxPath(targetRoot, `${homeRelative}/${relative}`);
+      if (exists(candidate)) files.add(candidate);
+    }
+  }
+  for (const file of files) for (const item of tensorlake.inspectFile(file)) {
+    const relative = `/${path.relative(targetRoot, file).replace(/\\/g, "/")}`;
+    addFinding(findings, item.severity === "medium" ? "review" : item.severity, item.type, item.message, relative, "Read-only assessment. https://www.stepsecurity.io/blog/tensorlake-npm-compromised-hostage-token-worm");
   }
 }
 
