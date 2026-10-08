@@ -121,4 +121,42 @@ for (const location of locations) {
   }
 }
 
+// An existing directory that cannot be listed was not inspected: the report
+// must say so (incomplete, exit 3) instead of treating the tree as clean.
+if (typeof process.getuid === "function" && process.getuid() !== 0) {
+  const { root, home, dir } = fixture(".cache/locked/x");
+  const locked = path.dirname(dir);
+  fs.chmodSync(locked, 0o000);
+  try {
+    const report = scanHost({ targetRoot: root, homePath: home });
+    assert.strictEqual(report.coverage.complete, false, "unlistable directory must make coverage incomplete");
+    assert(report.coverage.unlistableDirectories >= 1);
+    assert(report.coverage.unlistableSamples.includes(path.resolve(locked)));
+    assert.strictEqual(report.summary.incomplete, true);
+    assert.strictEqual(report.coverage.skippedDirectories, 0);
+    const result = runCLI(process["exec" + "Path"], [CLI, root, "--home", home, "--json"], { encoding: "utf8" });
+    assert.strictEqual(result.status, 3, `unlistable directory must exit 3, got ${result.status}: ${result.stderr}`);
+    const text = runCLI(process["exec" + "Path"], [CLI, root, "--home", home], { encoding: "utf8" });
+    assert.strictEqual(text.status, 3);
+    assert(/Coverage: INCOMPLETE - \d+ director(y|ies) could not be listed/.test(text.stdout));
+    tests += 1;
+  } finally {
+    fs.chmodSync(locked, 0o755);
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+  // A missing directory is not a coverage gap.
+  const clean = fs.mkdtempSync(path.join(os.tmpdir(), "coverage-"));
+  try {
+    fs.mkdirSync(path.join(clean, "home", "fixture"), { recursive: true });
+    const report = scanHost({ targetRoot: clean, homePath: path.join(clean, "home", "fixture") });
+    assert.strictEqual(report.coverage.unlistableDirectories, 0);
+    assert.strictEqual(report.coverage.complete, true);
+    tests += 1;
+  } finally {
+    fs.rmSync(clean, { recursive: true, force: true });
+  }
+} else {
+  console.log("skipping unlistable-directory test when running as root");
+}
+
 console.log(`${tests} default-coverage and exclusion tests passed`);

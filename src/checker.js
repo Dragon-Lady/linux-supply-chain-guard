@@ -11,6 +11,7 @@ let scanTextCache = null;
 let scanTextCacheBytes = 0;
 let scanExcludePaths = [];
 let scanExcludedDirs = new Set();
+let scanUnlistableDirs = new Set();
 const MAX_SCAN_TEXT_CACHE_BYTES = 64 * 1024 * 1024;
 
 const PATCHED_KERNELS = {
@@ -2731,6 +2732,7 @@ function scanHost(options = {}) {
   scanTextCacheBytes = 0;
   scanExcludePaths = normalizeExcludePaths(options.excludePaths);
   scanExcludedDirs = new Set();
+  scanUnlistableDirs = new Set();
   const osRelease = readOsRelease(readText(mapLinuxPath(targetRoot, "/etc/os-release")));
   const kernelRelease =
     options.kernelRelease ||
@@ -2845,15 +2847,18 @@ function scanHost(options = {}) {
     includeResolved: Boolean(options.includeResolved),
   });
   const coverage = {
-    complete: scanExcludedDirs.size === 0,
+    complete: scanExcludedDirs.size === 0 && scanUnlistableDirs.size === 0,
     excludedPaths: scanExcludePaths.slice(),
     skippedDirectories: scanExcludedDirs.size,
+    unlistableDirectories: scanUnlistableDirs.size,
+    unlistableSamples: Array.from(scanUnlistableDirs).sort().slice(0, 20),
   };
   scanFileCache = null;
   scanTextCache = null;
   scanTextCacheBytes = 0;
   scanExcludePaths = [];
   scanExcludedDirs = new Set();
+  scanUnlistableDirs = new Set();
 
   return {
     tool: "linux-supply-chain-guard",
@@ -4238,6 +4243,7 @@ function* glassWormFiles(roots, budget) {
       directory = fs.opendirSync(current);
     } catch (error) {
       if (error.code === "ENOENT") continue;
+      recordUnlistableDirectory(current, error);
       budget.incomplete = true;
       continue;
     }
@@ -8294,7 +8300,8 @@ function walkFiles(dirPath) {
     let entries = [];
     try {
       entries = fs.readdirSync(current, { withFileTypes: true });
-    } catch (_error) {
+    } catch (error) {
+      recordUnlistableDirectory(current, error);
       continue;
     }
     for (const entry of entries) {
@@ -8320,7 +8327,8 @@ function findDependencyFilesUncached(dirPath, maxFiles) {
     let entries = [];
     try {
       entries = fs.readdirSync(current, { withFileTypes: true });
-    } catch (_error) {
+    } catch (error) {
+      recordUnlistableDirectory(current, error);
       continue;
     }
     for (const entry of entries) {
@@ -8350,7 +8358,8 @@ function findWatchFilesUncached(dirPath, maxFiles) {
     let entries = [];
     try {
       entries = fs.readdirSync(current, { withFileTypes: true });
-    } catch (_error) {
+    } catch (error) {
+      recordUnlistableDirectory(current, error);
       continue;
     }
     for (const entry of entries) {
@@ -8399,6 +8408,16 @@ function normalizeExcludePaths(excludePaths) {
 }
 
 // Directories are only skipped when the operator names them with --exclude.
+// A directory that exists but cannot be listed (permission denied, I/O
+// error, too many links, ...) was not inspected. Count it so the report is
+// marked incomplete instead of silently treating the tree as clean. Paths
+// that vanished or are not directories are not coverage gaps.
+function recordUnlistableDirectory(dirPath, error) {
+  const code = error && error.code;
+  if (code === "ENOENT" || code === "ENOTDIR") return;
+  scanUnlistableDirs.add(path.resolve(String(dirPath)));
+}
+
 // Every skip is recorded so the report is marked incomplete and the CLI exits
 // non-zero; nothing is silently left out of a default scan.
 function shouldSkipScanDirectory(dirPath) {
@@ -8423,7 +8442,8 @@ function findNginxConfigFiles(dirPath, maxFiles) {
     let entries = [];
     try {
       entries = fs.readdirSync(current, { withFileTypes: true });
-    } catch (_error) {
+    } catch (error) {
+      recordUnlistableDirectory(current, error);
       continue;
     }
     for (const entry of entries) {
@@ -8453,7 +8473,8 @@ function findHadesFiles(dirPath, maxFiles) {
     let entries = [];
     try {
       entries = fs.readdirSync(current, { withFileTypes: true });
-    } catch (_error) {
+    } catch (error) {
+      recordUnlistableDirectory(current, error);
       continue;
     }
     for (const entry of entries) {
@@ -8479,7 +8500,8 @@ function findRoundcubeFiles(dirPath, maxFiles) {
     let entries = [];
     try {
       entries = fs.readdirSync(current, { withFileTypes: true });
-    } catch (_error) {
+    } catch (error) {
+      recordUnlistableDirectory(current, error);
       continue;
     }
     for (const entry of entries) {
@@ -8837,7 +8859,8 @@ function findJoomlaJceFiles(dirPath, maxFiles) {
     let entries;
     try {
       entries = fs.readdirSync(current, { withFileTypes: true });
-    } catch {
+    } catch (error) {
+      recordUnlistableDirectory(current, error);
       continue;
     }
     for (const entry of entries) {
@@ -8866,7 +8889,8 @@ function findJoomlaSpPageBuilderFiles(dirPath, maxFiles) {
     let entries;
     try {
       entries = fs.readdirSync(current, { withFileTypes: true });
-    } catch {
+    } catch (error) {
+      recordUnlistableDirectory(current, error);
       continue;
     }
     for (const entry of entries) {

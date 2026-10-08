@@ -62,10 +62,14 @@ but run only with `--include-historical`. Known scanner sources, test fixtures, 
 history, response archives, duplicate text indicators, and informational
 fixed/mitigated results no longer inflate the default severity headline.
 They remain available with `--include-historical` and `--include-resolved`.
-Directory coverage is never reduced by default: cache, IDE-history, agent,
-cloud-sync and security-tool checkout directories are scanned like any other
-directory. Use `--exclude DIR` to skip a tree; the report is then marked
-incomplete and the CLI exits 3.
+Cache, IDE-history, agent, cloud-sync and security-tool checkout directories
+are scanned like any other directory. The file walkers still skip dependency,
+VCS and build-output folders (`.git`, `.hg`, `.svn`, `node_modules`, `.venv`,
+`venv`, `dist`, `build`, `coverage`, `.next`); dedicated dependency checks read
+installed packages separately. Use `--exclude DIR` to skip a tree; the report is
+then marked incomplete and the CLI exits 3. A directory that exists but cannot
+be listed (for example permission denied) also marks the report incomplete and
+exits 3; run with sufficient privileges or review the listed paths.
 Exact npm-name boundaries prevent names such as `sync-external` from matching
 the legitimate `use-sync-external-store` package, and Ubuntu-family vendor
 backports are honored for PackageKit CVE-2026-41651. Repeated filesystem walks
@@ -466,8 +470,8 @@ runs the older source-backed rule catalog for retrospective incident response.
 listed under `coverage` in the JSON report, `summary.incomplete` is true, and
 the CLI exits 3 unless a critical (2) or token-monitor (4) result applies.
 `--include-research` is deprecated: it is still accepted, prints a one-line
-warning to stderr, and has no effect, because nothing is path-suppressed by
-default. It does not change the exit code. `--include-resolved` restores
+warning to stderr, and has no effect, because research and tool folders are
+no longer path-suppressed. It does not change the exit code. `--include-resolved` restores
 informational fixed or mitigated findings. Suppressed counts are reported
 without including their path-level data.
 
@@ -513,7 +517,13 @@ Exit codes:
 - `0`: informational findings only
 - `1`: warning or review findings
 - `2`: critical findings
+- `3`: scan incomplete: directories were skipped with `--exclude`, or a
+  directory could not be listed (see `coverage` in the JSON report)
+- `4`: token-monitor artifact found; follow the STOP guidance before revoking
+  tokens or removing anything
 - `64`: command-line or runtime error
+
+Precedence when several apply: `4` > `2` > `3` > `1` > `0`.
 
 ## Current checks
 
@@ -1225,7 +1235,8 @@ be checked by an operator. A clean run only means this version did not observe
 the known indicators it checks. Default output excludes resolved informational
 results and the historical rule catalog; use both include switches when
 performing a historical or forensic review. Exit code 3 means the scan was
-incomplete because directories were excluded with `--exclude`.
+incomplete because directories were excluded with `--exclude` or could not be
+listed.
 
 ## Related read-only tooling
 

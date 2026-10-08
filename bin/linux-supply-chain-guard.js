@@ -35,14 +35,18 @@ Examples:
 
 Default reports run the current/core rule lanes only. Use --include-historical
 to run the older source-backed campaign catalog. Use --include-resolved to
-include informational fixed/mitigated findings. No directory is skipped by
-default (caches, IDE history, agent folders and security-tool checkouts are all
-scanned). --exclude DIR (repeatable) skips a directory tree you name; any
-excluded directory marks the report incomplete. --include-research is
-deprecated: it is accepted, prints a warning to stderr, and has no effect.
+include informational fixed/mitigated findings. Caches, IDE history, agent
+folders and security-tool checkouts are scanned by default; the file walkers
+only skip dependency, VCS and build-output folders (.git, .hg, .svn,
+node_modules, .venv, venv, dist, build, coverage, .next). --exclude DIR
+(repeatable) skips a directory tree you name; any excluded directory, and any
+directory that exists but cannot be listed, marks the report incomplete.
+--include-research is deprecated: it is accepted, prints a warning to stderr,
+and has no effect.
 Exit codes: 0 no findings; 1 review/warning; 2 critical; 3 scan incomplete
-(--exclude skipped directories); 4 token-monitor artifact (follow STOP
-guidance); 64 usage or report error. Codes 4 and 2 take precedence over 3.
+(--exclude skipped directories or unlistable directories); 4 token-monitor
+artifact (follow STOP guidance); 64 usage or report error.
+Precedence: 4 > 2 > 3 > 1 > 0.
 `);
 }
 
@@ -113,9 +117,19 @@ function formatText(report) {
     `Suppressed by default: resolved=${suppressed.resolved || 0}, duplicates=${suppressed.duplicates || 0}`
   );
   if (report.coverage && !report.coverage.complete) {
-    lines.push(
-      `Coverage: INCOMPLETE - ${report.coverage.skippedDirectories} director${report.coverage.skippedDirectories === 1 ? "y" : "ies"} skipped by --exclude (${report.coverage.excludedPaths.join(", ")})`
-    );
+    const plural = (n) => `director${n === 1 ? "y" : "ies"}`;
+    const skipped = report.coverage.skippedDirectories || 0;
+    const unlistable = report.coverage.unlistableDirectories || 0;
+    if (skipped > 0) {
+      lines.push(
+        `Coverage: INCOMPLETE - ${skipped} ${plural(skipped)} skipped by --exclude (${report.coverage.excludedPaths.join(", ")})`
+      );
+    }
+    if (unlistable > 0) {
+      lines.push(
+        `Coverage: INCOMPLETE - ${unlistable} ${plural(unlistable)} could not be listed (${(report.coverage.unlistableSamples || []).join(", ")}${unlistable > (report.coverage.unlistableSamples || []).length ? ", ..." : ""})`
+      );
+    }
   }
   lines.push("");
 

@@ -20,7 +20,7 @@ Safety stance:
 cd C:\path\to\linux-supply-chain-guard
 npm test
 node bin\linux-supply-chain-guard.js --json
-node bin\linux-supply-chain-guard.js --include-historical --include-research --include-resolved --json
+node bin\linux-supply-chain-guard.js --include-historical --include-resolved --json
 npm run canary:socket-firewall
 npm run canary:socket-firewall:log
 ```
