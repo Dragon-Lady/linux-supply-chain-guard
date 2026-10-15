@@ -10,6 +10,14 @@
 >    IDE/agent history, agent tool, cloud-sync and security-tool-named folders
 >    are now scanned, so existing machines may report new findings.
 >    `--include-research` is deprecated and has no effect.
+> 3. **Sister-scanner checkouts can now exit 2.** Machines that keep sister-
+>    scanner trees under the scan root may now report critical findings and
+>    exit 2 (critical). Passing `--exclude` for those checkouts makes the run
+>    incomplete and exit 3 instead (critical and token-monitor STOP still win
+>    over 3 when they also apply).
+> 4. **JSON shape changed.** `options.includeResearch` is replaced by
+>    `options.excludePaths`. The report gains a `coverage` block and
+>    `summary.incomplete`. Callers that read the old field must update.
 
 Not yet released. No release date is set.
 
