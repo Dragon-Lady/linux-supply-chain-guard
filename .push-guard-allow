@@ -11,5 +11,3 @@ data/advisory.json workflow.agentjacking_sentry_mcp_config,workflow.dprk_socketi
 # Detector tests: fixtures contain the indicators the detector must find.
 test/smoke.js workflow.agentjacking_sentry_mcp_config,workflow.aurora_esxi_vm_kill,workflow.aurora_linux_ransomware_hash,workflow.aurora_ransomware_download,workflow.dprk_socketio_0001_stage,workflow.dprk_socketio_node_exec,workflow.dprk_socketio_service_fetch,workflow.hades_github_token_monitor,workflow.hades_llm_anti_analysis_bait,workflow.ottercookie_npm_package,workflow.ottercookie_ssh_backdoor_shape,workflow.ottercookie_vercel_c2,workflow.public_linux_kernel_lpe_poc,workflow.trinitite_payload_marker
 
-# Scheduled-task name in the canary docs matches an API-key shape; it is not a credential.
-docs/socket-firewall-canary.md secret.openai_token

@@ -1,4 +1,15 @@
-# v0.1.8 (Unreleased)
+# v0.2.0 (Unreleased)
+
+> **BREAKING CHANGES. Read before upgrading, especially in CI.**
+>
+> 1. **Exit code 3 now means "incomplete scan".** Any `--exclude DIR`, or a
+>    directory that cannot be listed, makes the run exit 3 instead of 0 or 1.
+>    CI jobs that treat every non-zero exit as failure, or that only expect
+>    0/1/2/4, must be updated.
+> 2. **Research and tool folders are no longer skipped by default.** Cache,
+>    IDE/agent history, agent tool, cloud-sync and security-tool-named folders
+>    are now scanned, so existing machines may report new findings.
+>    `--include-research` is deprecated and has no effect.
 
 Not yet released. No release date is set.
 
