@@ -6,6 +6,7 @@
     "linux-supply-chain-guard": "bin/linux-supply-chain-guard.js"
   },
   "files": [
+    "LICENSE",
     "bin/",
     "src/",
     "data/",
@@ -29,7 +30,7 @@
     "kernel"
   ],
   "author": "",
-  "license": "UNLICENSED",
+  "license": "MIT",
   "private": false,
   "engines": {
     "node": ">=18"
