@@ -172,9 +172,13 @@ test("inspection does not mutate, execute or contact network", () => fixture((ro
 test("incomplete candidate produces a non-success CLI result", () => fixture((root, home) => {
   write(path.join(home, "package.json"), "null");
   const output = cli(root, home, true);
-  assert.strictEqual(output.status, linux ? 1 : 3, output.stderr);
+  assert.strictEqual(output.status, 3, output.stderr);
   const report = JSON.parse(output.stdout);
   assert(types(report).includes("tensorlake-coverage-incomplete"));
+  if (linux) {
+    assert.strictEqual(report.coverage.complete, false);
+    assert.strictEqual(report.summary.incomplete, true);
+  }
   assert.strictEqual(report.safeRemovalGuidance.sequenceSensitive, false);
 }));
 

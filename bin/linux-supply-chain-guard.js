@@ -44,8 +44,8 @@ directory that exists but cannot be listed, marks the report incomplete.
 --include-research is deprecated: it is accepted, prints a warning to stderr,
 and has no effect.
 Exit codes: 0 no findings; 1 review/warning; 2 critical; 3 scan incomplete
-(--exclude skipped directories or unlistable directories); 4 token-monitor
-artifact (follow STOP guidance); 64 usage or report error.
+(exclusions, unreadable inputs, failed candidate inspections, or resource limits);
+4 token-monitor artifact (follow STOP guidance); 64 usage, target, or report error.
 Precedence: 4 > 2 > 3 > 1 > 0.
 `);
 }
@@ -61,6 +61,7 @@ function parseArgs(argv) {
     excludePaths: [],
   };
 
+  let targetSeen = false;
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i];
     if (arg === "--help" || arg === "-h") {
@@ -69,9 +70,11 @@ function parseArgs(argv) {
       args.json = true;
     } else if (arg === "--report") {
       args.report = argv[i + 1];
+      if (!args.report || args.report.startsWith("-")) throw new Error("--report requires a file path");
       i += 1;
     } else if (arg === "--home") {
       args.home = argv[i + 1] || "";
+      if (!args.home || args.home.startsWith("-")) throw new Error("--home requires a directory path");
       i += 1;
     } else if (arg === "--include-historical") {
       args.includeHistorical = true;
@@ -93,7 +96,9 @@ function parseArgs(argv) {
     } else if (arg === "--include-resolved") {
       args.includeResolved = true;
     } else if (!arg.startsWith("-")) {
+      if (targetSeen) throw new Error("Only one target root may be specified");
       args.targetRoot = arg;
+      targetSeen = true;
     } else {
       throw new Error(`Unknown argument: ${arg}`);
     }
@@ -117,6 +122,10 @@ function formatText(report) {
     `Suppressed by default: resolved=${suppressed.resolved || 0}, duplicates=${suppressed.duplicates || 0}`
   );
   if (report.coverage && !report.coverage.complete) {
+    lines.push("Coverage: INCOMPLETE - do not treat the absence of findings as a passed scan.");
+    if (report.coverage.unreadablePaths) lines.push(`Unreadable inputs: ${report.coverage.unreadablePaths}`);
+    if (report.coverage.limitedSearches) lines.push(`Discovery limits reached: ${report.coverage.limitedSearches}`);
+    if (report.coverage.inspectionFailures?.length) lines.push(`Incomplete checks: ${report.coverage.inspectionFailures.join(", ")}`);
     const plural = (n) => `director${n === 1 ? "y" : "ies"}`;
     const skipped = report.coverage.skippedDirectories || 0;
     const unlistable = report.coverage.unlistableDirectories || 0;

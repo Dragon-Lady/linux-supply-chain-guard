@@ -69,7 +69,10 @@ VCS and build-output folders (`.git`, `.hg`, `.svn`, `node_modules`, `.venv`,
 installed packages separately. Use `--exclude DIR` to skip a tree; the report is
 then marked incomplete and the CLI exits 3. A directory that exists but cannot
 be listed (for example permission denied) also marks the report incomplete and
-exits 3; run with sufficient privileges or review the listed paths.
+exits 3; review the listed paths and choose an appropriate scan scope. Failed
+candidate inspections (read, parse, change-during-read, size/time budgets) and
+discovery limits now also mark top-level coverage incomplete. Critical and
+token-monitor results retain higher exit-code precedence.
 Exact npm-name boundaries prevent names such as `sync-external` from matching
 the legitimate `use-sync-external-store` package, and Ubuntu-family vendor
 backports are honored for PackageKit CVE-2026-41651. Repeated filesystem walks
@@ -469,6 +472,16 @@ runs the older source-backed rule catalog for retrospective incident response.
 `--exclude DIR` (repeatable) skips a directory tree you name; skipped trees are
 listed under `coverage` in the JSON report, `summary.incomplete` is true, and
 the CLI exits 3 unless a critical (2) or token-monitor (4) result applies.
+
+The same incomplete status now covers unreadable inputs, candidate inspection
+failures and reached discovery budgets. `coverage.unreadablePaths` and bounded
+path samples report access failures; `coverage.limitedSearches` reports exhausted
+discovery searches; `coverage.inspectionFailures` identifies failed rule lanes.
+`coverage.scope` describes the boundary: enabled lanes and configured discovery
+paths, not every file on the host. Missing optional platform files do not by
+themselves mean incomplete coverage. A missing or non-directory explicit root
+is an error (64), not an empty successful scan. This intentionally replaces
+review exit 1 for candidate inspection failures with incomplete exit 3.
 `--include-research` is deprecated: it is still accepted, prints a one-line
 warning to stderr, and has no effect, because research and tool folders are
 no longer path-suppressed. It does not change the exit code. `--include-resolved` restores
@@ -517,8 +530,8 @@ Exit codes:
 - `0`: informational findings only
 - `1`: warning or review findings
 - `2`: critical findings
-- `3`: scan incomplete: directories were skipped with `--exclude`, or a
-  directory could not be listed (see `coverage` in the JSON report)
+- `3`: scan incomplete: exclusions, unreadable inputs, failed candidate
+  inspections or resource limits (see `coverage` in the JSON report)
 - `4`: token-monitor artifact found; follow the STOP guidance before revoking
   tokens or removing anything
 - `64`: command-line or runtime error
@@ -1235,8 +1248,8 @@ be checked by an operator. A clean run only means this version did not observe
 the known indicators it checks. Default output excludes resolved informational
 results and the historical rule catalog; use both include switches when
 performing a historical or forensic review. Exit code 3 means the scan was
-incomplete because directories were excluded with `--exclude` or could not be
-listed.
+incomplete because inputs were excluded or unreadable, candidate inspection
+failed, or discovery/resource budgets were reached.
 
 ## Related read-only tooling
 
