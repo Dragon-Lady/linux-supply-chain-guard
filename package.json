@@ -6,6 +6,7 @@
     "linux-supply-chain-guard": "bin/linux-supply-chain-guard.js"
   },
   "files": [
+    "LICENSE",
     "bin/",
     "src/",
     "data/",
@@ -15,7 +16,7 @@
     "docs/sources.md"
   ],
   "scripts": {
-    "test": "node --check bin/linux-supply-chain-guard.js && node --check src/checker.js && node test/smoke.js && node test/glassworm.js && node test/report-preservation.js && node test/default-coverage.js && node --check src/tensorlake.js && node test/tensorlake.js",
+    "test": "node --check bin/linux-supply-chain-guard.js && node --check src/checker.js && node test/smoke.js && node test/glassworm.js && node test/report-preservation.js && node test/default-coverage.js && node --check src/tensorlake.js && node test/tensorlake.js && node --test test/functional-boundaries.js",
     "canary:socket-firewall": "sfw npm install --package-lock-only --ignore-scripts --audit=false --fund=false",
     "canary:socket-firewall:log": "bash scripts/run-socket-firewall-canary.sh",
     "canary:socket-firewall:log:windows": "powershell -ExecutionPolicy Bypass -File scripts/run-socket-firewall-canary.ps1"
@@ -29,7 +30,7 @@
     "kernel"
   ],
   "author": "",
-  "license": "UNLICENSED",
+  "license": "MIT",
   "private": false,
   "engines": {
     "node": ">=18"

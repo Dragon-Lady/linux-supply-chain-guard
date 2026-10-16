@@ -1,4 +1,4 @@
-# v0.2.0 (Unreleased)
+# v0.2.0
 
 > **BREAKING CHANGES. Read before upgrading, especially in CI.**
 >
@@ -19,7 +19,7 @@
 >    `options.excludePaths`. The report gains a `coverage` block and
 >    `summary.incomplete`. Callers that read the old field must update.
 
-Not yet released. No release date is set.
+GitHub release. Registry publication is separate.
 
 ## Behavior changes
 
@@ -48,6 +48,12 @@ Not yet released. No release date is set.
   in the report and is always 0.
 
 ## Fixes
+
+- Candidate inspection failures, read failures, and discovery limits now mark
+  aggregate coverage incomplete instead of reporting a clean scan. Coverage
+  describes enabled rule lanes, not every byte or location on a host.
+- Explicit scan roots must be existing directories; invalid roots exit 64.
+- The package now includes the MIT license.
 
 - A file planted under `~/.cache`, an agent or IDE history folder, a
   cloud-sync folder, or any folder named after a security tool was silently

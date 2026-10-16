@@ -12,6 +12,8 @@ let scanTextCacheBytes = 0;
 let scanExcludePaths = [];
 let scanExcludedDirs = new Set();
 let scanUnlistableDirs = new Set();
+let scanUnreadablePaths = new Set();
+let scanLimitedSearches = new Set();
 const MAX_SCAN_TEXT_CACHE_BYTES = 64 * 1024 * 1024;
 
 const PATCHED_KERNELS = {
@@ -2725,6 +2727,7 @@ const MISTIC_RAT_TEXT_INDICATORS = [
 
 function scanHost(options = {}) {
   const targetRoot = path.resolve(options.targetRoot || "/");
+  if (!fs.statSync(targetRoot).isDirectory()) throw new Error("Target root must be a directory");
   const homePath = options.homePath || process.env.HOME || "";
   const findings = [];
   scanFileCache = new Map();
@@ -2733,6 +2736,8 @@ function scanHost(options = {}) {
   scanExcludePaths = normalizeExcludePaths(options.excludePaths);
   scanExcludedDirs = new Set();
   scanUnlistableDirs = new Set();
+  scanUnreadablePaths = new Set();
+  scanLimitedSearches = new Set();
   const osRelease = readOsRelease(readText(mapLinuxPath(targetRoot, "/etc/os-release")));
   const kernelRelease =
     options.kernelRelease ||
@@ -2846,8 +2851,22 @@ function scanHost(options = {}) {
   const finalized = finalizeFindings(findings, {
     includeResolved: Boolean(options.includeResolved),
   });
+  // Aggregate actual inspection failures, not advisory text containing words
+  // such as "incomplete". Use the raw findings so suppression cannot hide gaps.
+  const incompleteIds = new Set([
+    "tensorlake-coverage-incomplete", "glassworm-artifact-not-inspected", "glassworm-scan-incomplete",
+  ]);
+  const inspectionFailures = Array.from(new Set(findings.filter((item) => incompleteIds.has(item.id))
+    .map((item) => item.id))).sort();
   const coverage = {
-    complete: scanExcludedDirs.size === 0 && scanUnlistableDirs.size === 0,
+    complete: scanExcludedDirs.size === 0 && scanUnlistableDirs.size === 0
+      && scanUnreadablePaths.size === 0 && scanLimitedSearches.size === 0 && inspectionFailures.length === 0,
+    scope: "enabled rule lanes and their configured discovery paths; not every host file",
+    unreadablePaths: scanUnreadablePaths.size,
+    unreadableSamples: Array.from(scanUnreadablePaths).sort().slice(0, 20),
+    limitedSearches: scanLimitedSearches.size,
+    limitedSearchSamples: Array.from(scanLimitedSearches).sort().slice(0, 20),
+    inspectionFailures,
     excludedPaths: scanExcludePaths.slice(),
     skippedDirectories: scanExcludedDirs.size,
     unlistableDirectories: scanUnlistableDirs.size,
@@ -2859,6 +2878,8 @@ function scanHost(options = {}) {
   scanExcludePaths = [];
   scanExcludedDirs = new Set();
   scanUnlistableDirs = new Set();
+  scanUnreadablePaths = new Set();
+  scanLimitedSearches = new Set();
 
   return {
     tool: "linux-supply-chain-guard",
@@ -8278,7 +8299,8 @@ function readText(filePath) {
       scanTextCacheBytes += bytes;
     }
     return text;
-  } catch (_error) {
+  } catch (error) {
+    recordUnreadablePath(filePath, error);
     return "";
   }
 }
@@ -8386,6 +8408,7 @@ function cachedFileSearch(kind, dirPath, maxFiles, search) {
   }
 
   const files = search(dirPath, maxFiles);
+  if (files.length >= maxFiles) scanLimitedSearches.add(`${kind}:${path.resolve(dirPath)}`);
   scanFileCache.set(key, {
     files,
     limit: maxFiles,
@@ -8416,6 +8439,12 @@ function recordUnlistableDirectory(dirPath, error) {
   const code = error && error.code;
   if (code === "ENOENT" || code === "ENOTDIR") return;
   scanUnlistableDirs.add(path.resolve(String(dirPath)));
+}
+
+function recordUnreadablePath(filePath, error) {
+  // Absent optional host metadata is normal on mounted roots and other distros.
+  if (error && (error.code === "ENOENT" || error.code === "ENOTDIR")) return;
+  scanUnreadablePaths.add(path.resolve(String(filePath)));
 }
 
 // Every skip is recorded so the report is marked incomplete and the CLI exits
@@ -9170,7 +9199,8 @@ function exists(filePath) {
   try {
     fs.accessSync(filePath);
     return true;
-  } catch (_error) {
+  } catch (error) {
+    recordUnreadablePath(filePath, error);
     return false;
   }
 }
@@ -9178,7 +9208,8 @@ function exists(filePath) {
 function isFile(filePath) {
   try {
     return fs.statSync(filePath).isFile();
-  } catch (_error) {
+  } catch (error) {
+    recordUnreadablePath(filePath, error);
     return false;
   }
 }
@@ -9186,7 +9217,8 @@ function isFile(filePath) {
 function fileSizeBytes(filePath) {
   try {
     return fs.statSync(filePath).size;
-  } catch (_error) {
+  } catch (error) {
+    recordUnreadablePath(filePath, error);
     return 0;
   }
 }

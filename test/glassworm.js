@@ -23,7 +23,14 @@ function write(file, data) {
 function extension(home, publisher, name) {
   write(path.join(home, ".vscode", "extensions", `${publisher}.${name}-1.0.0`, "package.json"), JSON.stringify({ publisher, name, version: "1.0.0" }));
 }
-function rules(report) { return report.findings.map((row) => row.id); }
+function rules(report) {
+  const ids = report.findings.map((row) => row.id);
+  if (ids.includes("glassworm-artifact-not-inspected") || ids.includes("glassworm-scan-incomplete")) {
+    assert.strictEqual(report.coverage.complete, false);
+    assert.strictEqual(report.summary.incomplete, true);
+  }
+  return ids;
+}
 function mockedDigest(value, fn) {
   const original = crypto.createHash;
   // Only the expected digest is injected; all disk contents are harmless.
