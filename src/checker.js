@@ -3492,9 +3492,9 @@ function checkTensorlake(findings, targetRoot, homePath) {
       if (exists(candidate)) files.add(candidate);
     }
   }
-  for (const file of files) for (const item of tensorlake.inspectFile(file)) {
+  for (const file of files) for (const item of tensorlake.inspectFile(file, { root: targetRoot })) {
     const relative = `/${path.relative(targetRoot, file).replace(/\\/g, "/")}`;
-    addFinding(findings, item.severity === "medium" ? "review" : item.severity, item.type, item.message, relative, "Read-only assessment. https://www.stepsecurity.io/blog/tensorlake-npm-compromised-hostage-token-worm");
+    addFinding(findings, item.severity === "medium" ? "review" : item.severity === "low" ? "info" : item.severity, item.type, item.message, relative, "Read-only assessment. https://www.stepsecurity.io/blog/tensorlake-npm-compromised-hostage-token-worm");
   }
 }
 
@@ -8258,7 +8258,7 @@ function finalizeFindings(findings, options = {}) {
   const suppressed = { duplicates: 0, research: 0, resolved: 0 };
 
   for (const finding of findings) {
-    if (!options.includeResolved && finding.severity === "info" && !["october-review-text-out-of-scope", "october-review-incidental-json"].includes(finding.id)) {
+    if (!options.includeResolved && finding.severity === "info" && !["october-review-text-out-of-scope", "october-review-incidental-json", "tensorlake-incidental-json"].includes(finding.id)) {
       suppressed.resolved += 1;
       continue;
     }

@@ -169,3 +169,16 @@ for(const malformed of [false,true]) test('legacy critical fake-font task detect
  const report=require('../src/checker').scanHost({targetRoot:root,homePath:home,includeHistorical:true});
  assert(report.findings.some(f=>f.id==='vscode-autorun-fake-font-task' && f.severity==='critical'));
 });
+
+for(const platform of ['windows','linux','osx']) test('platform folder-open task '+platform,()=>{
+ const spec={command:'echo harmless',runOptions:{runOn:'folderOpen'},[platform]:{command:'NODE',args:['./PUBLIC/FONTS/'+font.toUpperCase()]}};
+ assert(has('tasks.json',json({tasks:[spec]}),'vscode-autorun-fake-font-task'));
+ spec[platform].runOptions={runOn:'default'};
+ assert(!has('tasks.json',json({tasks:[spec]}),'vscode-autorun-fake-font-task'));
+});
+test('platform args and Windows path separators are preserved',()=>{
+ const command=String.raw`"C:\Program Files\nodejs\node.exe"`;
+ const file=String.raw`C:\assets`+"\\"+font.toUpperCase();
+ assert(has('tasks.json',json({tasks:[{command,args:[file],runOptions:{runOn:'folderOpen'},windows:{command}}]}),'vscode-autorun-fake-font-task'));
+ assert(!has('tasks.json',json({tasks:[{command:'cp',args:[file],runOptions:{runOn:'folderOpen'}}]}),'vscode-autorun-fake-font-task'));
+});
