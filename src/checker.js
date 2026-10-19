@@ -3,6 +3,7 @@
 const crypto = require("crypto");
 const fs = require("fs");
 const tensorlake = require("./tensorlake");
+const octoberReview = require("./october-review");
 const path = require("path");
 const PACKAGE_VERSION = require("../package.json").version;
 
@@ -2771,6 +2772,7 @@ function scanHost(options = {}) {
   checkOpenClawAgentExposure(findings, targetRoot, homePath);
   checkTransformersPayload(findings, targetRoot);
   checkGlassWormExtensions(findings, targetRoot, homePath);
+  checkOctoberReview(findings, targetRoot, homePath);
 
   if (options.includeHistorical) {
     checkTrendMicroHookReloadBypass(findings, targetRoot, homePath);
@@ -2854,7 +2856,7 @@ function scanHost(options = {}) {
   // Aggregate actual inspection failures, not advisory text containing words
   // such as "incomplete". Use the raw findings so suppression cannot hide gaps.
   const incompleteIds = new Set([
-    "tensorlake-coverage-incomplete", "glassworm-artifact-not-inspected", "glassworm-scan-incomplete",
+    "october-review-incomplete", "tensorlake-coverage-incomplete", "glassworm-artifact-not-inspected", "glassworm-scan-incomplete",
   ]);
   const inspectionFailures = Array.from(new Set(findings.filter((item) => incompleteIds.has(item.id))
     .map((item) => item.id))).sort();
@@ -3440,6 +3442,27 @@ function checkNfTablesCve202623111(findings, targetRoot, homePath, kernelRelease
         addFinding(findings, "review", "nftables-cve-2026-23111-text-indicator", "CVE-2026-23111 nf_tables advisory term appears in scanned metadata.", `${relative}: ${indicator}`, "Use this as an inventory and patch-verification lead for nf_tables local privilege-escalation exposure.");
       }
     }
+  }
+}
+
+function checkOctoberReview(findings, targetRoot, homePath) {
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const roots = [homeRelative, "/opt", "/srv", "/var/www", "/usr/local/lib/node_modules", "/tmp", "/var/tmp"].filter(Boolean);
+  const files = new Set();
+  for (const root of roots) {
+    const location = mapLinuxPath(targetRoot, root);
+    const deps = findDependencyFiles(location, 25000);
+    const watched = findWatchFiles(location, 25000);
+    if (deps.length >= 25000 || watched.length >= 25000)
+      addFinding(findings, "warning", "october-review-incomplete", "October review discovery reached its file limit.", root, "Narrow the scan root; a negative result is incomplete.");
+    for (const file of [...deps, ...watched]) files.add(file);
+  }
+  const status = mapLinuxPath(targetRoot, "/var/lib/dpkg/status");
+  if (exists(status) && !scanExcludePaths.some(excluded => status === excluded || status.startsWith(excluded + path.sep))) files.add(status);
+  for (const file of files) for (const item of octoberReview.inspectFile(file, { root: targetRoot })) {
+    const relative = `/${path.relative(targetRoot, file).replace(/\\/g, "/")}`;
+    addFinding(findings, item.severity === "medium" ? "review" : item.severity === "high" ? "warning" : item.severity === "low" ? "info" : item.severity,
+      item.type, item.message, relative + ": " + item.message, "Static inventory only; verify resolved artifacts and runtime configuration before remediation.");
   }
 }
 
@@ -8235,7 +8258,7 @@ function finalizeFindings(findings, options = {}) {
   const suppressed = { duplicates: 0, research: 0, resolved: 0 };
 
   for (const finding of findings) {
-    if (!options.includeResolved && finding.severity === "info") {
+    if (!options.includeResolved && finding.severity === "info" && !["october-review-text-out-of-scope", "october-review-incidental-json"].includes(finding.id)) {
       suppressed.resolved += 1;
       continue;
     }
