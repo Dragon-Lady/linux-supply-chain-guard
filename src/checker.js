@@ -3,6 +3,7 @@
 const crypto = require("crypto");
 const fs = require("fs");
 const tensorlake = require("./tensorlake");
+const octoberReview = require("./october-review");
 const path = require("path");
 const PACKAGE_VERSION = require("../package.json").version;
 
@@ -2771,6 +2772,7 @@ function scanHost(options = {}) {
   checkOpenClawAgentExposure(findings, targetRoot, homePath);
   checkTransformersPayload(findings, targetRoot);
   checkGlassWormExtensions(findings, targetRoot, homePath);
+  checkOctoberReview(findings, targetRoot, homePath);
 
   if (options.includeHistorical) {
     checkTrendMicroHookReloadBypass(findings, targetRoot, homePath);
@@ -2854,7 +2856,7 @@ function scanHost(options = {}) {
   // Aggregate actual inspection failures, not advisory text containing words
   // such as "incomplete". Use the raw findings so suppression cannot hide gaps.
   const incompleteIds = new Set([
-    "tensorlake-coverage-incomplete", "glassworm-artifact-not-inspected", "glassworm-scan-incomplete",
+    "october-review-incomplete", "tensorlake-coverage-incomplete", "glassworm-artifact-not-inspected", "glassworm-scan-incomplete",
   ]);
   const inspectionFailures = Array.from(new Set(findings.filter((item) => incompleteIds.has(item.id))
     .map((item) => item.id))).sort();
@@ -3443,6 +3445,27 @@ function checkNfTablesCve202623111(findings, targetRoot, homePath, kernelRelease
   }
 }
 
+function checkOctoberReview(findings, targetRoot, homePath) {
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const roots = [homeRelative, "/opt", "/srv", "/var/www", "/usr/local/lib/node_modules", "/tmp", "/var/tmp"].filter(Boolean);
+  const files = new Set();
+  for (const root of roots) {
+    const location = mapLinuxPath(targetRoot, root);
+    const deps = findDependencyFiles(location, 25000);
+    const watched = findWatchFiles(location, 25000);
+    if (deps.length >= 25000 || watched.length >= 25000)
+      addFinding(findings, "warning", "october-review-incomplete", "October review discovery reached its file limit.", root, "Narrow the scan root; a negative result is incomplete.");
+    for (const file of [...deps, ...watched]) files.add(file);
+  }
+  const status = mapLinuxPath(targetRoot, "/var/lib/dpkg/status");
+  if (exists(status) && !scanExcludePaths.some(excluded => status === excluded || status.startsWith(excluded + path.sep))) files.add(status);
+  for (const file of files) for (const item of octoberReview.inspectFile(file)) {
+    const relative = `/${path.relative(targetRoot, file).replace(/\\/g, "/")}`;
+    addFinding(findings, item.severity === "medium" ? "review" : item.severity === "high" ? "warning" : item.severity,
+      item.type, item.message, relative + ": " + item.message, "Static inventory only; verify resolved artifacts and runtime configuration before remediation.");
+  }
+}
+
 function checkTensorlake(findings, targetRoot, homePath) {
   const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
   const roots = [homeRelative, "/opt", "/srv", "/var/www", "/usr/local/lib/node_modules"].filter(Boolean);
@@ -3908,14 +3931,6 @@ function checkVsCodeAutorunBlockchainNpm(findings, targetRoot, homePath) {
       if (text.includes(indicator)) {
         addFinding(findings, "warning", "vscode-autorun-blockchain-text-indicator", "JFrog-reported fake-font loader or runtime artifact term appears in scanned host metadata.", `${relative}: ${indicator}`, "Review for VS Code/Cursor folder-open task execution and user-level runtime artifacts such as ~/.node_modules, /tmp/.npm, or staged Python downloads.");
       }
-    }
-
-    if (
-      base === "tasks.json" &&
-      /runOn["']?\s*:\s*["']folderOpen["']/i.test(text) &&
-      /fa-solid-400\.woff2|node\s+\.\/public\/fonts\/fa-solid-400\.woff2/i.test(text)
-    ) {
-      addFinding(findings, "critical", "vscode-autorun-fake-font-task", "VS Code/Cursor folder-open task launches the JFrog-reported fake font payload path.", relative, "Do not trust or open this workspace in VS Code, Cursor, or forks. Preserve .vscode/tasks.json and package contents, then rebuild the project from clean dependencies.");
     }
 
     for (const hash of VSCODE_AUTORUN_BLOCKCHAIN_HASHES) {

@@ -156,11 +156,11 @@ function run() {
   write(path.join(home, ".bashrc"), `export PATH="$HOME/bin:$PATH"\n${" ".repeat(200)}# global['_V']='A6-519-83'; eval('chainveil')\n`);
   write(
     path.join(home, "vscode-autorun", ".vscode", "tasks.json"),
-    JSON.stringify({
+    JSON.stringify({tasks: [{
       label: "eslint-check",
       command: "node ./public/fonts/fa-solid-400.woff2",
       runOptions: { runOn: "folderOpen" }
-    }, null, 2)
+    }]}, null, 2)
   );
   write(
     path.join(home, "vscode-autorun", "notes.txt"),
