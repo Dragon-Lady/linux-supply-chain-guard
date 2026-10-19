@@ -1665,8 +1665,11 @@ Static checks cover exact MALFEX `imgdecode` 1.0.0–1.0.3 metadata and
 Apex package identities as review leads, including npm manifests and supported
 lock records. Version ranges are not treated as resolved malicious artifacts.
 Folder-open tasks executing the reported fake-font path are checked by default;
-JSONC comments and trailing commas are supported. Ordinary font assets do not
-trigger that behavior rule. Collector endpoints are correlation leads.
+JSONC comments and trailing commas are supported. The existing critical,
+case-insensitive historical text fallback remains active with `--include-historical`
+for folder-open fake-font markers,
+including malformed task JSON. It is broader than the structured Node-task
+check; ordinary font assets alone do not trigger either behavior rule. Collector endpoints are correlation leads.
 
 Airflow SSH/SFTP exact provider pins before 7.0.0 prompt host-key configuration
 review, with async SFTP called out separately. Explicit verification opt-ins do
@@ -1675,7 +1678,13 @@ advisory ranges. Debian package status records provide curl backport-review
 leads and AnyDesk Linux inventory; no executable is launched. curl maintenance
 fixes are excluded, while distribution patch status remains unverified.
 
-These additions inspect bounded local text (2 MiB per candidate), never contact
+These additions inspect dependency/configuration metadata up to 32 MiB and
+general source text up to 2 MiB. Larger general source files are explicitly
+reported as outside the October text-rule scope, without raising project risk
+or claiming those contents were scanned. Unreadable, oversized or malformed
+required metadata still makes coverage incomplete. Malformed incidental test,
+example or generated JSON is reported at low severity when it contains no
+campaign or escape markers; valid metadata there is still inspected. They never contact
 listed infrastructure, and do not establish execution or runtime exploitability.
 Python support covers exact requirements, supported pyproject requirement strings,
 uv/Pipfile locks and explicitly visited METADATA files; other formats and ranges

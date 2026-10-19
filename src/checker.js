@@ -3459,9 +3459,9 @@ function checkOctoberReview(findings, targetRoot, homePath) {
   }
   const status = mapLinuxPath(targetRoot, "/var/lib/dpkg/status");
   if (exists(status) && !scanExcludePaths.some(excluded => status === excluded || status.startsWith(excluded + path.sep))) files.add(status);
-  for (const file of files) for (const item of octoberReview.inspectFile(file)) {
+  for (const file of files) for (const item of octoberReview.inspectFile(file, { root: targetRoot })) {
     const relative = `/${path.relative(targetRoot, file).replace(/\\/g, "/")}`;
-    addFinding(findings, item.severity === "medium" ? "review" : item.severity === "high" ? "warning" : item.severity,
+    addFinding(findings, item.severity === "medium" ? "review" : item.severity === "high" ? "warning" : item.severity === "low" ? "info" : item.severity,
       item.type, item.message, relative + ": " + item.message, "Static inventory only; verify resolved artifacts and runtime configuration before remediation.");
   }
 }
@@ -3931,6 +3931,14 @@ function checkVsCodeAutorunBlockchainNpm(findings, targetRoot, homePath) {
       if (text.includes(indicator)) {
         addFinding(findings, "warning", "vscode-autorun-blockchain-text-indicator", "JFrog-reported fake-font loader or runtime artifact term appears in scanned host metadata.", `${relative}: ${indicator}`, "Review for VS Code/Cursor folder-open task execution and user-level runtime artifacts such as ~/.node_modules, /tmp/.npm, or staged Python downloads.");
       }
+    }
+
+    if (
+      base === "tasks.json" &&
+      /runOn["']?\s*:\s*["']folderOpen["']/i.test(text) &&
+      /fa-solid-400\.woff2|node\s+\.\/public\/fonts\/fa-solid-400\.woff2/i.test(text)
+    ) {
+      addFinding(findings, "critical", "vscode-autorun-fake-font-task", "VS Code/Cursor folder-open task launches the JFrog-reported fake font payload path.", relative, "Do not trust or open this workspace in VS Code, Cursor, or forks. Preserve .vscode/tasks.json and package contents, then rebuild the project from clean dependencies.");
     }
 
     for (const hash of VSCODE_AUTORUN_BLOCKCHAIN_HASHES) {
@@ -8250,7 +8258,7 @@ function finalizeFindings(findings, options = {}) {
   const suppressed = { duplicates: 0, research: 0, resolved: 0 };
 
   for (const finding of findings) {
-    if (!options.includeResolved && finding.severity === "info") {
+    if (!options.includeResolved && finding.severity === "info" && !["october-review-text-out-of-scope", "october-review-incidental-json"].includes(finding.id)) {
       suppressed.resolved += 1;
       continue;
     }
