@@ -1640,3 +1640,21 @@ Complementary **read-only** tools in the same security kit:
   https://www.wordfence.com/blog/2026/06/psa-supply-chain-compromise-targets-shapedplugin-backdoored-pro-plugins-distributed-via-official-channels/
 - The Hacker News ShapedPlugin Pro supply-chain compromise summary:
   https://thehackernews.com/2026/06/shapedplugin-wordpress-pro-plugins.html
+
+## Push Guard upgrade preparation
+
+The reviewed `.push-guard-allow` file scopes exceptions to exact workflow rules
+and files containing detector definitions, inert fixtures or scanner metadata.
+It cannot exempt credentials, personal terms or private paths. Review any change
+to an allowed file; an exception applies to that rule throughout that file.
+
+Keep the shared hook tool at 0.4.2 during migration. Existing inline fixture
+comments remain temporarily because its pre-push command does not read this
+policy. Push Guard 0.4.3 ignores those comments and reads policy from the
+destination base commit. Establish and review the policy there before upgrading;
+adding it in the same push as a matching fixture cannot approve that fixture.
+New destination refs have no base policy and receive no exceptions.
+
+Verify outgoing ranges and built packages with the reviewed candidate scanner
+before upgrading. Package scans must select this reviewed repository policy
+explicitly. Do not disable verification to get a fixture through the hook.
