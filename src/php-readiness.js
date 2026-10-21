@@ -1,6 +1,6 @@
 "use strict";
 
-// Static inventory only: no target execution, configuration loading or network.
+// Static inventory and upstream comparison: no target execution or network.
 const fs = require("node:fs");
 const path = require("node:path");
 const ADVISORY = require("../data/php-readiness.json");
@@ -11,7 +11,42 @@ const BINARY = /^(?:php(?:\d+(?:\.\d+)?)?(?:-cgi|-fpm)?|php-(?:cgi|fpm)(?:\d+(?:
 const PACKAGE = /^(?:php(?:\d+(?:\.\d+)?)?(?:-[a-z0-9][a-z0-9+.-]*)?|libapache2-mod-php(?:\d+(?:\.\d+)?)?)$/;
 const COMPOSE = /^(?:docker-)?compose(?:\.[a-zA-Z0-9_-]+)?\.ya?ml$/;
 const DOCKERFILE = /^(?:Dockerfile(?:\.[a-zA-Z0-9_-]+)?|Containerfile(?:\.[a-zA-Z0-9_-]+)?)$/;
-const GUIDANCE = "PHP patch status is unknown. Match the deployed runtime and full vendor package revision to the official PHP release and distribution advisory when available. A CLI version, Composer constraint or image tag alone does not verify the serving runtime. PHP: " + ADVISORY.primarySource + "; OX blog index for research updates (no PHP-specific article verified in this snapshot): " + ADVISORY.researchUpdates;
+const GUIDANCE = "PHP deployment patch status is unknown. For CVE-2026-109618 and CVE-2026-109619, update to a fixed upstream release or a vendor-confirmed backport, restart serving workers or redeploy images, and verify every serving runtime. A package version, Composer constraint or image tag cannot clear a running deployment. Partial mitigations are not a complete fix. PHP: " + ADVISORY.primarySource + "; OX research: " + ADVISORY.researchUpdates;
+
+function compareUpstream(version) {
+  const match = typeof version === "string" && version.match(/^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$/);
+  if (!match || !match.slice(1).every(value => Number.isSafeInteger(Number(value))))
+    return { status: "unknown", version: null, branch: null, fixedVersion: null };
+  const branch = match[1] + "." + match[2];
+  const fixedVersion = ADVISORY.fixedVersions[branch] || null;
+  let status = "unknown";
+  if (fixedVersion) status = Number(match[3]) < Number(fixedVersion.split(".")[2])
+    ? "below-fixed-upstream" : "at-or-above-fixed-upstream";
+  else if (/^(?:5\.[0-6]|7\.[0-4]|8\.[01])$/.test(branch))
+    status = "unsupported-upstream";
+  return { status, version, branch, fixedVersion };
+}
+
+function assessRecord(item) {
+  const unknown = reason => ({ ...compareUpstream(null), reason });
+  if (item.kind === "container-declaration")
+    return { ...compareUpstream(item.version), reason: "declaration-only-image-and-deployment-unverified" };
+  if (item.kind !== "installed-package") return unknown("no-runtime-version-evidence");
+  // Extension and metapackage versions are not PHP runtime versions. Only
+  // branch-named runtime packages are compared, retaining the full vendor revision.
+  const name = item.packageManager === "dpkg"
+    ? item.name.match(/^(?:php([5-8]\.[0-9]+)-(?:cli|cgi|fpm)|libapache2-mod-php([5-8]\.[0-9]+))$/)
+    : item.packageManager === "apk" ? item.name.match(/^php([5-8])([0-9]+)(?:-(?:cgi|fpm|apache2))?$/) : null;
+  if (!name) return unknown("extension-metapackage-or-unrecognized-runtime-package");
+  const branch = item.packageManager === "dpkg" ? name[1] || name[2] : name[1] + "." + name[2];
+  const version = item.version.match(item.packageManager === "dpkg"
+    ? /^(?:[0-9]+:)?([0-9]+\.[0-9]+\.[0-9]+)(?:\+dfsg[0-9]*)?(?:-[0-9][A-Za-z0-9.+~]*)?$/
+    : /^([0-9]+\.[0-9]+\.[0-9]+)(?:-r[0-9]+)?$/);
+  if (!version) return unknown("non-final-or-unrecognized-package-version");
+  const assessment = compareUpstream(version[1]);
+  if (assessment.branch !== branch) return unknown("package-name-version-branch-mismatch");
+  return { ...assessment, reason: "vendor-backport-status-unverified" };
+}
 
 function within(root, file) {
   const relative = path.relative(root, file);
@@ -51,7 +86,9 @@ function imageRecord(image) {
   // Exact official image identity. Do not infer contents of arbitrary custom images.
   const match = image.match(/^(?:(?:docker\.io\/)?library\/|docker\.io\/)?php(?=[:@]|$)(.*)$/);
   if (!match) return null;
-  const exact = match[1].match(/^:([0-9]+\.[0-9]+\.[0-9]+)(?:-[A-Za-z0-9_.-]+)?(?:@sha256:[a-fA-F0-9]{64})?$/);
+  // Unknown suffixes (including RC/beta/dev tags) cannot establish a final
+  // release. A tag plus digest is still only a declaration, never image proof.
+  const exact = match[1].match(/^:([0-9]+\.[0-9]+\.[0-9]+)(?:-(?:cli|fpm|apache|zts))?(?:-(?:alpine(?:[0-9]+\.[0-9]+)?|bullseye|bookworm|trixie))?(?:@sha256:[a-fA-F0-9]{64})?$/);
   return { kind: "container-declaration", version: exact ? exact[1] : null };
 }
 
@@ -173,7 +210,7 @@ function scanPhpReadiness(options = {}) {
     if (recordKeys.has(key)) return;
     if (records.length >= limits.records) { problem(file, "record-limit"); stopped = true; return; }
     recordKeys.add(key);
-    records.push({ ...item, path: display(file), patchStatus: "unknown" });
+    records.push({ ...item, path: display(file), patchStatus: "unknown", upstreamAssessment: assessRecord(item) });
   }
   function read(file, maxBytes) {
     const before = stat(file);
@@ -290,16 +327,23 @@ function scanPhpReadiness(options = {}) {
     "composer-declaration": "Project declares PHP; its deployed runtime is unverified.",
     "container-declaration": "Container build or service declares a PHP image; deployment is unverified.",
   };
+  function assessmentText(item) {
+    const assessment = item.upstreamAssessment;
+    if (assessment.status === "unknown") return "";
+    const comparison = assessment.status === "unsupported-upstream" ? "upstream branch unsupported"
+      : "upstream version " + (assessment.status === "below-fixed-upstream" ? "below " : "at/above ") + assessment.fixedVersion;
+    return "; " + comparison + (item.kind === "installed-package" ? "; vendor backport status unverified" : "; image contents and deployment unverified");
+  }
   const findings = records.map(item => ({
     severity: "review", id: "php-readiness-" + item.kind,
     title: titles[item.kind],
-    evidence: item.path + (item.name ? ": " + item.name + " " + item.version : item.version ? ": declared image tag " + item.version : ""), guidance: GUIDANCE,
+    evidence: item.path + (item.name ? ": " + item.name + " " + item.version : item.version ? ": declared image tag " + item.version : "") + assessmentText(item), guidance: GUIDANCE,
   }));
   if (problemKeys.size) findings.push({ severity: "review", id: "php-readiness-incomplete",
     title: "PHP readiness inspection is incomplete.", evidence: problemKeys.size + " inspection gap(s); see phpReadiness.coverage.",
     guidance: "Review excluded, linked, unsupported, unreadable or limited inputs. No PHP absence or patch-safety conclusion is available. " + GUIDANCE });
   return {
-    advisory: { ...ADVISORY }, patchStatus: "unknown", presence: records.length ? "observed" : "not-observed",
+    advisory: JSON.parse(JSON.stringify(ADVISORY)), patchStatus: "unknown", presence: records.length ? "observed" : "not-observed",
     packageInventory: inventory, records, findings,
     coverage: { complete: problemKeys.size === 0, scope: "Configured package databases, common runtime/config paths and selected project declarations only",
       entries, files, bytes, problemCount: problemKeys.size, problems, limits: { ...limits },
@@ -307,4 +351,4 @@ function scanPhpReadiness(options = {}) {
   };
 }
 
-module.exports = { scanPhpReadiness, inspectProjectText, packageRecords, LIMITS };
+module.exports = { scanPhpReadiness, inspectProjectText, packageRecords, compareUpstream, LIMITS };

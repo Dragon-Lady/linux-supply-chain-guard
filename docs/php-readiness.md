@@ -1,24 +1,78 @@
 # PHP readiness check
 
 The default scan includes a read-only PHP inventory and deployment review.
-It records evidence to help operators prepare for a security update. It does
+It compares version evidence with a dated upstream security advisory. It does
 not determine whether PHP is vulnerable, patched, running or internet-facing.
 
-## Advisory snapshot: October 20, 2026
+## Advisory snapshot: October 21, 2026
 
-PHP announced two critical vulnerabilities rated CVSS 4.0 9.2, with a security
-release scheduled for October 21 at 14:00 UTC (possibly earlier). Affected and
-fixed versions were not disclosed in the advance notice. This is a dated
-snapshot, not a live feed. Every result keeps `patchStatus: "unknown"`.
+PHP released fixes for two critical vulnerabilities rated CVSS 4.0 9.2:
+
+| Upstream branch | Affected upstream releases | First fixed release |
+| --- | --- | --- |
+| 8.2 | Earlier than 8.2.35 | 8.2.35 |
+| 8.3 | Earlier than 8.3.36 | 8.3.36 |
+| 8.4 | Earlier than 8.4.27 | 8.4.27 |
+| 8.5 | Earlier than 8.5.12 | 8.5.12 |
+
+- [CVE-2026-109618: OOM corruption](https://github.com/php/php-src/security/advisories/GHSA-w8hw-w9fx-j79w)
+  concerns failed allocations, partially initialized state and unsafe cleanup.
+  PHP confirms unauthenticated pre-application RCE on mod_php; evidence for
+  exploitability differs across other SAPIs.
+- [CVE-2026-109619: stale global state](https://github.com/php/php-src/security/advisories/GHSA-6wmf-4rv5-p3rp)
+  concerns request state reused by a persistent worker after its memory was
+  freed. A subsequent request must reach a consumer before state resets.
+  Confirmed session-lifecycle paths include mod_php and FPM.
+
+PHP warns that web-serving installations are at risk. Only updating provides
+a complete fix; disabling upload progress addresses only particular paths.
+PHP 8.1 and older require maintained vendor backports or migration to a
+supported branch. This scanner does not test exploit prerequisites or apply
+configuration mitigations. Every result keeps `patchStatus: "unknown"`.
 
 - Official release information: https://www.php.net/archive/2026.php
-- Further research updates: https://www.ox.security/blog/
+- Official changelog: https://www.php.net/ChangeLog-8.php
+- OX research: https://www.ox.security/blog/php-cve-2026-109618-cve-2026-109619-what-to-do-before-the-details-drop/
 
-The OX link is the general research index. No PHP-specific OX article was
-verified for this snapshot. It is not evidence of an affected version or a fix.
-If PHP evidence appears, consult the official release and your distribution or
-hosting provider's advisory. This scanner cannot tell whether exploitation
-occurred; it does not supply a mitigation or replace an update.
+The OX article contains pre-disclosure guidance. PHP's subsequently published
+advisories establish the versions and fix details used here. The PHP archive
+dates the releases October 21; the changelog headers observed during this check
+were dated October 22. No timing inference is drawn from that discrepancy.
+
+Vendor status is a dated observation, not a live feed. At this check, Ubuntu's
+[first](https://ubuntu.com/security/CVE-2026-109618) and
+[second](https://ubuntu.com/security/CVE-2026-109619) CVE pages showed relevant
+PHP packages awaiting evaluation. Debian's two CVE tracker entries returned
+404. Alpine's v3.21-v3.24 community security feeds had no matching CVE fix
+entries. Exact source URLs are retained in `data/php-readiness.json`.
+No distribution fixed revision was verified. Missing entries do not establish
+that a package update or backport is unavailable. Consult the package vendor.
+
+## Upstream comparison and backports
+
+Each evidence record includes `upstreamAssessment`, separate from unknown
+deployment `patchStatus`. These statuses describe version evidence only:
+
+| Status | Meaning |
+| --- | --- |
+| `below-fixed-upstream` | The recognized branch's upstream version predates its listed fix. A vendor may have backported the patch. |
+| `at-or-above-fixed-upstream` | The numeric version reaches that branch's fix threshold. It does not prove that an image exists, contains that version, or is deployed. |
+| `unsupported-upstream` | A recognized older PHP branch lacks ongoing upstream support; maintained vendor coverage requires separate verification. |
+| `unknown` | No exact final runtime version is available, the package name and version disagree, or the branch/format is unrecognized. |
+
+Only branch-named dpkg CLI/CGI/FPM/Apache runtime packages and Alpine PHP
+runtime/CGI/FPM/Apache packages receive comparisons. Full vendor revisions
+remain in the evidence; epochs and recognized packaging suffixes are separated
+only for the upstream comparison. Extension and metapackage versions cannot
+stand in for the runtime. Even a high vendor revision on an older upstream
+base remains unverified, not automatically vulnerable or fixed.
+
+Official-image declarations need an exact final version with recognized SAPI
+and distribution tag suffixes. RC/beta/dev, custom suffixes, floating tags and
+digest-only references remain unknown. Tag-plus-digest references are still
+declarations: the digest is never resolved. Composer platform overrides do
+not establish runtime versions. Different branches are assessed individually;
+one fixed declaration cannot clear another older branch or a coverage gap.
 
 ## Evidence and limits
 
@@ -67,7 +121,8 @@ node bin/linux-supply-chain-guard.js /mnt/recovered-root --json
 ```
 
 JSON adds `phpReadiness`, including the dated advisory, evidence records,
-package database status, `patchStatus`, `presence`, and scoped coverage. Text
+package database status, per-record `upstreamAssessment`, `patchStatus`,
+`presence`, and scoped coverage. Text
 output always shows the unknown PHP patch status, including when no evidence
 is found. Findings use `php-readiness-*` IDs and review severity. The check
 does not assign critical severity to mere PHP presence.
@@ -93,14 +148,17 @@ contents, Composer scripts, raw image references and filesystem error text are
 not included in this check's findings. Evidence paths and validated package
 versions are included; keep reports private as usual.
 
-## When the patch details are published
+## Updating and verifying deployments
 
-Update `data/php-readiness.json` from PHP's official release and relevant
-distribution advisories, then implement and test the corresponding checks.
-Changing the snapshot alone never turns an unknown result into a fixed verdict.
-Keep distro revisions and backports separate from upstream version comparison.
-Verify each serving FPM/Apache/CGI runtime and deployed container, including
-whether it has loaded the update. CLI or Composer results cannot clear them.
+Use an appropriate fixed upstream release or a vendor-confirmed backport.
+Restart serving workers or rebuild/redeploy containers as appropriate, then
+verify each serving runtime has loaded the update. CLI or Composer results
+cannot clear FPM, Apache, CGI or another web-serving runtime. Follow the
+vendor's upgrade instructions and current PHP advisory.
+
+Future snapshot updates must use primary advisories. Do not add a vendor
+"fixed" verdict without verifying distribution identity, package provenance,
+full version-ordering semantics and the vendor's exact fixed revision.
 
 Tests must cover affected, fixed, backported and unresolved versions, plus
 multiple PHP branches, stale declarations and incomplete coverage. Publish

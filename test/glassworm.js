@@ -46,7 +46,7 @@ fixture((root, home) => {
   assert(rules(report).includes("glassworm-confirmed-build-identity-review"));
   assert(rules(report).includes("glassworm-cluster-identity-review"));
   assert(!report.findings.some((row) => row.id.startsWith("glassworm-") && row.evidence.includes("christmas-safe")));
-  assert.strictEqual(report.version, "0.5.0"); // independently expected release version
+  assert.strictEqual(report.version, "0.6.0"); // independently expected release version
   assert.strictEqual(report.version, require("../package.json").version);
 });
 

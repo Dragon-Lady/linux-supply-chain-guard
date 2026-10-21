@@ -143,6 +143,8 @@ test("PHP readiness integrates with the default report and CLI exit precedence",
   result = run(root, home, []);
   assert.equal(result.status, 3, result.stderr);
   assert.match(result.stdout, /PHP readiness: observed; patch status UNKNOWN/);
+  assert.match(result.stdout, /PHP upstream fixes: 8\.2\.35, 8\.3\.36, 8\.4\.27, 8\.5\.12/);
+  assert.match(result.stdout, /upstream version below 8\.3\.36; vendor backport status unverified/);
   fs.writeFileSync(path.join(home, "package.json"), '{"dependencies":{"terminal-logger-utils":"1.0.0"}}');
   assert.equal(run(root, home).status, 2);
 });

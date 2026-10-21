@@ -188,6 +188,7 @@ function formatText(report) {
   if (report.phpReadiness) {
     lines.push(`PHP readiness: ${report.phpReadiness.presence}; patch status UNKNOWN`);
     lines.push(`PHP advisory snapshot: ${report.phpReadiness.advisory.checkedOn}; recheck ${report.phpReadiness.advisory.primarySource}`);
+    lines.push(`PHP upstream fixes: ${Object.values(report.phpReadiness.advisory.fixedVersions).join(", ")}; vendor backports and running deployments require verification.`);
     lines.push("PHP inventory is limited to configured paths; no matches is not proof PHP is absent.");
     lines.push("");
   }

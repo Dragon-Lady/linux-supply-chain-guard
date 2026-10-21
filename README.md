@@ -1,5 +1,12 @@
 # linux-supply-chain-guard
 
+Version 0.6.0 records PHP's October 21 security releases for CVE-2026-109618
+and CVE-2026-109619. The default read-only check compares recognized runtime
+package versions and exact official-image declarations with the upstream fixes:
+**8.2.35, 8.3.36, 8.4.27 and 8.5.12**. Distribution backports and running
+deployments remain unverified; no version comparison marks a host patched.
+See [the PHP assessment and sources](docs/php-readiness.md).
+
 Version 0.5.0 adds optional read-only UpdraftCentral incident review
 with `--wordpress-root`, `--updraft-log`, and `--wordpress-evidence`. It checks
 selected plugin files, logs and a sanitized account/key export against
@@ -20,8 +27,8 @@ See [supported configurations and baseline workflow](docs/web-exposure.md).
 
 PHP readiness: the default scan now inventories PHP-related packages, common
 runtime/configuration paths and selected Composer/container declarations.
-Patch status stays **unknown** while the October 20 advance notice lacks fixed
-versions. This is preparation evidence, not a vulnerability or protection
+Deployment patch status stays **unknown**, separately from the published upstream
+version comparison. This is preparation evidence, not a vulnerability or protection
 verdict. See [coverage, limitations and official sources](docs/php-readiness.md).
 
 October 8 update: exact Tensorlake 0.5.144 package/payload checks and ordered
