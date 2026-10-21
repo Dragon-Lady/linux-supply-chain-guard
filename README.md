@@ -1,6 +1,6 @@
 # linux-supply-chain-guard
 
-Local web review: supported management-panel and cache/session configuration
+Version 0.4.0 adds local web review: supported management-panel and cache/session configuration
 checks now run by default. Select `--webroot DIR` and a trusted
 `--web-baseline FILE` to review file-content and permission changes. Runtime
 exposure stays **unknown**; no network probes or target execution occur.
