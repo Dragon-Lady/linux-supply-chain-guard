@@ -314,11 +314,13 @@ function scanWebExposure(options = {}) {
           const previous = new Map(baseline.entries.map(x => [x.root + "\0" + x.path, x]));
           for (const entry of manifest.entries) {
             const key = entry.root + "\0" + entry.path, old = previous.get(key);
-            let kind;
-            if (!old) kind = "added";
-            else if (old.sha256 !== entry.sha256 || old.size !== entry.size) kind = "content-changed";
-            else if (old.mode !== entry.mode) kind = "permissions-changed";
-            if (kind) { changed(entry, kind); comparison = "changed"; }
+            const kinds = [];
+            if (!old) kinds.push("added");
+            else {
+              if (old.sha256 !== entry.sha256 || old.size !== entry.size) kinds.push("content-changed");
+              if (old.mode !== entry.mode) kinds.push("permissions-changed");
+            }
+            for (const kind of kinds) { changed(entry, kind); comparison = "changed"; }
             previous.delete(key);
           }
           for (const entry of previous.values()) { changed(entry, "removed"); comparison = "changed"; }

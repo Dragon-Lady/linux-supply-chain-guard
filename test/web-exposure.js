@@ -26,6 +26,20 @@ function baseline(f, webroot) {
 function compose(image, lines) {
   return `services:\n  example:\n    image: ${image}\n${lines.map(x => "    " + x).join("\n")}\n`;
 }
+function withoutProcAnchor(callback, unavailable = () => true) {
+  const originals = new Map();
+  for (const name of ["openSync", "statSync", "lstatSync", "opendirSync"]) {
+    const original = fs[name];
+    originals.set(name, original);
+    fs[name] = (file, ...args) => {
+      if (String(file).startsWith("/proc/self/fd/") && unavailable(String(file)))
+        throw Object.assign(new Error("PRIVATE_SENTINEL"), { code: "ENOENT" });
+      return original(file, ...args);
+    };
+  }
+  try { return callback(); }
+  finally { for (const [name, original] of originals) fs[name] = original; }
+}
 
 test("missing optional paths remain complete, with unknown exposure and no clean-site claim", t => {
   const r = fixture(t).scan();
@@ -33,6 +47,52 @@ test("missing optional paths remain complete, with unknown exposure and no clean
   assert.deepEqual(r.findings, []);
   assert.equal(r.runtimeExposure, "unknown");
   assert.equal(r.comparison, "not-requested");
+});
+test("missing proc descriptor anchor cannot hide existing risky configurations", t => {
+  const f = fixture(t);
+  f.put("etc/redis.conf", "protected-mode no\n");
+  f.put("etc/webmin/miniserv.conf", "bind=0.0.0.0\nssl=0\n");
+  const normal = f.scan();
+  assert.equal(normal.records.length, 2);
+  assert(ids(normal).includes("web-store-redis-protection-disabled"));
+  const r = withoutProcAnchor(() => f.scan());
+  assert.equal(r.coverage.complete, false);
+  assert.deepEqual(r.records, []);
+  assert(ids(r).includes("web-exposure-incomplete"));
+  assert(r.coverage.problems.some(x => x.reason === "descriptor-anchor-unavailable"));
+  assert(!JSON.stringify(r).includes("PRIVATE_SENTINEL"));
+  assert.equal(f.scan().coverage.complete, true, "a later scan can recover");
+});
+test("losing the proc anchor during optional discovery is incomplete", t => {
+  const f = fixture(t);
+  f.put("etc/redis.conf", "protected-mode no\n");
+  let unavailable = false;
+  const r = withoutProcAnchor(() => f.scan(), file => {
+    if (file.endsWith("/etc")) unavailable = true;
+    return unavailable;
+  });
+  assert.equal(unavailable, true);
+  assert.equal(r.coverage.complete, false);
+  assert(r.coverage.problems.some(x => x.reason === "descriptor-anchor-unavailable"));
+});
+test("descriptor anchor must refer to the opened root directory", t => {
+  const f = fixture(t), original = fs.statSync;
+  f.put("etc/redis.conf", "protected-mode no\n");
+  const unrelated = original(path.join(f.root, "etc"));
+  fs.statSync = (file, ...args) => /^\/proc\/self\/fd\/\d+$/.test(String(file)) ? unrelated : original(file, ...args);
+  let r;
+  try { r = f.scan(); } finally { fs.statSync = original; }
+  assert.equal(r.coverage.complete, false);
+  assert.deepEqual(r.records, []);
+  assert(r.coverage.problems.some(x => x.reason === "descriptor-anchor-unavailable"));
+});
+test("missing proc anchor cannot create a complete manifest for the target root", t => {
+  const f = fixture(t);
+  f.put("index.php", "inert source");
+  const r = withoutProcAnchor(() => f.scan({ webroots: [f.root] }));
+  assert.equal(r.coverage.complete, false);
+  assert.equal(r.manifest.complete, false);
+  assert.deepEqual(r.manifest.entries, []);
 });
 test("Webmin settings respect comments, last assignment, IPv6 and secret redaction", t => {
   const f = fixture(t);
@@ -194,6 +254,21 @@ test("baseline comparison finds added, removed, same-size changed and permission
   assert.equal(r.comparison, "changed");
   for (const kind of ["added", "removed", "content-changed", "permissions-changed"]) assert(ids(r).includes("webroot-" + kind));
   assert(!r.findings.some(x => x.severity === "critical"));
+});
+test("baseline reports simultaneous content and permission changes on the same file", t => {
+  const f = fixture(t), root = path.join(f.root, "site");
+  const file = f.put("site/index.php", "versionA", 0o600);
+  const saved = baseline(f, root);
+  f.put("site/index.php", "versionB");
+  fs.chmodSync(file, 0o777);
+  const r = f.scan({ webroots: [root], webBaseline: saved });
+  assert.equal(r.comparison, "changed");
+  assert.equal(r.coverage.complete, true);
+  for (const kind of ["content-changed", "permissions-changed"])
+    assert(r.findings.some(x => x.id === "webroot-" + kind && x.evidence === "/site/index.php"));
+  const limited = f.scan({ webroots: [root], webBaseline: saved, limits: { findings: 1 } });
+  assert.equal(limited.coverage.complete, false);
+  assert.equal(limited.comparison, "incomplete");
 });
 test("webroot hashing does not silently omit dependencies, hidden files or build output", t => {
   const f = fixture(t);
