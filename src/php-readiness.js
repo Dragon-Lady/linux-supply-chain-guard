@@ -160,7 +160,9 @@ function scanPhpReadiness(options = {}) {
           if (!parent.isDirectory()) return null;
         }
       }
-      return fs.lstatSync(file);
+      // The operator explicitly selected this root, which may name a mounted
+      // snapshot through a link. Discovered paths beneath it remain no-follow.
+      return file === root ? fs.statSync(file) : fs.lstatSync(file);
     } catch (error) {
       if (!["ENOENT", "ENOTDIR"].includes(error.code)) problem(file, "unreadable");
       return null;
@@ -301,7 +303,7 @@ function scanPhpReadiness(options = {}) {
     packageInventory: inventory, records, findings,
     coverage: { complete: problemKeys.size === 0, scope: "Configured package databases, common runtime/config paths and selected project declarations only",
       entries, files, bytes, problemCount: problemKeys.size, problems, limits: { ...limits },
-      limitations: ["No running service, network reachability, exploitation or patch verification", "No RPM database, container daemon, remote host or custom image inspection", "No target execution or symlink traversal; vendor/dependency/build trees excluded from project discovery", "Composer and image declarations may be unused or differ from deployment; absence is not proof PHP is absent"] },
+      limitations: ["No running service, network reachability, exploitation or patch verification", "No RPM database, container daemon, remote host or custom image inspection", "No target execution or discovered symlink traversal; the explicitly selected root may be a link; vendor/dependency/build trees excluded from project discovery", "Composer and image declarations may be unused or differ from deployment; absence is not proof PHP is absent"] },
   };
 }
 

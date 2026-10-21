@@ -1665,7 +1665,7 @@ Verify outgoing ranges and built packages with the reviewed candidate scanner
 before upgrading. Package scans must select this reviewed repository policy
 explicitly. Do not disable verification to get a fixture through the hook.
 
-## Reviewed October additions (unreleased)
+## Reviewed October additions (0.3.0)
 
 Static checks cover exact MALFEX `imgdecode` 1.0.0–1.0.3 metadata and
 Apex package identities as review leads, including npm manifests and supported

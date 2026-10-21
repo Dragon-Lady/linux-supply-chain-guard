@@ -46,7 +46,7 @@ fixture((root, home) => {
   assert(rules(report).includes("glassworm-confirmed-build-identity-review"));
   assert(rules(report).includes("glassworm-cluster-identity-review"));
   assert(!report.findings.some((row) => row.id.startsWith("glassworm-") && row.evidence.includes("christmas-safe")));
-  assert.strictEqual(report.version, "0.2.0"); // independently expected release version
+  assert.strictEqual(report.version, "0.3.0"); // independently expected release version
   assert.strictEqual(report.version, require("../package.json").version);
 });
 
@@ -197,7 +197,7 @@ fixture((root, home) => {
   const report = JSON.parse(command.stdout);
   assert(rules(report).includes("glassworm-confirmed-build-identity-review"));
   assert.strictEqual(report.options.includeHistorical, false);
-  assert.strictEqual(report.version, "0.2.0");
+  assert.strictEqual(report.version, require("../package.json").version);
 });
 
 console.log(`${tests} GlassWorm default-path, boundary, and operator tests passed`);

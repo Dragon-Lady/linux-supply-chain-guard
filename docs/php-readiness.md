@@ -44,6 +44,11 @@ root, use `--home` with a directory inside that mount. Project discovery skips
 `vendor`, `.venv` and `venv`. Those standard scope exclusions do not count as
 inspection failures. Explicit `--exclude` paths do.
 
+An explicitly selected target root may be a symlink to a mounted snapshot.
+Use the same root path for `--home` and `--exclude` paths beneath it. Links
+discovered inside the selected root are still not followed. Keep the root
+link and mounted contents stable throughout the scan.
+
 RPM databases, custom installation locations, custom image contents,
 Kubernetes manifests, running containers, process memory, remote servers and
 hosted sites are outside this check. Missing package metadata remains

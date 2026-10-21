@@ -144,6 +144,47 @@ test("symlinked candidates and parent directories never import outside-root decl
   assert(!JSON.stringify(r).includes(external));
 });
 
+test("explicit symlinked roots retain package and selected-home inventory", t => {
+  const f = fixture(t);
+  f.put("var/lib/dpkg/status", dpkg("php8.3-fpm", "8.3.35-1"));
+  f.put("accounts/operator/app/composer.json", '{"require":{"php":"^8.3"}}');
+  const alias = path.join(f.root, "selected-root");
+  fs.symlinkSync(f.root, alias);
+  const r = f.scan({ targetRoot: alias, homePath: path.join(alias, "accounts/operator") });
+  assert.equal(r.coverage.complete, true);
+  assert.equal(r.packageInventory.dpkg, "read");
+  assert.deepEqual(r.records, f.scan().records);
+});
+
+test("symlinked roots still enforce exclusions and reject discovered links", t => {
+  const f = fixture(t), outside = fixture(t);
+  f.put("accounts/operator/private/composer.json", '{"require":{"php":"^8.3"}}');
+  outside.put("app/composer.json", '{"require":{"php":"^8.3"}}');
+  fs.symlinkSync(path.join(outside.root, "app"), path.join(f.root, "srv"));
+  const alias = path.join(f.root, "selected-root");
+  fs.symlinkSync(f.root, alias);
+  const r = f.scan({ targetRoot: alias, homePath: path.join(alias, "accounts/operator"),
+    excludePaths: [path.join(alias, "accounts/operator/private")] });
+  assert.deepEqual(r.records, []);
+  assert.equal(r.coverage.complete, false);
+  assert(r.coverage.problems.some(x => x.reason === "excluded"));
+  assert(r.coverage.problems.some(x => x.path === "/srv" && x.reason === "not-directory"));
+  assert(!JSON.stringify(r).includes(outside.root));
+});
+
+test("broken roots and links to regular files remain invalid", t => {
+  const f = fixture(t);
+  const file = f.put("ordinary.txt", "ordinary fixture");
+  for (const [name, destination] of [["broken-root", path.join(f.root, "absent")], ["file-root", file]]) {
+    const alias = path.join(f.root, name);
+    fs.symlinkSync(destination, alias);
+    const r = f.scan({ targetRoot: alias, homePath: undefined });
+    assert.deepEqual(r.records, []);
+    assert.equal(r.coverage.complete, false);
+    assert(r.coverage.problems.some(x => x.reason === "invalid-root"));
+  }
+});
+
 test("exclusions are enforced before contents are read", t => {
   const f = fixture(t);
   f.put("srv/private/composer.json", '{"require":{"php":"^8.3"}}');
