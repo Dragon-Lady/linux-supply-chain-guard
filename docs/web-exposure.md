@@ -91,6 +91,8 @@ Timestamps alone are not used as evidence of a change. Ownership, ACLs,
 extended attributes, runtime memory and files outside the selected roots are
 not compared. A matching baseline is not proof that a site is uncompromised;
 ordinary authorized deployments also produce differences.
+Content and Unix-mode differences are reported independently, including when
+both change on the same file.
 
 `comparison` is `not-requested`, `matched`, `changed` or `incomplete`.
 `manifest.complete` covers the selected webroots only. An unrelated config gap
@@ -101,6 +103,10 @@ is asserted from the partial inventory.
 ## Limits and privacy
 
 This lane uses Linux `/proc/self/fd` and directory descriptors to anchor reads.
+The scanner verifies that the procfs descriptor path refers to its opened root.
+Missing, inaccessible or mismatched descriptor anchors produce incomplete
+coverage, including in containers or chroots without procfs. An anchor that
+disappears during optional-path discovery is not treated as an absent config.
 The explicitly selected root may be a symlink; links discovered beneath it are
 not followed. A changed file is discarded. Use a stable, read-only filesystem
 snapshot when concurrent changes are possible: this is not an atomic snapshot.

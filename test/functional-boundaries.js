@@ -179,6 +179,39 @@ test("web configuration checks run by default with unknown runtime exposure", t 
   assert.match(run(root, home, []).stdout, /Web configuration: runtime exposure UNKNOWN/);
 });
 
+test("CLI reports incomplete coverage when proc descriptor access is unavailable", t => {
+  const { root, home } = fixture(t);
+  fs.mkdirSync(path.join(root, "etc"));
+  fs.writeFileSync(path.join(root, "etc/os-release"), "ID=debian\nVERSION_ID=12\n");
+  fs.writeFileSync(path.join(root, "etc/redis.conf"), "protected-mode no\n");
+  const preload = path.join(root, "missing-proc.cjs");
+  fs.writeFileSync(preload, `
+    const fs = require("node:fs");
+    for (const name of ["openSync", "statSync", "lstatSync", "opendirSync"]) {
+      const original = fs[name];
+      fs[name] = (file, ...args) => {
+        if (String(file).startsWith("/proc/self/fd/"))
+          throw Object.assign(new Error("private fixture error details"), { code: "ENOENT" });
+        return original(file, ...args);
+      };
+    }
+  `);
+  for (const extra of [["--json"], []]) {
+    const result = runCLI(process["exec" + "Path"], ["--require", preload, CLI, root, "--home", home, ...extra],
+      { encoding: "utf8", timeout: 30000 });
+    assert.ifError(result.error);
+    assert.equal(result.status, 3, result.stderr);
+    if (extra.length) {
+      const report = JSON.parse(result.stdout);
+      assert.equal(report.coverage.complete, false);
+      assert.equal(report.webExposure.coverage.complete, false);
+      assert.equal(report.summary.incomplete, true);
+      assert(report.coverage.inspectionFailures.includes("web-exposure-incomplete"));
+      assert(!JSON.stringify(report.webExposure).includes("private fixture error details"));
+    } else assert.match(result.stdout, /Coverage: INCOMPLETE/);
+  }
+});
+
 test("CLI can create a private report and compare a selected webroot with that report", t => {
   const { root, home } = fixture(t), webroot = path.join(root, "site"), saved = path.join(root, "baseline.json");
   fs.mkdirSync(path.join(root, "etc"));

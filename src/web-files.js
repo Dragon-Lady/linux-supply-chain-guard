@@ -40,7 +40,19 @@ function createReader(options) {
     return budget(file);
   }
   const dirFlags = fs.constants.O_RDONLY | fs.constants.O_DIRECTORY | fs.constants.O_NOFOLLOW | fs.constants.O_NONBLOCK;
-  function errorGap(file, error, required) {
+  function anchorAvailable(fd) {
+    try {
+      const opened = fs.fstatSync(fd), anchored = fs.statSync(`/proc/self/fd/${fd}`);
+      if (anchored.isDirectory() && opened.dev === anchored.dev && opened.ino === anchored.ino) return true;
+    } catch (_error) { /* Missing or inaccessible procfs is an inspection gap. */ }
+    gap(root, "descriptor-anchor-unavailable");
+    stopped = true;
+    return false;
+  }
+  function errorGap(file, error, required, parent) {
+    // ENOENT can mean the scanner's procfs anchor disappeared, not that an
+    // optional target is absent. Revalidate the descriptor before suppressing it.
+    if (error.code === "ENOENT" && !anchorAvailable(parent)) return;
     if (error.code === "ENOENT") { if (required) gap(file, "missing-or-not-directory"); }
     else gap(file, "unreadable-or-symlink");
   }
@@ -49,6 +61,7 @@ function createReader(options) {
     // components below this descriptor are opened with O_NOFOLLOW.
     rootFD = fs.openSync(fs.realpathSync(root), dirFlags);
   } catch (_error) { gap(root, "invalid-root"); }
+  if (rootFD !== undefined) anchorAvailable(rootFD);
   function anchored(file, callback, required = false) {
     if (rootFD === undefined || !allowed(file)) return null;
     const parts = path.relative(root, file).split(path.sep).filter(Boolean);
@@ -60,7 +73,7 @@ function createReader(options) {
         parent = next;
       }
       return callback(parts.length ? `/proc/self/fd/${parent}/${parts.at(-1)}` : `/proc/self/fd/${rootFD}`, parts.length === 0);
-    } catch (error) { errorGap(file, error, required); return null; }
+    } catch (error) { errorGap(file, error, required, parent); return null; }
     finally { if (parent !== rootFD) fs.closeSync(parent); }
   }
   function stat(file, required = false) {

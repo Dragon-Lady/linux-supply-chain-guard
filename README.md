@@ -1,5 +1,11 @@
 # linux-supply-chain-guard
 
+Version 0.4.1 corrects two web-review reporting gaps in 0.4.0. Unavailable
+`/proc/self/fd` access now makes coverage incomplete, including in minimal
+containers and chroots. A webroot file that changes both contents and Unix
+permissions now produces both findings. Upgrade and rerun affected scans;
+an empty 0.4.0 result from an environment without procfs is not reliable.
+
 Version 0.4.0 adds local web review: supported management-panel and cache/session configuration
 checks now run by default. Select `--webroot DIR` and a trusted
 `--web-baseline FILE` to review file-content and permission changes. Runtime
