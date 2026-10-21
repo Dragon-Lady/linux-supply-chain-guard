@@ -1,5 +1,11 @@
 # linux-supply-chain-guard
 
+PHP readiness: the default scan now inventories PHP-related packages, common
+runtime/configuration paths and selected Composer/container declarations.
+Patch status stays **unknown** while the October 20 advance notice lacks fixed
+versions. This is preparation evidence, not a vulnerability or protection
+verdict. See [coverage, limitations and official sources](docs/php-readiness.md).
+
 October 8 update: exact Tensorlake 0.5.144 package/payload checks and ordered
 token-monitor warnings are in the default scan. See the
 [dated evidence, limitations and inert test instructions](docs/advisory.md#tensorlake-response-update--2026-10-08).
@@ -1659,7 +1665,7 @@ Verify outgoing ranges and built packages with the reviewed candidate scanner
 before upgrading. Package scans must select this reviewed repository policy
 explicitly. Do not disable verification to get a fixture through the hook.
 
-## Reviewed October additions (unreleased)
+## Reviewed October additions (0.3.0)
 
 Static checks cover exact MALFEX `imgdecode` 1.0.0–1.0.3 metadata and
 Apex package identities as review leads, including npm manifests and supported

@@ -1,0 +1,15 @@
+{
+  "id": "php-security-2026-10-20",
+  "checkedOn": "2026-10-20",
+  "status": "awaiting-details",
+  "scheduledReleaseUtc": "2026-10-21T14:00:00Z",
+  "criticalVulnerabilities": 2,
+  "cvssVersion": "4.0",
+  "cvssScore": 9.2,
+  "affectedVersions": null,
+  "fixedVersions": null,
+  "primarySource": "https://www.php.net/archive/2026.php",
+  "researchUpdates": "https://www.ox.security/blog/",
+  "researchUpdatesLabel": "OX Security blog index; no PHP-specific article verified on the checked date",
+  "note": "Dated advance notice, not a live feed. Release may occur earlier. Recheck PHP and the package vendor before making patch decisions."
+}

@@ -46,7 +46,7 @@ fixture((root, home) => {
   assert(rules(report).includes("glassworm-confirmed-build-identity-review"));
   assert(rules(report).includes("glassworm-cluster-identity-review"));
   assert(!report.findings.some((row) => row.id.startsWith("glassworm-") && row.evidence.includes("christmas-safe")));
-  assert.strictEqual(report.version, "0.2.0"); // independently expected release version
+  assert.strictEqual(report.version, "0.3.0"); // independently expected release version
   assert.strictEqual(report.version, require("../package.json").version);
 });
 
@@ -142,8 +142,12 @@ fixture((root, home) => {
   const original = fs.opendirSync;
   let emitted = 0;
   let closed = false;
+  let injected = false;
   fs.opendirSync = function(dir) {
-    if (dir !== home) return original(dir);
+    // Inject into GlassWorm's first iterator only. Other default checks may
+    // independently list this directory with their own discovery budgets.
+    if (dir !== home || injected) return original(dir);
+    injected = true;
     return {
       readSync() { emitted += 1; return { name: `${emitted}.unrelated`, isDirectory: () => false, isFile: () => true }; },
       closeSync() { closed = true; },
@@ -193,7 +197,7 @@ fixture((root, home) => {
   const report = JSON.parse(command.stdout);
   assert(rules(report).includes("glassworm-confirmed-build-identity-review"));
   assert.strictEqual(report.options.includeHistorical, false);
-  assert.strictEqual(report.version, "0.2.0");
+  assert.strictEqual(report.version, require("../package.json").version);
 });
 
 console.log(`${tests} GlassWorm default-path, boundary, and operator tests passed`);

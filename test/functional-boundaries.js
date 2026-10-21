@@ -123,3 +123,45 @@ test("missing optional host paths do not make an empty mounted root incomplete",
   assert.equal(report.coverage.unreadablePaths, 0);
 });
 
+
+test("PHP readiness integrates with the default report and CLI exit precedence", t => {
+  const { root, home } = fixture(t);
+  const status = path.join(root, "var/lib/dpkg/status");
+  fs.mkdirSync(path.dirname(status), { recursive: true });
+  fs.writeFileSync(status, "Package: php8.3-fpm\nStatus: install ok installed\nVersion: 8.3.35-1\n\n");
+  let result = run(root, home);
+  assert.equal(result.status, 1, result.stderr);
+  let report = JSON.parse(result.stdout);
+  assert.equal(report.phpReadiness.patchStatus, "unknown");
+  assert(report.findings.some(x => x.id === "php-readiness-installed-package"));
+  const composer = path.join(root, "srv/app/composer.json");
+  fs.mkdirSync(path.dirname(composer), { recursive: true });
+  fs.writeFileSync(composer, "broken");
+  report = scanHost({ targetRoot: root, homePath: home });
+  assert.equal(report.coverage.complete, false);
+  assert(report.coverage.inspectionFailures.includes("php-readiness-incomplete"));
+  result = run(root, home, []);
+  assert.equal(result.status, 3, result.stderr);
+  assert.match(result.stdout, /PHP readiness: observed; patch status UNKNOWN/);
+  fs.writeFileSync(path.join(home, "package.json"), '{"dependencies":{"terminal-logger-utils":"1.0.0"}}');
+  assert.equal(run(root, home).status, 2);
+});
+
+test("explicit symlinked roots preserve PHP CLI inventory and exit status", t => {
+  const { root, home } = fixture(t);
+  fs.mkdirSync(path.join(root, "etc"));
+  fs.writeFileSync(path.join(root, "etc/os-release"), "ID=debian\nVERSION_ID=12\n");
+  const alias = path.join(root, "selected-root");
+  fs.symlinkSync(root, alias);
+  const linkedHome = path.join(alias, path.relative(root, home));
+  assert.equal(run(alias, linkedHome).status, 0);
+  const status = path.join(root, "var/lib/dpkg/status");
+  fs.mkdirSync(path.dirname(status), { recursive: true });
+  fs.writeFileSync(status, "Package: php8.3-fpm\nStatus: install ok installed\nVersion: 8.3.35-1\n\n");
+  const result = run(alias, linkedHome);
+  assert.equal(result.status, 1, result.stderr);
+  const report = JSON.parse(result.stdout);
+  assert.equal(report.coverage.complete, true);
+  assert.equal(report.phpReadiness.coverage.complete, true);
+  assert.equal(report.phpReadiness.records[0].name, "php8.3-fpm");
+});
