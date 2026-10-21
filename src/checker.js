@@ -5,6 +5,7 @@ const fs = require("fs");
 const tensorlake = require("./tensorlake");
 const octoberReview = require("./october-review");
 const { scanPhpReadiness } = require("./php-readiness");
+const { scanWebExposure } = require("./web-exposure");
 const path = require("path");
 const PACKAGE_VERSION = require("../package.json").version;
 
@@ -2779,6 +2780,9 @@ function scanHost(options = {}) {
     || requestedHome === targetRoot || requestedHome.startsWith(targetRoot + path.sep)) ? requestedHome : "";
   const phpReadiness = scanPhpReadiness({ targetRoot, homePath: phpHome, excludePaths: scanExcludePaths });
   findings.push(...phpReadiness.findings);
+  const webExposure = scanWebExposure({ targetRoot, excludePaths: scanExcludePaths,
+    webroots: options.webroots, webBaseline: options.webBaseline, webCompose: options.webCompose });
+  findings.push(...webExposure.findings);
 
   if (options.includeHistorical) {
     checkTrendMicroHookReloadBypass(findings, targetRoot, homePath);
@@ -2863,7 +2867,7 @@ function scanHost(options = {}) {
   // such as "incomplete". Use the raw findings so suppression cannot hide gaps.
   const incompleteIds = new Set([
     "october-review-incomplete", "tensorlake-coverage-incomplete", "glassworm-artifact-not-inspected", "glassworm-scan-incomplete",
-    "php-readiness-incomplete",
+    "php-readiness-incomplete", "web-exposure-incomplete",
   ]);
   const inspectionFailures = Array.from(new Set(findings.filter((item) => incompleteIds.has(item.id))
     .map((item) => item.id))).sort();
@@ -2903,6 +2907,7 @@ function scanHost(options = {}) {
     },
     coverage,
     phpReadiness,
+    webExposure,
     host: {
       os: osRelease,
       kernelRelease,

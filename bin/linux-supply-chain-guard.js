@@ -27,6 +27,7 @@ Read-only Linux host checker for supply-chain incident response.
 Usage:
   linux-supply-chain-guard [target-root] [--json] [--report report.json] [--home /home/user]
                            [--include-historical] [--include-resolved] [--exclude DIR]...
+                           [--webroot DIR]... [--web-baseline report.json] [--web-compose FILE]...
 
 Examples:
   linux-supply-chain-guard
@@ -44,6 +45,13 @@ directory that exists but cannot be listed, marks the report incomplete.
 PHP readiness is a dated, offline inventory check. Patch status stays unknown;
 it does not run PHP, query containers, or verify deployed versions. PHP project
 discovery also skips Composer vendor directories. See docs/php-readiness.md.
+Web configuration checks are local declarations, not internet-exposure tests.
+--webroot DIR hashes all regular files in an explicitly selected webroot inside
+the target root. --web-baseline FILE compares those hashes with a trusted prior
+JSON report or manifest. Paths refer to this machine, including the mount prefix.
+Keep baseline reports outside webroots. No baseline is created automatically.
+--web-compose FILE adds an explicit Compose file to the default discovery paths.
+See docs/web-exposure.md for supported formats, limits and baseline trust.
 --include-research is deprecated: it is accepted, prints a warning to stderr,
 and has no effect.
 Exit codes: 0 no findings; 1 review/warning; 2 critical; 3 scan incomplete
@@ -62,6 +70,9 @@ function parseArgs(argv) {
     includeHistorical: false,
     includeResolved: false,
     excludePaths: [],
+    webroots: [],
+    webCompose: [],
+    webBaseline: null,
   };
 
   let targetSeen = false;
@@ -81,6 +92,16 @@ function parseArgs(argv) {
       i += 1;
     } else if (arg === "--include-historical") {
       args.includeHistorical = true;
+    } else if (["--webroot", "--web-compose", "--web-baseline"].includes(arg)) {
+      const value = argv[i + 1];
+      if (!value || value.startsWith("-")) throw new Error(arg + " requires a path");
+      if (arg === "--webroot") args.webroots.push(value);
+      else if (arg === "--web-compose") args.webCompose.push(value);
+      else {
+        if (args.webBaseline) throw new Error("Only one web baseline may be specified");
+        args.webBaseline = value;
+      }
+      i += 1;
     } else if (arg === "--include-research") {
       // Retained for compatibility: nothing is suppressed by default any more.
       if (!args.warnedIncludeResearch) {
@@ -153,6 +174,10 @@ function formatText(report) {
   }
 
   if (report.safeRemovalGuidance?.required) lines.push(report.safeRemovalGuidance.firstAction, "");
+  if (report.webExposure) {
+    lines.push(`Web configuration: runtime exposure UNKNOWN; webroot comparison ${report.webExposure.comparison}`);
+    lines.push("Only supported local declarations and explicitly selected webroots were inspected.", "");
+  }
 
   for (const finding of report.findings) {
     lines.push(`[${finding.severity}] ${finding.id}`);
@@ -181,6 +206,9 @@ function main() {
       includeHistorical: args.includeHistorical,
       includeResolved: args.includeResolved,
       excludePaths: args.excludePaths,
+      webroots: args.webroots,
+      webCompose: args.webCompose,
+      webBaseline: args.webBaseline,
     });
 
     if (args.report) {

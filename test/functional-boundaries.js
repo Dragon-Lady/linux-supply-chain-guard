@@ -165,3 +165,53 @@ test("explicit symlinked roots preserve PHP CLI inventory and exit status", t =>
   assert.equal(report.phpReadiness.coverage.complete, true);
   assert.equal(report.phpReadiness.records[0].name, "php8.3-fpm");
 });
+
+test("web configuration checks run by default with unknown runtime exposure", t => {
+  const { root, home } = fixture(t);
+  fs.mkdirSync(path.join(root, "etc"));
+  fs.writeFileSync(path.join(root, "etc/os-release"), "ID=debian\nVERSION_ID=12\n");
+  fs.writeFileSync(path.join(root, "etc/redis.conf"), "bind 0.0.0.0\nprotected-mode no\n");
+  const result = run(root, home);
+  assert.equal(result.status, 1, result.stderr);
+  const report = JSON.parse(result.stdout);
+  assert(report.findings.some(x => x.id === "web-store-redis-protection-disabled"));
+  assert.equal(report.webExposure.runtimeExposure, "unknown");
+  assert.match(run(root, home, []).stdout, /Web configuration: runtime exposure UNKNOWN/);
+});
+
+test("CLI can create a private report and compare a selected webroot with that report", t => {
+  const { root, home } = fixture(t), webroot = path.join(root, "site"), saved = path.join(root, "baseline.json");
+  fs.mkdirSync(path.join(root, "etc"));
+  fs.writeFileSync(path.join(root, "etc/os-release"), "ID=debian\nVERSION_ID=12\n");
+  fs.mkdirSync(webroot); fs.writeFileSync(path.join(webroot, "index.php"), "known version");
+  const first = run(root, home, ["--webroot", webroot, "--json", "--report", saved]);
+  assert.equal(first.status, 1, first.stderr);
+  assert.equal(fs.statSync(saved).mode & 0o777, 0o600);
+  const same = run(root, home, ["--webroot", webroot, "--web-baseline", saved, "--json"]);
+  assert.equal(same.status, 0, same.stderr);
+  assert.equal(JSON.parse(same.stdout).webExposure.comparison, "matched");
+  fs.writeFileSync(path.join(webroot, ".user.ini"), "inert new configuration");
+  const changed = run(root, home, ["--webroot", webroot, "--web-baseline", saved, "--json"]);
+  assert.equal(changed.status, 1, changed.stderr);
+  assert.equal(JSON.parse(changed.stdout).webExposure.comparison, "changed");
+});
+
+test("web inspection gaps affect CLI coverage and preserve critical-finding precedence", t => {
+  const { root, home } = fixture(t), file = path.join(root, "etc/redis.conf");
+  fs.mkdirSync(path.dirname(file)); fs.writeFileSync(file, "include /external/config\n");
+  let result = run(root, home);
+  assert.equal(result.status, 3, result.stderr);
+  assert(JSON.parse(result.stdout).coverage.inspectionFailures.includes("web-exposure-incomplete"));
+  fs.writeFileSync(path.join(home, "package.json"), '{"dependencies":{"terminal-logger-utils":"1.0.0"}}');
+  result = run(root, home);
+  assert.equal(result.status, 2, result.stderr);
+});
+
+test("web CLI options reject missing values, outside roots and baseline without webroot", t => {
+  const { root, home } = fixture(t);
+  for (const args of [["--webroot"], ["--web-compose"], ["--web-baseline"], ["--webroot", "--json"],
+    ["--webroot", os.tmpdir()], ["--web-baseline", "absent.json"],
+    ["--web-baseline", "first.json", "--web-baseline", "second.json"]]) {
+    assert.equal(run(root, home, args).status, 64, JSON.stringify(args));
+  }
+});

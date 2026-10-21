@@ -1,5 +1,11 @@
 # linux-supply-chain-guard
 
+Version 0.4.0 adds local web review: supported management-panel and cache/session configuration
+checks now run by default. Select `--webroot DIR` and a trusted
+`--web-baseline FILE` to review file-content and permission changes. Runtime
+exposure stays **unknown**; no network probes or target execution occur.
+See [supported configurations and baseline workflow](docs/web-exposure.md).
+
 PHP readiness: the default scan now inventories PHP-related packages, common
 runtime/configuration paths and selected Composer/container declarations.
 Patch status stays **unknown** while the October 20 advance notice lacks fixed

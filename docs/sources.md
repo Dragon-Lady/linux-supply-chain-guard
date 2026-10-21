@@ -1,5 +1,19 @@
 # Sources
 
+## Local web exposure review, checked 2026-10-20
+
+- Research context: https://norforge.com/blog/inside_cairn
+- Webmin configuration: https://webmin.com/docs/modules/webmin-configuration/
+- Cockpit listener declarations: https://docs.cockpit-project.org/cockpit-guide/latest/guide/listen.html
+- Compose published ports: https://docs.docker.com/reference/compose-file/services/#ports
+- Redis security: https://redis.io/docs/latest/operate/oss_and_stack/management/security/
+- Memcached configuration: https://docs.memcached.org/serverguide/configuring/
+- PHP session settings: https://www.php.net/manual/en/session.configuration.php
+
+These support local configuration and integrity review, not campaign
+attribution, confirmed internet exposure or a PHP patch verdict. See
+[scope and baseline trust](web-exposure.md).
+
 ## PHP advance notice (October 20, 2026)
 
 - PHP official release notice: https://www.php.net/archive/2026.php
