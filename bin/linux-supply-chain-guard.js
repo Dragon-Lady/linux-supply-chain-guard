@@ -28,6 +28,7 @@ Usage:
   linux-supply-chain-guard [target-root] [--json] [--report report.json] [--home /home/user]
                            [--include-historical] [--include-resolved] [--exclude DIR]...
                            [--webroot DIR]... [--web-baseline report.json] [--web-compose FILE]...
+                           [--wordpress-root DIR]... [--updraft-log FILE]... [--wordpress-evidence FILE]
 
 Examples:
   linux-supply-chain-guard
@@ -52,6 +53,12 @@ JSON report or manifest. Paths refer to this machine, including the mount prefix
 Keep baseline reports outside webroots. No baseline is created automatically.
 --web-compose FILE adds an explicit Compose file to the default discovery paths.
 See docs/web-exposure.md for supported formats, limits and baseline trust.
+UpdraftCentral incident checks are opt-in: --wordpress-root DIR inspects PHP
+files in wp-content/plugins, mu-plugins and upgrade. --updraft-log FILE reads
+an explicit plain-text log. --wordpress-evidence FILE reads a sanitized JSON
+projection of key counts, user roles/capabilities and option names, not a SQL
+dump. All paths must be inside the target root. No WordPress/PHP code runs.
+Unselected layers remain uninspected. See docs/updraft-review.md.
 --include-research is deprecated: it is accepted, prints a warning to stderr,
 and has no effect.
 Exit codes: 0 no findings; 1 review/warning; 2 critical; 3 scan incomplete
@@ -73,6 +80,9 @@ function parseArgs(argv) {
     webroots: [],
     webCompose: [],
     webBaseline: null,
+    wordpressRoots: [],
+    updraftLogs: [],
+    wordpressEvidence: null,
   };
 
   let targetSeen = false;
@@ -92,6 +102,15 @@ function parseArgs(argv) {
       i += 1;
     } else if (arg === "--include-historical") {
       args.includeHistorical = true;
+    } else if (["--wordpress-root", "--updraft-log", "--wordpress-evidence"].includes(arg)) {
+      const value = argv[++i];
+      if (!value || value.startsWith("-")) throw new Error(arg + " requires a path");
+      if (arg === "--wordpress-root") args.wordpressRoots.push(value);
+      else if (arg === "--updraft-log") args.updraftLogs.push(value);
+      else {
+        if (args.wordpressEvidence) throw new Error("Only one WordPress evidence file may be specified");
+        args.wordpressEvidence = value;
+      }
     } else if (["--webroot", "--web-compose", "--web-baseline"].includes(arg)) {
       const value = argv[i + 1];
       if (!value || value.startsWith("-")) throw new Error(arg + " requires a path");
@@ -178,6 +197,11 @@ function formatText(report) {
     lines.push(`Web configuration: runtime exposure UNKNOWN; webroot comparison ${report.webExposure.comparison}`);
     lines.push("Only supported local declarations and explicitly selected webroots were inspected.", "");
   }
+  if (report.updraftReview?.requested) {
+    const lane = report.updraftReview;
+    lines.push(`UpdraftCentral: compromise UNKNOWN; files ${lane.layers.files}; logs ${lane.layers.logs}; database ${lane.layers.database}`);
+    lines.push("Only selected inputs were checked; no matches does not establish a clean site.", "");
+  }
 
   for (const finding of report.findings) {
     lines.push(`[${finding.severity}] ${finding.id}`);
@@ -209,6 +233,9 @@ function main() {
       webroots: args.webroots,
       webCompose: args.webCompose,
       webBaseline: args.webBaseline,
+      wordpressRoots: args.wordpressRoots,
+      updraftLogs: args.updraftLogs,
+      wordpressEvidence: args.wordpressEvidence,
     });
 
     if (args.report) {
