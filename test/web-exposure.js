@@ -359,7 +359,10 @@ test("scanner performs no target execution, network operations or writes", t => 
   const originalOpen = fs.openSync;
   replaced.push([fs, "openSync", originalOpen]);
   fs.openSync = (file, flags, ...args) => {
-    if (typeof flags !== "number" || flags & (fs.constants.O_WRONLY | fs.constants.O_RDWR | fs.constants.O_CREAT | fs.constants.O_TRUNC | fs.constants.O_APPEND)) return deny();
+    // Node 18 loads CommonJS sources with the read-only string flag.
+    const readOnly = flags === "r" || (typeof flags === "number" &&
+      !(flags & (fs.constants.O_WRONLY | fs.constants.O_RDWR | fs.constants.O_CREAT | fs.constants.O_TRUNC | fs.constants.O_APPEND)));
+    if (!readOnly) return deny();
     return originalOpen(file, flags, ...args);
   };
   for (const [object, names] of [[fs, ["writeFileSync", "appendFileSync", "writeSync", "mkdirSync", "unlinkSync", "renameSync", "chmodSync", "rmSync"]],
