@@ -1,5 +1,11 @@
 # linux-supply-chain-guard
 
+Version 0.5.0 adds optional read-only UpdraftCentral incident review
+with `--wordpress-root`, `--updraft-log`, and `--wordpress-evidence`. It checks
+selected plugin files, logs and a sanitized account/key export against
+published indicators; unselected layers remain uninspected and compromise
+status remains unknown. See [scope and evidence format](docs/updraft-review.md).
+
 Version 0.4.1 corrects two web-review reporting gaps in 0.4.0. Unavailable
 `/proc/self/fd` access now makes coverage incomplete, including in minimal
 containers and chroots. A webroot file that changes both contents and Unix

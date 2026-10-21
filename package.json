@@ -1,6 +1,6 @@
 {
   "name": "linux-supply-chain-guard",
-  "version": "0.4.1",
+  "version": "0.5.0",
   "description": "Read-only Linux host checker for supply-chain incident response, including vulnerable kernel posture, risky module state, and known developer-tooling persistence indicators.",
   "bin": {
     "linux-supply-chain-guard": "bin/linux-supply-chain-guard.js"
@@ -15,15 +15,17 @@
     "docs/recovery-playbook.md",
     "docs/sources.md",
     "docs/php-readiness.md",
-    "docs/web-exposure.md"
+    "docs/web-exposure.md",
+    "docs/updraft-review.md"
   ],
   "scripts": {
-    "test": "node --check bin/linux-supply-chain-guard.js && node --check src/checker.js && node test/smoke.js && node test/glassworm.js && node test/report-preservation.js && node test/default-coverage.js && node --check src/tensorlake.js && node test/tensorlake.js && node --test test/functional-boundaries.js && node --check src/october-review.js && node --test test/october-review.js && npm run test:php && npm run test:web",
+    "test": "node --check bin/linux-supply-chain-guard.js && node --check src/checker.js && node test/smoke.js && node test/glassworm.js && node test/report-preservation.js && node test/default-coverage.js && node --check src/tensorlake.js && node test/tensorlake.js && node --test test/functional-boundaries.js && node --check src/october-review.js && node --test test/october-review.js && npm run test:php && npm run test:web && npm run test:updraft",
     "canary:socket-firewall": "sfw npm install --package-lock-only --ignore-scripts --audit=false --fund=false",
     "canary:socket-firewall:log": "bash scripts/run-socket-firewall-canary.sh",
     "canary:socket-firewall:log:windows": "powershell -ExecutionPolicy Bypass -File scripts/run-socket-firewall-canary.ps1",
     "test:php": "node --check src/php-readiness.js && node --test test/php-readiness.js",
-    "test:web": "node --check src/web-files.js && node --check src/web-exposure.js && node --test test/web-exposure.js"
+    "test:web": "node --check src/web-files.js && node --check src/web-exposure.js && node --test test/web-exposure.js",
+    "test:updraft": "node --check src/updraft-review.js && node --test test/updraft-review.js"
   },
   "keywords": [
     "linux",
