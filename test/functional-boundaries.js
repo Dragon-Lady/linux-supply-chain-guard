@@ -123,3 +123,26 @@ test("missing optional host paths do not make an empty mounted root incomplete",
   assert.equal(report.coverage.unreadablePaths, 0);
 });
 
+
+test("PHP readiness integrates with the default report and CLI exit precedence", t => {
+  const { root, home } = fixture(t);
+  const status = path.join(root, "var/lib/dpkg/status");
+  fs.mkdirSync(path.dirname(status), { recursive: true });
+  fs.writeFileSync(status, "Package: php8.3-fpm\nStatus: install ok installed\nVersion: 8.3.35-1\n\n");
+  let result = run(root, home);
+  assert.equal(result.status, 1, result.stderr);
+  let report = JSON.parse(result.stdout);
+  assert.equal(report.phpReadiness.patchStatus, "unknown");
+  assert(report.findings.some(x => x.id === "php-readiness-installed-package"));
+  const composer = path.join(root, "srv/app/composer.json");
+  fs.mkdirSync(path.dirname(composer), { recursive: true });
+  fs.writeFileSync(composer, "broken");
+  report = scanHost({ targetRoot: root, homePath: home });
+  assert.equal(report.coverage.complete, false);
+  assert(report.coverage.inspectionFailures.includes("php-readiness-incomplete"));
+  result = run(root, home, []);
+  assert.equal(result.status, 3, result.stderr);
+  assert.match(result.stdout, /PHP readiness: observed; patch status UNKNOWN/);
+  fs.writeFileSync(path.join(home, "package.json"), '{"dependencies":{"terminal-logger-utils":"1.0.0"}}');
+  assert.equal(run(root, home).status, 2);
+});

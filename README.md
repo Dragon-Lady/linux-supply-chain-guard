@@ -1,5 +1,11 @@
 # linux-supply-chain-guard
 
+PHP readiness: the default scan now inventories PHP-related packages, common
+runtime/configuration paths and selected Composer/container declarations.
+Patch status stays **unknown** while the October 20 advance notice lacks fixed
+versions. This is preparation evidence, not a vulnerability or protection
+verdict. See [coverage, limitations and official sources](docs/php-readiness.md).
+
 October 8 update: exact Tensorlake 0.5.144 package/payload checks and ordered
 token-monitor warnings are in the default scan. See the
 [dated evidence, limitations and inert test instructions](docs/advisory.md#tensorlake-response-update--2026-10-08).

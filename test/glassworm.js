@@ -142,8 +142,12 @@ fixture((root, home) => {
   const original = fs.opendirSync;
   let emitted = 0;
   let closed = false;
+  let injected = false;
   fs.opendirSync = function(dir) {
-    if (dir !== home) return original(dir);
+    // Inject into GlassWorm's first iterator only. Other default checks may
+    // independently list this directory with their own discovery budgets.
+    if (dir !== home || injected) return original(dir);
+    injected = true;
     return {
       readSync() { emitted += 1; return { name: `${emitted}.unrelated`, isDirectory: () => false, isFile: () => true }; },
       closeSync() { closed = true; },

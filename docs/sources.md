@@ -1,5 +1,13 @@
 # Sources
 
+## PHP advance notice (October 20, 2026)
+
+- PHP official release notice: https://www.php.net/archive/2026.php
+- OX Security research updates: https://www.ox.security/blog/
+
+The OX URL is a general blog index, not a verified PHP-specific advisory.
+Read the [PHP readiness scope](php-readiness.md) before interpreting findings.
+
 ## GlassWorm editor extension cluster (October 2026)
 
 Socket confirmed malicious distributed builds under

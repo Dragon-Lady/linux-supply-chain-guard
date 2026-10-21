@@ -41,6 +41,9 @@ only skip dependency, VCS and build-output folders (.git, .hg, .svn,
 node_modules, .venv, venv, dist, build, coverage, .next). --exclude DIR
 (repeatable) skips a directory tree you name; any excluded directory, and any
 directory that exists but cannot be listed, marks the report incomplete.
+PHP readiness is a dated, offline inventory check. Patch status stays unknown;
+it does not run PHP, query containers, or verify deployed versions. PHP project
+discovery also skips Composer vendor directories. See docs/php-readiness.md.
 --include-research is deprecated: it is accepted, prints a warning to stderr,
 and has no effect.
 Exit codes: 0 no findings; 1 review/warning; 2 critical; 3 scan incomplete
@@ -141,6 +144,13 @@ function formatText(report) {
     }
   }
   lines.push("");
+
+  if (report.phpReadiness) {
+    lines.push(`PHP readiness: ${report.phpReadiness.presence}; patch status UNKNOWN`);
+    lines.push(`PHP advisory snapshot: ${report.phpReadiness.advisory.checkedOn}; recheck ${report.phpReadiness.advisory.primarySource}`);
+    lines.push("PHP inventory is limited to configured paths; no matches is not proof PHP is absent.");
+    lines.push("");
+  }
 
   if (report.safeRemovalGuidance?.required) lines.push(report.safeRemovalGuidance.firstAction, "");
 
