@@ -4,7 +4,7 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
-const { scanPhpReadiness, inspectProjectText } = require("../src/php-readiness");
+const { scanPhpReadiness, inspectProjectText, compareUpstream } = require("../src/php-readiness");
 
 function fixture(t) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "php-readiness-"));
@@ -22,6 +22,84 @@ function fixture(t) {
 const dpkg = (name, version, status = "install ok installed") =>
   "Package: " + name + "\nStatus: " + status + "\nVersion: " + version + "\n\n";
 
+test("each confirmed branch distinguishes the last affected and first fixed upstream versions", () => {
+  for (const [branch, lastAffected, fixed, later] of [["8.2", "8.2.34", "8.2.35", "8.2.36"],
+    ["8.3", "8.3.35", "8.3.36", "8.3.37"], ["8.4", "8.4.26", "8.4.27", "8.4.28"],
+    ["8.5", "8.5.11", "8.5.12", "8.5.13"]]) {
+    assert.deepEqual(compareUpstream(lastAffected), { status: "below-fixed-upstream", version: lastAffected, branch, fixedVersion: fixed });
+    assert.equal(compareUpstream(fixed).status, "at-or-above-fixed-upstream");
+    // A numeric comparison is not a claim that a future release exists.
+    assert.equal(compareUpstream(later).status, "at-or-above-fixed-upstream");
+    assert.equal(compareUpstream(branch + ".9").status, "below-fixed-upstream");
+    assert.equal(compareUpstream(branch + ".100").status, "at-or-above-fixed-upstream");
+  }
+});
+
+test("non-final, ambiguous, unlisted and unsupported upstream versions are not cleared", () => {
+  for (const version of [null, "8.5", "8.5.12RC1", "8.5.12-rc1", "8.5.12-dev", "08.5.12", "8.5.012", "8.5.12+vendor", "8.5.9007199254740992", "9.0.0", "8.6.0", "6.0.0"])
+    assert.equal(compareUpstream(version).status, "unknown", String(version));
+  for (const version of ["5.6.40", "7.4.33", "8.0.30", "8.1.34"])
+    assert.equal(compareUpstream(version).status, "unsupported-upstream");
+});
+
+test("vendor revisions, including synthetic backports, retain unknown deployment patch status", t => {
+  const f = fixture(t);
+  // Synthetic vendor revisions exercise backport ambiguity; they are not
+  // assertions that any distribution published these exact packages.
+  f.put("var/lib/dpkg/status", dpkg("php8.3-fpm", "2:8.3.35-0vendor99")
+    + dpkg("php8.4-cli", "8.4.27+dfsg1-1vendor1") + dpkg("libapache2-mod-php8.1", "8.1.2-99vendor1"));
+  f.put("lib/apk/db/installed", "P:php85-fpm\nV:8.5.11-r99\n\nP:php85\nV:8.5.12-r0\n");
+  const r = f.scan();
+  assert.deepEqual(r.records.map(x => x.upstreamAssessment.status), ["below-fixed-upstream", "at-or-above-fixed-upstream", "unsupported-upstream", "below-fixed-upstream", "at-or-above-fixed-upstream"]);
+  assert(r.records.every(x => x.patchStatus === "unknown" && x.upstreamAssessment.reason === "vendor-backport-status-unverified"));
+  assert(r.findings.every(x => x.evidence.includes("vendor backport status unverified")));
+  assert.equal(r.patchStatus, "unknown");
+});
+
+test("extensions, metapackages, inconsistent branches and prerelease packages cannot impersonate fixed runtimes", t => {
+  const f = fixture(t);
+  const unknown = [["php8.4-redis", "8.4.27"], ["php-cli", "8.4.27"], ["php8.4", "8.4.27"],
+    ["php8.4-fpm", "8.5.12-1"], ["php8.5-cli", "8.5.12~rc1-1"], ["php8.5-cgi", "8.5.12RC1-1"]];
+  f.put("var/lib/dpkg/status", unknown.map(([name, version]) => dpkg(name, version)).join(""));
+  f.put("lib/apk/db/installed", "P:php85-pecl-redis\nV:8.5.12-r0\n\nP:php85-fpm\nV:8.5.12_rc1-r0\n\nP:php84\nV:8.5.12-r0\n");
+  assert(f.scan().records.every(x => x.upstreamAssessment.status === "unknown"));
+});
+
+test("fixed declarations, stale tags and pinned digests do not verify deployed images", t => {
+  const f = fixture(t);
+  const dockerfile = "FROM php:8.5.11-fpm AS old\nFROM php:8.5.12-fpm-alpine3.24@sha256:" + "a".repeat(64)
+    + " AS new\nFROM php:8.5.12-rc1-fpm AS prerelease\nFROM php:8.5.12-fpm-custom AS custom\nFROM php:8.5-fpm AS floating\nFROM php@sha256:" + "b".repeat(64);
+  assert.deepEqual(inspectProjectText("Dockerfile", dockerfile).map(x => x.version), ["8.5.11", "8.5.12", null, null, null, null]);
+  f.put("srv/app/Dockerfile", dockerfile);
+  f.put("srv/app/composer.json", '{"config":{"platform":{"php":"8.5.12"}}}');
+  const r = f.scan(), images = r.records.filter(x => x.kind === "container-declaration");
+  // Identical unknown leads in one file are deduplicated by the inventory.
+  assert.deepEqual(images.map(x => x.upstreamAssessment.status), ["below-fixed-upstream", "at-or-above-fixed-upstream", "unknown"]);
+  assert(r.records.every(x => x.patchStatus === "unknown"));
+  assert.equal(r.records.find(x => x.kind === "composer-declaration").upstreamAssessment.status, "unknown");
+  assert.equal(r.patchStatus, "unknown");
+  assert.equal(r.coverage.complete, true);
+});
+
+test("a fixed declaration cannot hide a simultaneous older branch or incomplete inspection", t => {
+  const f = fixture(t);
+  f.put("srv/new/Dockerfile", "FROM php:8.5.12-apache");
+  f.put("srv/old/Dockerfile", "FROM php:8.2.34-fpm");
+  f.put("srv/unresolved/compose.yaml", "services: {app: {image: php:8.5.12}}");
+  const r = f.scan();
+  assert(r.records.some(x => x.upstreamAssessment.status === "below-fixed-upstream"));
+  assert(r.records.some(x => x.upstreamAssessment.status === "at-or-above-fixed-upstream"));
+  assert.equal(r.coverage.complete, false);
+  assert.equal(r.patchStatus, "unknown");
+  assert(r.findings.some(x => x.id === "php-readiness-incomplete"));
+});
+
+test("editing a returned advisory snapshot cannot change future comparisons", t => {
+  const f = fixture(t);
+  f.scan().advisory.fixedVersions["8.5"] = "8.5.1";
+  assert.equal(compareUpstream("8.5.11").status, "below-fixed-upstream");
+});
+
 test("inventories PHP branches and preserves complete distro revisions without declaring a fix", t => {
   const f = fixture(t);
   f.put("var/lib/dpkg/status", dpkg("php8.2-cli", "8.2.34-1+deb12u1") + dpkg("php8.3-fpm", "1:8.3.35-0ubuntu0.1")
@@ -31,7 +109,8 @@ test("inventories PHP branches and preserves complete distro revisions without d
   assert.deepEqual(result.records.map(x => x.version), ["8.2.34-1+deb12u1", "1:8.3.35-0ubuntu0.1", "8.4.26-1"]);
   assert(result.records.every(x => x.patchStatus === "unknown"));
   assert(result.findings.every(x => x.severity === "review"));
-  assert.equal(result.advisory.fixedVersions, null);
+  assert.deepEqual(result.advisory.fixedVersions, { "8.2": "8.2.35", "8.3": "8.3.36", "8.4": "8.4.27", "8.5": "8.5.12" });
+  assert(result.records.every(x => x.upstreamAssessment.status === "below-fixed-upstream"));
   assert.equal(result.patchStatus, "unknown");
 });
 
@@ -128,7 +207,7 @@ test("empty inventory remains unknown, with explicit scope and absence limitatio
   assert.equal(r.patchStatus, "unknown");
   assert.equal(r.coverage.complete, true);
   assert.match(r.coverage.limitations.join(" "), /absence is not proof/);
-  assert.equal(r.advisory.checkedOn, "2026-10-20");
+  assert.equal(r.advisory.checkedOn, "2026-10-21");
 });
 
 test("symlinked candidates and parent directories never import outside-root declarations", t => {

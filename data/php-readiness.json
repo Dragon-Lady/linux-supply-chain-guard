@@ -1,15 +1,66 @@
 {
   "id": "php-security-2026-10-20",
-  "checkedOn": "2026-10-20",
-  "status": "awaiting-details",
-  "scheduledReleaseUtc": "2026-10-21T14:00:00Z",
+  "checkedOn": "2026-10-21",
+  "status": "released",
   "criticalVulnerabilities": 2,
   "cvssVersion": "4.0",
   "cvssScore": 9.2,
-  "affectedVersions": null,
-  "fixedVersions": null,
+  "affectedVersions": {
+    "8.2": "<8.2.35",
+    "8.3": "<8.3.36",
+    "8.4": "<8.4.27",
+    "8.5": "<8.5.12"
+  },
+  "fixedVersions": {
+    "8.2": "8.2.35",
+    "8.3": "8.3.36",
+    "8.4": "8.4.27",
+    "8.5": "8.5.12"
+  },
   "primarySource": "https://www.php.net/archive/2026.php",
-  "researchUpdates": "https://www.ox.security/blog/",
-  "researchUpdatesLabel": "OX Security blog index; no PHP-specific article verified on the checked date",
-  "note": "Dated advance notice, not a live feed. Release may occur earlier. Recheck PHP and the package vendor before making patch decisions."
+  "researchUpdates": "https://www.ox.security/blog/php-cve-2026-109618-cve-2026-109619-what-to-do-before-the-details-drop/",
+  "researchUpdatesLabel": "OX pre-disclosure guidance; PHP's published advisories take precedence",
+  "note": "Dated offline snapshot. PHP warns that web-serving installations are at risk. PHP 8.1 and older need maintained vendor backports or an upgrade. A version comparison does not verify vendor patch contents, deployed images, running workers, exposure or exploitation. Recheck vendor advisories; missing tracker data does not establish that a fix is unavailable. Updating is the only complete fix.",
+  "vulnerabilities": [
+    {
+      "cve": "CVE-2026-109618",
+      "title": "RCE via OOM corruption",
+      "source": "https://github.com/php/php-src/security/advisories/GHSA-w8hw-w9fx-j79w",
+      "prerequisites": "Request processing encounters an allocation failure while internal state is partially initialized, followed by unsafe cleanup. PHP confirms pre-application unauthenticated RCE on mod_php; exploitability evidence differs across SAPIs."
+    },
+    {
+      "cve": "CVE-2026-109619",
+      "title": "RCE via stale global state",
+      "source": "https://github.com/php/php-src/security/advisories/GHSA-6wmf-4rv5-p3rp",
+      "prerequisites": "A persistent worker retains stale request state after an abnormal lifecycle and a later request reaches a consumer before initialization. Confirmed session-lifecycle paths include mod_php and FPM."
+    }
+  ],
+  "changelog": "https://www.php.net/ChangeLog-8.php",
+  "distributionReview": {
+    "checkedOn": "2026-10-21",
+    "fixedPackageRevisionsVerified": false,
+    "ubuntu": {
+      "status": "needs-evaluation-at-check",
+      "sources": [
+        "https://ubuntu.com/security/CVE-2026-109618",
+        "https://ubuntu.com/security/CVE-2026-109619"
+      ]
+    },
+    "debian": {
+      "status": "tracker-entries-unavailable-at-check",
+      "sources": [
+        "https://security-tracker.debian.org/tracker/CVE-2026-109618",
+        "https://security-tracker.debian.org/tracker/CVE-2026-109619"
+      ]
+    },
+    "alpine": {
+      "status": "no-matching-secfixes-observed-at-check",
+      "sources": [
+        "https://secdb.alpinelinux.org/v3.21/community.json",
+        "https://secdb.alpinelinux.org/v3.22/community.json",
+        "https://secdb.alpinelinux.org/v3.23/community.json",
+        "https://secdb.alpinelinux.org/v3.24/community.json"
+      ]
+    }
+  }
 }
