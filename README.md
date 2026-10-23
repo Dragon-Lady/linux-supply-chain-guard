@@ -1,5 +1,9 @@
 # linux-supply-chain-guard
 
+Version 0.6.1 extends UpdraftCentral access-log review to the 12-hex trigger
+parameter used by working variants, while retaining the original underscore
+shape. Matches remain redacted review leads, not proof of compromise.
+
 Version 0.6.0 records PHP's October 21 security releases for CVE-2026-109618
 and CVE-2026-109619. The default read-only check compares recognized runtime
 package versions and exact official-image declarations with the upstream fixes:

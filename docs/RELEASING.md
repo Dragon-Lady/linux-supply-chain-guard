@@ -6,8 +6,8 @@ and sets the repository variable `ENABLE_NPM_PUBLISH` to `true`. Before enabling
 1. Land reviewed workflow policies on `main`; complete consumer migrations and
    release stable Push Guard 0.4.3. CI temporarily pins the independently reviewed
    scanner commit; replace that checkout with the reviewed stable release later.
-   Add the verified PyPI wheel SHA-256 to `.github/requirements/push-guard.txt`;
-   the exact `==0.4.3` pin with `--require-hashes` blocks publication until then.
+   The verified PyPI wheel SHA-256 is pinned in
+   `.github/requirements/push-guard.txt`; keep `--require-hashes` enabled.
 2. Configure the GitHub `npm` environment with required maintainer approval
    and restrict deployment to `v*` release tags, with administrator bypass off.
    For a repository with one maintainer, self-review must remain permitted so
@@ -51,3 +51,13 @@ These public checks do not replace the private-term gate before publication.
 No account settings, environment protections, repository variables, package
 versions or release tags are configured automatically by these files. Keep the
 publish variable disabled until every prerequisite is verified.
+
+## First npm publication
+
+If the package does not yet exist on npm, trusted-publisher settings may not be
+available. With explicit maintainer release approval, bootstrap by publishing
+the exact reviewed and privately scanned release tarball through an interactive
+npm login with two-factor authentication. Use `--access public --ignore-scripts`;
+do not publish an empty placeholder or claim CI provenance for a local publish.
+Leave `ENABLE_NPM_PUBLISH` disabled until the package exists and all trusted
+publishing prerequisites above have been verified.
