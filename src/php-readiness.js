@@ -11,7 +11,7 @@ const BINARY = /^(?:php(?:\d+(?:\.\d+)?)?(?:-cgi|-fpm)?|php-(?:cgi|fpm)(?:\d+(?:
 const PACKAGE = /^(?:php(?:\d+(?:\.\d+)?)?(?:-[a-z0-9][a-z0-9+.-]*)?|libapache2-mod-php(?:\d+(?:\.\d+)?)?)$/;
 const COMPOSE = /^(?:docker-)?compose(?:\.[a-zA-Z0-9_-]+)?\.ya?ml$/;
 const DOCKERFILE = /^(?:Dockerfile(?:\.[a-zA-Z0-9_-]+)?|Containerfile(?:\.[a-zA-Z0-9_-]+)?)$/;
-const GUIDANCE = "PHP deployment patch status is unknown. For CVE-2026-109618 and CVE-2026-109619, update to a fixed upstream release or a vendor-confirmed backport, restart serving workers or redeploy images, and verify every serving runtime. A package version, Composer constraint or image tag cannot clear a running deployment. Partial mitigations are not a complete fix. PHP: " + ADVISORY.primarySource + "; OX research: " + ADVISORY.researchUpdates;
+const GUIDANCE = "October 23 update: CVE-2026-115560 concerns an unusual runtime session serializer change with upload progress enabled; it is not assessed by the two-CVE version table. Review PHP guidance and keep session.upload_progress.enabled=0 where applicable pending the regular fix. PHP deployment patch status is unknown. For CVE-2026-109618 and CVE-2026-109619, update to a fixed upstream release or a vendor-confirmed backport, restart serving workers or redeploy images, and verify every serving runtime. A package version, Composer constraint or image tag cannot clear a running deployment. Partial mitigations are not a complete fix. PHP: " + ADVISORY.primarySource + "; OX research: " + ADVISORY.researchUpdates;
 
 function compareUpstream(version) {
   const match = typeof version === "string" && version.match(/^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$/);

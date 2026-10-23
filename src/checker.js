@@ -3,6 +3,7 @@
 const crypto = require("crypto");
 const fs = require("fs");
 const tensorlake = require("./tensorlake");
+const october23 = require("./october23");
 const octoberReview = require("./october-review");
 const { scanPhpReadiness } = require("./php-readiness");
 const { scanWebExposure } = require("./web-exposure");
@@ -2775,6 +2776,7 @@ function scanHost(options = {}) {
   checkOpenClawAgentExposure(findings, targetRoot, homePath);
   checkTransformersPayload(findings, targetRoot);
   checkGlassWormExtensions(findings, targetRoot, homePath);
+  checkOctober23(findings, targetRoot, homePath);
   checkOctoberReview(findings, targetRoot, homePath);
   const requestedHome = homePath ? path.resolve(homePath) : "";
   const phpHome = requestedHome && (targetRoot === path.parse(targetRoot).root
@@ -2871,7 +2873,7 @@ function scanHost(options = {}) {
   // Aggregate actual inspection failures, not advisory text containing words
   // such as "incomplete". Use the raw findings so suppression cannot hide gaps.
   const incompleteIds = new Set([
-    "october-review-incomplete", "tensorlake-coverage-incomplete", "glassworm-artifact-not-inspected", "glassworm-scan-incomplete",
+    "october23-coverage-incomplete", "october-review-incomplete", "tensorlake-coverage-incomplete", "glassworm-artifact-not-inspected", "glassworm-scan-incomplete",
     "php-readiness-incomplete", "web-exposure-incomplete", "updraft-review-incomplete",
   ]);
   const inspectionFailures = Array.from(new Set(findings.filter((item) => incompleteIds.has(item.id))
@@ -2903,7 +2905,7 @@ function scanHost(options = {}) {
     tool: "linux-supply-chain-guard",
     version: PACKAGE_VERSION,
     generatedAt: new Date().toISOString(),
-    safeRemovalGuidance: tensorlake.safeRemovalGuidance(finalized.findings),
+    safeRemovalGuidance: october23.safeRemovalGuidance(finalized.findings, tensorlake.safeRemovalGuidance(finalized.findings)),
     targetRoot,
     options: {
       includeHistorical: Boolean(options.includeHistorical),
@@ -3482,6 +3484,27 @@ function checkOctoberReview(findings, targetRoot, homePath) {
     const relative = `/${path.relative(targetRoot, file).replace(/\\/g, "/")}`;
     addFinding(findings, item.severity === "medium" ? "review" : item.severity === "high" ? "warning" : item.severity === "low" ? "info" : item.severity,
       item.type, item.message, relative + ": " + item.message, "Static inventory only; verify resolved artifacts and runtime configuration before remediation.");
+  }
+}
+
+function checkOctober23(findings, targetRoot, homePath) {
+  const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
+  const roots = [homeRelative, "/opt", "/srv", "/var/www", "/usr/local/lib", "/usr/lib/python3/dist-packages"].filter(Boolean);
+  const seen = new Set();
+  const add = item => addFinding(findings,
+    item.severity === "medium" ? "review" : item.severity === "high" ? "warning" : item.severity === "low" ? "info" : item.severity,
+    item.type, item.message, "/" + path.relative(targetRoot, item.path).replace(/\\/g, "/"),
+    "Static inspection only. " + item.evidence.source);
+  for (const relative of roots) {
+    const location = mapLinuxPath(targetRoot, relative);
+    if (!exists(location)) continue;
+    const discovered = october23.discover(location, {excludePaths: scanExcludePaths});
+    discovered.findings.forEach(add);
+    for (const file of discovered.files) {
+      if (seen.has(file)) continue;
+      seen.add(file);
+      october23.inspectFile(file, {root: targetRoot}).forEach(add);
+    }
   }
 }
 
@@ -8277,7 +8300,7 @@ function finalizeFindings(findings, options = {}) {
   const suppressed = { duplicates: 0, research: 0, resolved: 0 };
 
   for (const finding of findings) {
-    if (!options.includeResolved && finding.severity === "info" && !["october-review-text-out-of-scope", "october-review-incidental-json", "tensorlake-incidental-json"].includes(finding.id)) {
+    if (!options.includeResolved && finding.severity === "info" && !["october23-incidental-json", "october-review-text-out-of-scope", "october-review-incidental-json", "tensorlake-incidental-json"].includes(finding.id)) {
       suppressed.resolved += 1;
       continue;
     }
