@@ -250,3 +250,22 @@ test("web CLI options reject missing values, outside roots and baseline without 
     assert.equal(run(root, home, args).status, 64, JSON.stringify(args));
   }
 });
+
+test("review: October discovery budget is configurable through CLI and report options", t=>{
+ const {root,home}=fixture(t);
+ const directory=path.join(home,"node_modules","fixture");fs.mkdirSync(directory,{recursive:true});
+ fs.writeFileSync(path.join(directory,"package.json"),JSON.stringify({name:"fixture",version:"1.0.0"}));
+ const limited=run(root,home,["--json","--october23-max-entries","1"]);
+ assert.equal(limited.status,3);assert(JSON.parse(limited.stdout).coverage.inspectionFailures.includes("october23-coverage-incomplete"));
+ const expanded=run(root,home,["--json","--october23-max-entries=120000"]);
+ const report=JSON.parse(expanded.stdout);assert.equal(report.options.october23MaxEntries,120000);assert.equal(report.coverage.complete,true);assert.notEqual(expanded.status,3);
+ const excluded=JSON.parse(run(root,home,["--json","--exclude",directory,"--october23-max-entries","120000"]).stdout);
+ assert.equal(excluded.coverage.complete,false);assert(excluded.coverage.skippedDirectories>0);
+});
+test("review: invalid October budgets fail before scanning", t=>{
+ const {root,home}=fixture(t);
+ for(const value of ["0","-1","1.5","Infinity","10000001","9007199254740992",""])
+  assert.equal(run(root,home,["--october23-max-entries="+value]).status,64,value);
+ for(const value of [0,-1,1.5,Infinity,10000001,"120000",null])
+  assert.throws(()=>scanHost({targetRoot:root,homePath:home,october23MaxEntries:value}),/entry budget/);
+});

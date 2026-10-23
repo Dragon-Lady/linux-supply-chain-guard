@@ -27,6 +27,7 @@ Read-only Linux host checker for supply-chain incident response.
 Usage:
   linux-supply-chain-guard [target-root] [--json] [--report report.json] [--home /home/user]
                            [--include-historical] [--include-resolved] [--exclude DIR]...
+                           [--october23-max-entries N]
                            [--webroot DIR]... [--web-baseline report.json] [--web-compose FILE]...
                            [--wordpress-root DIR]... [--updraft-log FILE]... [--wordpress-evidence FILE]
 
@@ -39,8 +40,10 @@ Default reports run the current/core rule lanes only. Use --include-historical
 to run the older source-backed campaign catalog. Use --include-resolved to
 include informational fixed/mitigated findings. Caches, IDE history, agent
 folders and security-tool checkouts are scanned by default; the file walkers
-only skip dependency, VCS and build-output folders (.git, .hg, .svn,
-node_modules, .venv, venv, dist, build, coverage, .next). --exclude DIR
+skip VCS and build-output folders. Dependency traversal varies by rule lane:
+the October 23 lane includes node_modules and virtual environments. Its discovery
+budget defaults to 100000 entries per root; --october23-max-entries N raises or
+lowers it (1 to 10000000). Reaching a limit marks coverage incomplete. --exclude DIR
 (repeatable) skips a directory tree you name; any excluded directory, and any
 directory that exists but cannot be listed, marks the report incomplete.
 PHP readiness is a dated, offline inventory check. Patch status stays unknown;
@@ -127,6 +130,10 @@ function parseArgs(argv) {
         console.error("warning: --include-research is deprecated and has no effect; research folders are scanned by default");
         args.warnedIncludeResearch = true;
       }
+    } else if (arg === "--october23-max-entries" || arg.startsWith("--october23-max-entries=")) {
+      const value = arg.includes("=") ? arg.slice(arg.indexOf("=")+1) : argv[++i];
+      if (!value || !/^[0-9]+$/.test(value)) throw new Error("--october23-max-entries requires a positive integer");
+      args.october23MaxEntries = Number(value);
     } else if (arg === "--exclude") {
       const value = argv[i + 1];
       if (!value || value.startsWith("-")) throw new Error("--exclude requires a directory path");
@@ -231,6 +238,7 @@ function main() {
       includeHistorical: args.includeHistorical,
       includeResolved: args.includeResolved,
       excludePaths: args.excludePaths,
+      october23MaxEntries: args.october23MaxEntries,
       webroots: args.webroots,
       webCompose: args.webCompose,
       webBaseline: args.webBaseline,

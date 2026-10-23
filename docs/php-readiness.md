@@ -164,3 +164,11 @@ Tests must cover affected, fixed, backported and unresolved versions, plus
 multiple PHP branches, stale declarations and incomplete coverage. Publish
 accurate release notes and verify the actual release artifact before preparing
 a placard or quote-post that claims the added coverage.
+
+## October 23 session notice
+
+CVE-2026-115560 is a separate, narrowly conditioned issue. The version table
+above still covers only the two October 21 CVEs. See PHP's [notice](https://www.php.net/archive/2026.php). Keep
+`session.upload_progress.enabled=0` where applicable until the regular fix;
+the scanner does not determine runtime serializer changes or claim a fixed
+version for the new issue.

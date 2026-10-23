@@ -1,6 +1,6 @@
 {
   "id": "php-security-2026-10-20",
-  "checkedOn": "2026-10-21",
+  "checkedOn": "2026-10-23",
   "status": "released",
   "criticalVulnerabilities": 2,
   "cvssVersion": "4.0",
@@ -20,7 +20,7 @@
   "primarySource": "https://www.php.net/archive/2026.php",
   "researchUpdates": "https://www.ox.security/blog/php-cve-2026-109618-cve-2026-109619-what-to-do-before-the-details-drop/",
   "researchUpdatesLabel": "OX pre-disclosure guidance; PHP's published advisories take precedence",
-  "note": "Dated offline snapshot. PHP warns that web-serving installations are at risk. PHP 8.1 and older need maintained vendor backports or an upgrade. A version comparison does not verify vendor patch contents, deployed images, running workers, exposure or exploitation. Recheck vendor advisories; missing tracker data does not establish that a fix is unavailable. Updating is the only complete fix.",
+  "note": "Dated offline snapshot. PHP warns that web-serving installations are at risk. PHP 8.1 and older need maintained vendor backports or an upgrade. A version comparison does not verify vendor patch contents, deployed images, running workers, exposure or exploitation. Recheck vendor advisories; missing tracker data does not establish that a fix is unavailable. Updating is the only complete fix. The fixed-version table covers only CVE-2026-109618 and CVE-2026-109619. The separate October 23 session upload progress advisory is not cleared by this comparison.",
   "vulnerabilities": [
     {
       "cve": "CVE-2026-109618",
@@ -62,5 +62,13 @@
         "https://secdb.alpinelinux.org/v3.24/community.json"
       ]
     }
+  },
+  "additionalAdvisory": {
+    "cve": "CVE-2026-115560",
+    "published": "2026-10-23",
+    "fixedVersions": null,
+    "source": "https://www.php.net/archive/2026.php",
+    "scope": "Unusual session configuration and runtime serializer changes; not assessed by the two-CVE version comparison.",
+    "guidance": "Keep session.upload_progress.enabled=0 until the regular fix if the application switches from configured php_binary or php_serialize to php at runtime before session_start(). Applications that never change the handler at runtime are outside this path. Verify current PHP guidance."
   }
 }

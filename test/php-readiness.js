@@ -207,7 +207,7 @@ test("empty inventory remains unknown, with explicit scope and absence limitatio
   assert.equal(r.patchStatus, "unknown");
   assert.equal(r.coverage.complete, true);
   assert.match(r.coverage.limitations.join(" "), /absence is not proof/);
-  assert.equal(r.advisory.checkedOn, "2026-10-21");
+  assert.equal(r.advisory.checkedOn, "2026-10-23");
 });
 
 test("symlinked candidates and parent directories never import outside-root declarations", t => {
@@ -366,4 +366,11 @@ test("scanner does not execute PHP, package managers, configuration or network c
     require.cache[resolved] = cached;
   }
   assert.deepEqual(fs.readFileSync(file), before);
+});
+
+test("October 23 advisory does not inherit the earlier CVEs' fixed-version table", () => {
+ const advisory=require("../data/php-readiness.json");
+ assert.equal(advisory.additionalAdvisory.cve,"CVE-2026-115560");
+ assert.equal(advisory.additionalAdvisory.fixedVersions,null);
+ assert.match(advisory.note,/covers only CVE-2026-109618 and CVE-2026-109619/);
 });
