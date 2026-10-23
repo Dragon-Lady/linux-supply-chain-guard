@@ -26,6 +26,12 @@ snapshot. Reports should remain private and outside the selected site.
 | `--updraft-log FILE` | Explicit UTF-8 text, including exported UpdraftCentral events or access logs | Probe marker, plugin upload/delete commands, shortened client identifier and trigger-shaped query parameters are separate findings. Events may be authorized, spoofed or rejected; they do not prove execution. |
 | `--wordpress-evidence FILE` | Strict sanitized JSON, described below | Cloud/unclassified key counts, non-admin accounts with elevated capabilities, and option-name suffixes prompt review. No key values or account credentials are accepted. |
 
+Log trigger checks retain the underscore-prefixed 4–10 alphanumeric parameter
+shape documented by Patchstack and also match Nethemba's 12 lowercase hexadecimal
+parameter without an underscore. Both require a 32-character value bounded by
+query/log delimiters. A working variant can reuse an existing administrator,
+so database evidence is not required for the log finding.
+
 The report includes `updraftReview.layers` and always reports
 `compromiseStatus: "unknown"`. `coverage.complete` means only that the selected
 inputs were inspected within supported limits. Omitted layers are
@@ -81,6 +87,11 @@ denials. A stored false value is not a granted capability. Include all accounts,
 not only administrators. `optionNames` contains unique names only, never values.
 SQL dumps, serialized PHP and arbitrary WP-CLI exports are not supported.
 
+Schema 1 does not represent UpdraftPlus Migrator key counts or stored account
+passwords. An `updraft_migrator_localkeys` option name alone cannot establish
+whether keys remain active; inspect those separately using trusted tools and
+the researcher guidance. Never add credentials or key values to this export.
+
 The checker cannot verify that an export includes every key/account/option or
 that it matches the selected files and logs. Zero exported keys is not proof
 that stolen keys were never used. Self-hosted-only keys do not trigger the
@@ -89,7 +100,7 @@ may need review; the scanner does not decide whether they are authorized.
 
 ## Advisory snapshot and operator follow-up
 
-Sources checked October 20, 2026:
+Sources checked October 23, 2026:
 
 - [TeamUpdraft incident notice](https://teamupdraft.com/blog/security-incident-october-2026/)
 - [Patchstack investigation](https://patchstack.com/articles/updraftcentral-key-compromise-wordpress-backdoors/)
@@ -100,6 +111,13 @@ Nethemba reports that its cutoff leaves some incident-period keys intact.
 Check remaining connections directly; an installed version does not establish
 revocation, and an update does not remove an existing backdoor. Self-hosted
 UpdraftCentral was not affected by the vendor breach according to TeamUpdraft.
+
+TeamUpdraft's October 21 update asks Premium users to inspect sites even if
+they never knowingly used UpdraftCentral. Nethemba reports that logging into
+an account inside the plugin can create a key through a default-selected
+connection option; installing the plugin alone does not create one. Its
+October 21 observations include further command attempts after the revocation
+release, reinforcing the need to verify remaining keys directly.
 
 From a trusted administrative environment, preserve evidence, revoke affected
 site connections, inspect plugins and effective account privileges, and follow
