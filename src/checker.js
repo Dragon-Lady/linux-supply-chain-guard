@@ -2735,6 +2735,7 @@ function scanHost(options = {}) {
   if (!fs.statSync(targetRoot).isDirectory()) throw new Error("Target root must be a directory");
   const homePath = options.homePath || process.env.HOME || "";
   const findings = [];
+  const october23MaxEntries = october23.entryBudget(options.october23MaxEntries);
   scanFileCache = new Map();
   scanTextCache = new Map();
   scanTextCacheBytes = 0;
@@ -2776,7 +2777,7 @@ function scanHost(options = {}) {
   checkOpenClawAgentExposure(findings, targetRoot, homePath);
   checkTransformersPayload(findings, targetRoot);
   checkGlassWormExtensions(findings, targetRoot, homePath);
-  checkOctober23(findings, targetRoot, homePath);
+  checkOctober23(findings, targetRoot, homePath, october23MaxEntries);
   checkOctoberReview(findings, targetRoot, homePath);
   const requestedHome = homePath ? path.resolve(homePath) : "";
   const phpHome = requestedHome && (targetRoot === path.parse(targetRoot).root
@@ -2911,6 +2912,7 @@ function scanHost(options = {}) {
       includeHistorical: Boolean(options.includeHistorical),
       includeResolved: Boolean(options.includeResolved),
       excludePaths: coverage.excludedPaths,
+      october23MaxEntries,
     },
     coverage,
     phpReadiness,
@@ -3487,7 +3489,7 @@ function checkOctoberReview(findings, targetRoot, homePath) {
   }
 }
 
-function checkOctober23(findings, targetRoot, homePath) {
+function checkOctober23(findings, targetRoot, homePath, maxEntries) {
   const homeRelative = homePath ? stripRoot(homePath, targetRoot) : "";
   const roots = [homeRelative, "/opt", "/srv", "/var/www", "/usr/local/lib", "/usr/lib/python3/dist-packages"].filter(Boolean);
   const seen = new Set();
@@ -3498,7 +3500,7 @@ function checkOctober23(findings, targetRoot, homePath) {
   for (const relative of roots) {
     const location = mapLinuxPath(targetRoot, relative);
     if (!exists(location)) continue;
-    const discovered = october23.discover(location, {excludePaths: scanExcludePaths});
+    const discovered = october23.discover(location, {excludePaths: scanExcludePaths, maxEntries});
     discovered.findings.forEach(add);
     for (const file of discovered.files) {
       if (seen.has(file)) continue;
