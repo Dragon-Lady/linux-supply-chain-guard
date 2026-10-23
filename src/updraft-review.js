@@ -42,7 +42,7 @@ function scanUpdraftReview(options = {}) {
   const requested = Boolean(roots.length || logs.length || evidenceFile);
   const findings = [], layers = { files: "not-selected", logs: "not-selected", database: "not-selected" };
   const result = { requested, incident: "updraftcentral-key-compromise-october-2026",
-    advisory: { checkedOn: "2026-10-20", sources: SOURCES,
+    advisory: { checkedOn: "2026-10-23", sources: SOURCES,
       vendorRevocationRelease: ["1.26.13", "2.26.13"],
       note: "Version alone does not verify key revocation or remove an existing backdoor. Researchers report a revocation cutoff gap; inspect remaining keys." },
     compromiseStatus: "unknown", layers, findings,
@@ -117,7 +117,9 @@ function scanUpdraftReview(options = {}) {
           add(file, "log-plugin-command", "review", "An UpdraftCentral plugin upload or deletion command is recorded; correlate with authorized changes.");
         if (/WordPress\/[^\s";]+;\s*class-udrpc\.php(?:["\s]|$)/.test(text))
           add(file, "log-client-marker", "review", "A shortened UpdraftCentral client identifier appears in the selected log.");
-        if (/[?&]_[A-Za-z0-9]{4,10}=[A-Za-z0-9_]{32}(?:[&"\s]|$)/.test(text))
+        // Preserve Patchstack's first-variant shape and add Nethemba's
+        // working/hidden variants. Tokens cannot cross query or log delimiters.
+        if (/[?&](?:_[A-Za-z0-9]{4,10}|[0-9a-f]{12})=[^&"\s]{32}(?:[&"\s]|$)/.test(text))
           add(file, "log-trigger-shape", "review", "A request matches a published backdoor trigger shape; correlate with files and response evidence.");
       }
       layers.logs = reader.gapEvents === before ? "inspected" : "incomplete";

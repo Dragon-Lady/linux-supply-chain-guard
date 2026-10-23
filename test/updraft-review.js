@@ -80,6 +80,52 @@ test("logs match separate signals without leaking query values or claiming succe
   f.put("access.log", '"WordPress/6.8.5; class-udrpc.php/2.0; https://teamupdraft.com"\nGET /?_abc12=short HTTP/1.1');
   assert.deepEqual(ids(f.scan({ updraftLogs: [file] })), []);
 });
+test("both published trigger variants match bounded tokens without exposing log contents", t => {
+  const f = fixture(t), token = "Z_+-".repeat(8);
+  for (const parameter of ["_abcdef", "abcdef123456"])
+    for (const prefix of ["?", "?ordinary=1&"])
+      for (const suffix of [" HTTP/1.1", "&m=setup", '"', "\t", "\n", ""]) {
+        const input = `GET /${prefix}${parameter}=${token}${suffix}`;
+        const file = f.put("trigger.log", input);
+        const r = f.scan({ updraftLogs: [file] });
+        assert.deepEqual(ids(r), ["updraft-log-trigger-shape"], `${parameter}: ${JSON.stringify(suffix)}`);
+        assert.equal(r.findings[0].severity, "review");
+        assert.equal(r.layers.logs, "inspected");
+        assert.equal(r.compromiseStatus, "unknown");
+        assert.equal(r.layers.database, "not-selected");
+        assert(!JSON.stringify(r).includes(token));
+        assert(!JSON.stringify(r).includes(parameter));
+        assert.equal(fs.readFileSync(file, "utf8"), input);
+      }
+});
+test("near-miss trigger names and unbounded or split values do not match", t => {
+  const f = fixture(t), token = "Z".repeat(32);
+  const requests = [
+    ...["abcdef12345", "abcdef1234567", "abcdef12345g", "_abc", "_abcdefghijk", "ordinary"]
+      .map(parameter => `GET /?${parameter}=${token} HTTP/1.1`),
+    `GET /abcdef123456=${token} HTTP/1.1`,
+    ...[31, 33].map(length => `GET /?abcdef123456=${"Z".repeat(length)} HTTP/1.1`),
+    ...[" ", "\t", "\n", '"', "&"].map(separator =>
+      `GET /?abcdef123456=${"Z".repeat(15)}${separator}${"Z".repeat(16)} HTTP/1.1`),
+  ];
+  for (const input of requests) {
+    const file = f.put("near-miss.log", input);
+    const r = f.scan({ updraftLogs: [file] });
+    assert.deepEqual(ids(r), [], input);
+    assert.equal(r.layers.logs, "inspected");
+  }
+});
+test("CLI reports a working-variant trigger from logs alone with a redacted review finding", t => {
+  const f = fixture(t), token = "Z".repeat(32);
+  const file = f.put("access.log", `GET /?abcdef123456=${token}&m=setup HTTP/1.1`);
+  const r = f.cli(["--updraft-log", file, "--json"]);
+  assert.equal(r.status, 1, r.stderr);
+  const report = JSON.parse(r.stdout).updraftReview;
+  assert.deepEqual(ids(report), ["updraft-log-trigger-shape"]);
+  assert.equal(report.compromiseStatus, "unknown");
+  assert(!r.stdout.includes(token));
+  assert(!r.stdout.includes("abcdef123456"));
+});
 test("sanitized evidence checks capabilities, key classes and option names without exposing values", t => {
   const f = fixture(t), data = evidence();
   data.keys.cloud = 1;
