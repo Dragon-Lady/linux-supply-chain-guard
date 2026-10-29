@@ -20,7 +20,7 @@
     "docs/october23.md"
   ],
   "scripts": {
-    "test": "node --check bin/linux-supply-chain-guard.js && node --check src/checker.js && node test/smoke.js && node test/glassworm.js && node test/report-preservation.js && node test/default-coverage.js && node --check src/tensorlake.js && node test/tensorlake.js && node --test test/functional-boundaries.js && node --check src/october-review.js && node --test test/october-review.js && npm run test:php && npm run test:web && npm run test:updraft && node --check src/october23.js && node --test test/october23.js",
+    "test": "node --check bin/linux-supply-chain-guard.js && node --check src/checker.js && node test/smoke.js && node test/glassworm.js && node test/report-preservation.js && node test/default-coverage.js && node --check src/tensorlake.js && node test/tensorlake.js && node --test test/functional-boundaries.js && node --check src/october-review.js && node --test test/october-review.js && npm run test:php && npm run test:web && npm run test:updraft && node --check src/october23.js && node --test test/october23.js && node --test test/kernel-cve-2026-98432.js",
     "canary:socket-firewall": "sfw npm install --package-lock-only --ignore-scripts --audit=false --fund=false",
     "canary:socket-firewall:log": "bash scripts/run-socket-firewall-canary.sh",
     "canary:socket-firewall:log:windows": "powershell -ExecutionPolicy Bypass -File scripts/run-socket-firewall-canary.ps1",

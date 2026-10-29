@@ -88,6 +88,14 @@ checks for affected public kernel trains, `nf_tables` module/config presence,
 around `nft_map_catchall_activate()` and the inverted genmask check, and public
 PoC/checker provenance markers. It does not clone, build, or run exploit code.
 
+The October 2026 IPv4 TCP `CVE-2026-98432` lane compares the running
+kernel's upstream version with the first fixed stable release for its branch
+(7.2.10, 5.15.223, 5.10.272) and reads installed kernel package changelogs for
+upstream fix `e3f33b0` or the CVE ID. Distribution kernels on other branches
+report "unknown, check vendor". It also reports a pending reboot when a newer
+kernel package is installed than the one running. It makes no network calls
+and does not test the bug.
+
 SentinelOne's June 2026 macOS.Gaslight analysis is included as mounted-root and
 developer-workstation triage context. The guard checks copied host metadata and
 analysis notes for the reported Gaslight SHA-256 values, the
