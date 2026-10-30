@@ -1,5 +1,11 @@
 # linux-supply-chain-guard
 
+Version 0.6.3 adds a read-only check for CVE-2026-98432. It compares the
+running kernel with the first fixed stable release on the 7.2, 5.15, and
+5.10 branches, and it reports a pending reboot when a newer kernel of the
+same flavor is installed. A changelog mention counts only when that package
+build is the one running.
+
 Version 0.6.1 extends UpdraftCentral access-log review to the 12-hex trigger
 parameter used by working variants, while retaining the original underscore
 shape. Matches remain redacted review leads, not proof of compromise.
