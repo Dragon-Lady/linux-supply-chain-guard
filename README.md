@@ -663,7 +663,8 @@ Precedence when several apply: `4` > `2` > `3` > `1` > `0`.
     `5.10 < 5.10.272`; other branches report "unknown, check vendor"
   - installed kernel package changelogs under `/usr/share/doc` are read
     offline; a mention of upstream fix `e3f33b0` or `CVE-2026-98432` is
-    treated as a vendor backport note
+    treated as a vendor backport note only when that package build stamp
+    matches the running kernel
   - `net.ipv4.tcp_migrate_req` is reported; `0` closes only the second
     attack path, so it is never treated as a fix
 - Kernel reboot pending (`kernel-reboot-pending`): a newer `linux-image-*`

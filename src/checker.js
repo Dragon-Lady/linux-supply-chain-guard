@@ -3426,7 +3426,7 @@ function cve202698432ChangelogMarker(changelogText) {
   return "";
 }
 
-function tcpInetOptCve202698432Assessment(kernelRelease, changelogText = "") {
+function tcpInetOptCve202698432Assessment(kernelRelease, changelogText = "", changelogAppliesToRunningBuild = false) {
   const rule = TCP_INET_OPT_CVE_2026_98432;
   const upstream = kernelUpstreamVersion(kernelRelease);
   if (!upstream) {
@@ -3441,8 +3441,11 @@ function tcpInetOptCve202698432Assessment(kernelRelease, changelogText = "") {
     return { status: "fixed", upstream, branch, fixed, reason: `upstream ${upstream} >= ${fixed}, the first fixed ${branch}.x stable release` };
   }
   const marker = cve202698432ChangelogMarker(changelogText);
+  if (marker && changelogAppliesToRunningBuild === true) {
+    return { status: "backported", upstream, branch, fixed, marker, reason: `upstream ${upstream} < ${fixed}, but the running kernel package changelog mentions ${marker}` };
+  }
   if (marker) {
-    return { status: "backported", upstream, branch, fixed, marker, reason: `upstream ${upstream} < ${fixed}, but the kernel package changelog mentions ${marker}` };
+    return { status: "vulnerable", upstream, branch, fixed, marker, reason: `upstream ${upstream} < ${fixed}; a kernel package changelog mentions ${marker}, but it is not confirmed as the running build` };
   }
   return { status: "vulnerable", upstream, branch, fixed, reason: `upstream ${upstream} < ${fixed} (first fixed ${branch}.x stable release) and no kernel package changelog mentions ${rule.fixCommit} or ${rule.cve}` };
 }
@@ -3476,7 +3479,7 @@ function readKernelPackageChangelogs(targetRoot, kernelRelease) {
 function checkTcpInetOptCve202698432(findings, targetRoot, kernelRelease) {
   if (!kernelRelease) return;
   const changelogs = readKernelPackageChangelogs(targetRoot, kernelRelease);
-  const assessment = tcpInetOptCve202698432Assessment(kernelRelease, changelogs.text);
+  const assessment = tcpInetOptCve202698432Assessment(kernelRelease, changelogs.text, runningKernelChangelogApplies(targetRoot, kernelRelease));
   const migrateReq = readText(mapLinuxPath(targetRoot, "/proc/sys/net/ipv4/tcp_migrate_req")).trim();
   const evidence = [
     `${kernelRelease}: ${assessment.reason}`,
@@ -3521,12 +3524,27 @@ function runningKernelBuildStamp(kernelVersionText) {
   return match ? match[1].split("-")[0] : "";
 }
 
+function kernelFlavor(kernelRelease) {
+  const match = String(kernelRelease || "").match(/-([A-Za-z][A-Za-z0-9_]*)$/);
+  return match ? match[1] : "";
+}
+
+function runningKernelChangelogApplies(targetRoot, kernelRelease) {
+  const installed = installedKernelImagePackages(readText(mapLinuxPath(targetRoot, "/var/lib/dpkg/status")));
+  const same = installed.find((entry) => entry.release === kernelRelease);
+  if (!same) return false;
+  const runningStamp = runningKernelBuildStamp(readText(mapLinuxPath(targetRoot, "/proc/sys/kernel/version")));
+  const packageStamp = kernelPackageBuildStamp(same.version, kernelRelease);
+  return Boolean(packageStamp && runningStamp && packageStamp === runningStamp);
+}
+
 function checkKernelRebootPending(findings, targetRoot, kernelRelease) {
   if (!kernelRelease) return;
   const installed = installedKernelImagePackages(readText(mapLinuxPath(targetRoot, "/var/lib/dpkg/status")));
   const reasons = [];
+  const flavor = kernelFlavor(kernelRelease);
   const newer = installed
-    .filter((entry) => compareKernelRelease(entry.release, kernelRelease) > 0)
+    .filter((entry) => kernelFlavor(entry.release) === flavor && compareKernelRelease(entry.release, kernelRelease) > 0)
     .sort((a, b) => compareKernelRelease(b.release, a.release));
   if (newer.length > 0) {
     reasons.push(`installed ${newer[0].name} ${newer[0].version} is newer than running ${kernelRelease}`);
