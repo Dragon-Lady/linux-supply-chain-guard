@@ -218,6 +218,8 @@ VSIX against Socket's published hashes and confirm its source registry.
 - Positive Technologies DBugs CVE-2026-23111 record: https://dbugs.ptsecurity.com/vulnerability/CVE-2026-23111
 - Linux stable nf_tables CVE-2026-23111 fix commit: https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/commit/?id=8c760ba4e36c750379d13569f23f5a6e185333f5
 - Baba01hacker666 public CVE-2026-23111 PoC/checker repository: https://github.com/Baba01hacker666/CVE-2026-23111
+- Ubuntu CVE-2026-98432 tracker (24.04 fix in progress at review time): https://ubuntu.com/security/CVE-2026-98432
+- Linux upstream CVE-2026-98432 fix commit `e3f33b0` ("ipv4: free inet_opt and ireq_opt after an RCU grace period"); first stable releases 7.2.10, 5.15.223, 5.10.272
 - NVD CVE-2026-46331 record: https://nvd.nist.gov/vuln/detail/CVE-2026-46331
 - Red Hat Security Bulletin RHSB-2026-008: https://access.redhat.com/security/vulnerabilities/RHSB-2026-008
 - Ubuntu CVE-2026-46331 tracker: https://ubuntu.com/security/CVE-2026-46331

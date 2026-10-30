@@ -657,6 +657,20 @@ Precedence when several apply: `4` > `2` > `3` > `1` > `0`.
   - public PoC/provenance markers such as
     `Baba01hacker666/CVE-2026-23111`, `CVE-2026-23111-checker.py`,
     `exploit_full.c`, and `exploit_full.b64` are review-only signals
+- IPv4 TCP `CVE-2026-98432` (inet_opt/ireq_opt use-after-free) kernel posture:
+  - running kernel upstream version compared with the first fixed stable
+    release for its branch: `7.2 < 7.2.10`, `5.15 < 5.15.223`,
+    `5.10 < 5.10.272`; other branches report "unknown, check vendor"
+  - installed kernel package changelogs under `/usr/share/doc` are read
+    offline; a mention of upstream fix `e3f33b0` or `CVE-2026-98432` is
+    treated as a vendor backport note only when that package build stamp
+    matches the running kernel
+  - `net.ipv4.tcp_migrate_req` is reported; `0` closes only the second
+    attack path, so it is never treated as a fix
+- Kernel reboot pending (`kernel-reboot-pending`): a newer `linux-image-*`
+  package installed than the running kernel, the same release rebuilt with a
+  different build stamp than `/proc/sys/kernel/version`, or
+  `/run/reboot-required` present
 - Known Shai-Hulud / Here We Go Again persistence and payload paths:
   - `/tmp/transformers.pyz`
   - `gh-token-monitor.service`

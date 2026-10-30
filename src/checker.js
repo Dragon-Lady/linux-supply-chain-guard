@@ -2,6 +2,7 @@
 
 const crypto = require("crypto");
 const fs = require("fs");
+const zlib = require("zlib");
 const tensorlake = require("./tensorlake");
 const october23 = require("./october23");
 const octoberReview = require("./october-review");
@@ -52,6 +53,19 @@ const NFTABLES_CVE_2026_23111_FIXED_KERNELS = [
   ["6.1.36", "6.1.163"],
   ["5.15.121", "5.15.200"],
 ];
+
+// CVE-2026-98432: IPv4 TCP inet_opt/ireq_opt use-after-free. Upstream fix
+// e3f33b0 ("ipv4: free inet_opt and ireq_opt after an RCU grace period").
+// First fixed stable release per tracked branch; other branches are unknown.
+const TCP_INET_OPT_CVE_2026_98432 = {
+  cve: "CVE-2026-98432",
+  fixCommit: "e3f33b0",
+  fixedByBranch: {
+    "7.2": "7.2.10",
+    "5.15": "5.15.223",
+    "5.10": "5.10.272",
+  },
+};
 
 const KNOWN_DPRK_NPM_PACKAGES = [
   "terminal-logger-utils",
@@ -2755,6 +2769,8 @@ function scanHost(options = {}) {
   checkItScapeArm64Kvm(findings, targetRoot, kernelRelease, architecture);
   checkKernelModules(findings, targetRoot);
   checkNfTablesCve202623111(findings, targetRoot, homePath, kernelRelease);
+  checkTcpInetOptCve202698432(findings, targetRoot, kernelRelease);
+  checkKernelRebootPending(findings, targetRoot, kernelRelease);
   checkSeptember2026LinuxLpePack(findings, targetRoot, homePath, kernelRelease);
   checkPersistence(findings, targetRoot, homePath);
   checkTensorlake(findings, targetRoot, homePath);
@@ -3395,6 +3411,158 @@ function kernelConfigExposure(vulnerability, kernelConfig) {
   const configured = (symbol) => new RegExp(`^${escapeRegExp(symbol)}=(?:y|m)$`, "m").test(kernelConfig);
   if (all.length > 0) return all.every(configured) ? "configured" : "unavailable";
   return any.some(configured) ? "configured" : "unavailable";
+}
+
+function kernelUpstreamVersion(kernelRelease) {
+  const match = String(kernelRelease || "").trim().match(/^(\d+)\.(\d+)(?:\.(\d+))?/);
+  if (!match) return "";
+  return `${match[1]}.${match[2]}.${match[3] || "0"}`;
+}
+
+function cve202698432ChangelogMarker(changelogText) {
+  const text = String(changelogText || "");
+  if (/\bCVE-2026-98432\b/i.test(text)) return "CVE-2026-98432";
+  if (/\be3f33b0[0-9a-f]*\b/i.test(text)) return "fix commit e3f33b0";
+  return "";
+}
+
+function tcpInetOptCve202698432Assessment(kernelRelease, changelogText = "", changelogAppliesToRunningBuild = false) {
+  const rule = TCP_INET_OPT_CVE_2026_98432;
+  const upstream = kernelUpstreamVersion(kernelRelease);
+  if (!upstream) {
+    return { status: "unknown", reason: "the running kernel release could not be read" };
+  }
+  const branch = upstream.split(".").slice(0, 2).join(".");
+  const fixed = rule.fixedByBranch[branch];
+  if (!fixed) {
+    return { status: "unknown", upstream, branch, reason: `upstream ${upstream} is on the ${branch} branch, which has no tracked fixed release; check the vendor advisory` };
+  }
+  if (compareKernelRelease(upstream, fixed) >= 0) {
+    return { status: "fixed", upstream, branch, fixed, reason: `upstream ${upstream} >= ${fixed}, the first fixed ${branch}.x stable release` };
+  }
+  const marker = cve202698432ChangelogMarker(changelogText);
+  if (marker && changelogAppliesToRunningBuild === true) {
+    return { status: "backported", upstream, branch, fixed, marker, reason: `upstream ${upstream} < ${fixed}, but the running kernel package changelog mentions ${marker}` };
+  }
+  if (marker) {
+    return { status: "vulnerable", upstream, branch, fixed, marker, reason: `upstream ${upstream} < ${fixed}; a kernel package changelog mentions ${marker}, but it is not confirmed as the running build` };
+  }
+  return { status: "vulnerable", upstream, branch, fixed, reason: `upstream ${upstream} < ${fixed} (first fixed ${branch}.x stable release) and no kernel package changelog mentions ${rule.fixCommit} or ${rule.cve}` };
+}
+
+function readKernelPackageChangelogs(targetRoot, kernelRelease) {
+  if (!kernelRelease) return { text: "", sources: [] };
+  const texts = [];
+  const sources = [];
+  for (const prefix of ["linux-image", "linux-image-unsigned", "linux-modules"]) {
+    for (const name of ["changelog.Debian.gz", "changelog.Debian", "changelog.gz", "changelog"]) {
+      const linuxPath = `/usr/share/doc/${prefix}-${kernelRelease}/${name}`;
+      const filePath = mapLinuxPath(targetRoot, linuxPath);
+      let data;
+      try {
+        data = fs.readFileSync(filePath);
+      } catch (error) {
+        recordUnreadablePath(filePath, error);
+        continue;
+      }
+      try {
+        texts.push(name.endsWith(".gz") ? zlib.gunzipSync(data).toString("utf8") : data.toString("utf8"));
+        sources.push(linuxPath);
+      } catch (error) {
+        recordUnreadablePath(filePath, error);
+      }
+    }
+  }
+  return { text: texts.join("\n"), sources };
+}
+
+function checkTcpInetOptCve202698432(findings, targetRoot, kernelRelease) {
+  if (!kernelRelease) return;
+  const changelogs = readKernelPackageChangelogs(targetRoot, kernelRelease);
+  const assessment = tcpInetOptCve202698432Assessment(kernelRelease, changelogs.text, runningKernelChangelogApplies(targetRoot, kernelRelease));
+  const migrateReq = readText(mapLinuxPath(targetRoot, "/proc/sys/net/ipv4/tcp_migrate_req")).trim();
+  const evidence = [
+    `${kernelRelease}: ${assessment.reason}`,
+    `changelogs read: ${changelogs.sources.length ? changelogs.sources.join(", ") : "none found"}`,
+    `net.ipv4.tcp_migrate_req=${migrateReq || "unreadable"}`,
+  ].join("; ");
+  const migrateNote = "net.ipv4.tcp_migrate_req=0 closes only the second (request-migration) attack path, not the first, so it is not a fix.";
+
+  if (assessment.status === "vulnerable") {
+    addFinding(findings, "warning", "tcp-inet-opt-cve-2026-98432-vulnerable-kernel", "Running kernel appears vulnerable to CVE-2026-98432 (IPv4 TCP inet_opt/ireq_opt use-after-free).", evidence, `Install a vendor kernel that contains upstream fix e3f33b0 (stable 7.2.10, 5.15.223, 5.10.272 or a vendor backport) and reboot into it. Until then, limit which hosts can reach listening TCP services. ${migrateNote}`);
+  } else if (assessment.status === "unknown") {
+    addFinding(findings, "review", "tcp-inet-opt-cve-2026-98432-unknown-kernel", "CVE-2026-98432 status could not be decided from the running kernel version.", evidence, `Check the vendor advisory for CVE-2026-98432 / upstream fix e3f33b0. ${migrateNote}`);
+  } else if (assessment.status === "backported") {
+    addFinding(findings, "info", "tcp-inet-opt-cve-2026-98432-backport-noted", "Kernel package changelog mentions the CVE-2026-98432 fix.", evidence, "A changelog mention is vendor evidence, not proof. Confirm the vendor advisory and that this kernel is the one running.");
+  } else {
+    addFinding(findings, "info", "tcp-inet-opt-cve-2026-98432-kernel-fixed", "Running kernel is at or above the CVE-2026-98432 fixed stable release for its branch.", evidence, "Keep following vendor advisories for later kernel updates.");
+  }
+}
+
+function installedKernelImagePackages(dpkgStatusText) {
+  const packages = [];
+  for (const stanza of String(dpkgStatusText || "").split(/\n\s*\n/)) {
+    const name = (stanza.match(/^Package:\s*(\S+)/m) || [])[1] || "";
+    const match = name.match(/^linux-image-(?:unsigned-)?(\d+\.\d+\S*)$/);
+    if (!match) continue;
+    if (!/^Status:\s*install ok installed\s*$/m.test(stanza)) continue;
+    const version = (stanza.match(/^Version:\s*(\S+)/m) || [])[1] || "";
+    packages.push({ name, release: match[1], version });
+  }
+  return packages;
+}
+
+function kernelPackageBuildStamp(packageVersion, kernelRelease) {
+  const abi = String(kernelRelease || "").replace(/-[A-Za-z][A-Za-z0-9_]*$/, "");
+  const version = String(packageVersion || "");
+  if (!abi || !version.startsWith(`${abi}.`)) return "";
+  return version.slice(abi.length + 1);
+}
+
+function runningKernelBuildStamp(kernelVersionText) {
+  const match = String(kernelVersionText || "").trim().match(/^#(\S+)/);
+  return match ? match[1].split("-")[0] : "";
+}
+
+function kernelFlavor(kernelRelease) {
+  const match = String(kernelRelease || "").match(/-([A-Za-z][A-Za-z0-9_]*)$/);
+  return match ? match[1] : "";
+}
+
+function runningKernelChangelogApplies(targetRoot, kernelRelease) {
+  const installed = installedKernelImagePackages(readText(mapLinuxPath(targetRoot, "/var/lib/dpkg/status")));
+  const same = installed.find((entry) => entry.release === kernelRelease);
+  if (!same) return false;
+  const runningStamp = runningKernelBuildStamp(readText(mapLinuxPath(targetRoot, "/proc/sys/kernel/version")));
+  const packageStamp = kernelPackageBuildStamp(same.version, kernelRelease);
+  return Boolean(packageStamp && runningStamp && packageStamp === runningStamp);
+}
+
+function checkKernelRebootPending(findings, targetRoot, kernelRelease) {
+  if (!kernelRelease) return;
+  const installed = installedKernelImagePackages(readText(mapLinuxPath(targetRoot, "/var/lib/dpkg/status")));
+  const reasons = [];
+  const flavor = kernelFlavor(kernelRelease);
+  const newer = installed
+    .filter((entry) => kernelFlavor(entry.release) === flavor && compareKernelRelease(entry.release, kernelRelease) > 0)
+    .sort((a, b) => compareKernelRelease(b.release, a.release));
+  if (newer.length > 0) {
+    reasons.push(`installed ${newer[0].name} ${newer[0].version} is newer than running ${kernelRelease}`);
+  }
+  const same = installed.find((entry) => entry.release === kernelRelease);
+  const runningStamp = runningKernelBuildStamp(readText(mapLinuxPath(targetRoot, "/proc/sys/kernel/version")));
+  const packageStamp = same ? kernelPackageBuildStamp(same.version, kernelRelease) : "";
+  if (packageStamp && runningStamp && packageStamp !== runningStamp) {
+    reasons.push(`installed ${same.name} ${same.version} is a different build (${packageStamp}) from the running build (${runningStamp})`);
+  }
+  for (const marker of ["/run/reboot-required", "/var/run/reboot-required"]) {
+    if (exists(mapLinuxPath(targetRoot, marker))) {
+      reasons.push(`${marker} is present`);
+      break;
+    }
+  }
+  if (reasons.length === 0) return;
+  addFinding(findings, "review", "kernel-reboot-pending", "A newer kernel is installed than the one running; a reboot is pending.", reasons.join("; "), "Reboot when convenient so kernel fixes that are installed actually take effect, then re-run this check.");
 }
 
 function checkNfTablesCve202623111(findings, targetRoot, homePath, kernelRelease) {
@@ -9565,4 +9733,5 @@ function compareDottedVersion(a, b) {
 module.exports = {
   scanHost,
   compareKernelRelease,
+  tcpInetOptCve202698432Assessment,
 };
