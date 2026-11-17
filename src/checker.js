@@ -5,6 +5,7 @@ const fs = require("fs");
 const zlib = require("zlib");
 const tensorlake = require("./tensorlake");
 const october23 = require("./october23");
+const { scanSansar } = require("./sansar");
 const octoberReview = require("./october-review");
 const { scanPhpReadiness } = require("./php-readiness");
 const { scanWebExposure } = require("./web-exposure");
@@ -2773,6 +2774,8 @@ function scanHost(options = {}) {
   checkKernelRebootPending(findings, targetRoot, kernelRelease);
   checkSeptember2026LinuxLpePack(findings, targetRoot, homePath, kernelRelease);
   checkPersistence(findings, targetRoot, homePath);
+  const sansar = scanSansar({ targetRoot, excludePaths: scanExcludePaths });
+  findings.push(...sansar.findings);
   checkTensorlake(findings, targetRoot, homePath);
   checkCompromisedNpmPackages(findings, targetRoot, homePath);
   checkDirtyBlanketPersistence(findings, targetRoot, homePath);
@@ -2891,7 +2894,7 @@ function scanHost(options = {}) {
   // such as "incomplete". Use the raw findings so suppression cannot hide gaps.
   const incompleteIds = new Set([
     "october23-coverage-incomplete", "october-review-incomplete", "tensorlake-coverage-incomplete", "glassworm-artifact-not-inspected", "glassworm-scan-incomplete",
-    "php-readiness-incomplete", "web-exposure-incomplete", "updraft-review-incomplete",
+    "php-readiness-incomplete", "web-exposure-incomplete", "updraft-review-incomplete", "sansar-coverage-incomplete",
   ]);
   const inspectionFailures = Array.from(new Set(findings.filter((item) => incompleteIds.has(item.id))
     .map((item) => item.id))).sort();
@@ -2932,6 +2935,7 @@ function scanHost(options = {}) {
     },
     coverage,
     phpReadiness,
+    sansar,
     webExposure,
     updraftReview,
     host: {

@@ -1,5 +1,9 @@
 # linux-supply-chain-guard
 
+Version 0.6.4 adds bounded SANSAR artifact review and raises the supported Node.js
+security floors to 22.23.5, 24.22.3 and 26.13.1. Findings are review leads,
+not proof of compromise. See [SANSAR coverage and limits](docs/sansar.md).
+
 Version 0.6.3 adds a read-only check for CVE-2026-98432. It compares the
 running kernel with the first fixed stable release on the 7.2, 5.15, and
 5.10 branches, and it reports a pending reboot when a newer kernel of the

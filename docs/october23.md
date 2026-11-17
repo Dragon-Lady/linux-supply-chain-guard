@@ -52,7 +52,7 @@ Source: https://safedep.io/hugo-paper-mevn-cli-forged-commit-preinstall-dropper/
 
 ## Limits and supported runtime
 
-Use patched Node 22.23.4+, 24.22.1+, or 26.12.1+ within those supported major
+Use patched Node 22.23.5+, 24.22.3+, or 26.13.1+ within those supported major
 lines. This patch intentionally drops Node 18 and 20 from supported runtimes;
 legacy CI coverage is not a runtime-support promise. The package engines field
 expresses these minima. Node's October 21

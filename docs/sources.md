@@ -309,3 +309,8 @@ See [coverage and response order](october23.md). Sources rechecked 2026-10-23:
 - https://docs.litellm.ai/blog/security-incident-oct-21-2026
 - https://safedep.io/hugo-paper-mevn-cli-forged-commit-preinstall-dropper/
 - https://nodejs.org/en/blog/vulnerability/october-2026-security-releases
+
+## November 17, 2026 refresh
+
+- SANSAR: https://www.elastic.co/security-labs/threat-command/sansar-linux-cryptomining-malware (published November 12; activity October 22–25).
+- Supported runtime floors: https://nodejs.org/en/blog/vulnerability/november-2026-security-releases (released November 11).
